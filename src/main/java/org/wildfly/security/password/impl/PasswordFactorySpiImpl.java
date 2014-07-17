@@ -21,19 +21,23 @@ package org.wildfly.security.password.impl;
 import static org.wildfly.security.password.interfaces.TrivialDigestPassword.*;
 import static org.wildfly.security.password.interfaces.UnixSHACryptPassword.*;
 import static org.wildfly.security.password.interfaces.UnixMD5CryptPassword.*;
+import static org.wildfly.security.password.interfaces.UnixDESCryptPassword.*;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactorySpi;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.password.interfaces.TrivialDigestPassword;
+import org.wildfly.security.password.interfaces.UnixDESCryptPassword;
 import org.wildfly.security.password.interfaces.UnixMD5CryptPassword;
 import org.wildfly.security.password.interfaces.UnixSHACryptPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
 import org.wildfly.security.password.spec.TrivialDigestPasswordSpec;
+import org.wildfly.security.password.spec.UnixDESCryptPasswordSpec;
 import org.wildfly.security.password.spec.UnixMD5CryptPasswordSpec;
 import org.wildfly.security.password.spec.EncryptablePasswordSpec;
 import org.wildfly.security.password.spec.UnixSHACryptPasswordSpec;
@@ -103,6 +107,19 @@ public final class PasswordFactorySpiImpl extends PasswordFactorySpi {
                     break;
                 }
             }
+            case ALGORITHM_DES_CRYPT: {
+                if (keySpec instanceof UnixDESCryptPasswordSpec) {
+                    return new UnixDESCryptPasswordImpl((UnixDESCryptPasswordSpec) keySpec);
+                } else if (keySpec instanceof EncryptablePasswordSpec) {
+                    try {
+                        return new UnixDESCryptPasswordImpl((EncryptablePasswordSpec) keySpec);
+                    } catch (InvalidParameterSpecException e) {
+                        throw new InvalidKeySpecException(e);
+                    }
+                } else {
+                    break;
+                }
+            }
         }
         throw new InvalidKeySpecException("Unknown algorithm");
     }
@@ -165,6 +182,15 @@ public final class PasswordFactorySpiImpl extends PasswordFactorySpi {
                     return password;
                 } else if (password instanceof TrivialDigestPassword) {
                     return new TrivialDigestPasswordImpl((TrivialDigestPassword) password);
+                } else {
+                    break;
+                }
+            }
+            case ALGORITHM_DES_CRYPT: {
+                if (password instanceof UnixDESCryptPasswordImpl) {
+                    return password;
+                } else if (password instanceof UnixDESCryptPassword) {
+                    return new UnixDESCryptPasswordImpl((UnixDESCryptPassword) password);
                 } else {
                     break;
                 }
