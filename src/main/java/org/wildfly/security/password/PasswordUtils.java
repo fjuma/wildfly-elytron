@@ -23,6 +23,7 @@ import static org.wildfly.security.password.interfaces.SunUnixMD5CryptPassword.*
 import static org.wildfly.security.password.interfaces.UnixSHACryptPassword.*;
 import static org.wildfly.security.util.Base64.*;
 
+import java.io.ByteArrayInputStream;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Locale;
 
@@ -36,7 +37,6 @@ import org.wildfly.security.password.spec.TrivialDigestPasswordSpec;
 import org.wildfly.security.password.spec.UnixDESCryptPasswordSpec;
 import org.wildfly.security.password.spec.UnixMD5CryptPasswordSpec;
 import org.wildfly.security.password.spec.UnixSHACryptPasswordSpec;
-import org.wildfly.security.util.ByteArrayIterator;
 import org.wildfly.security.util.CharacterArrayIterator;
 
 /**
@@ -202,8 +202,8 @@ public class PasswordUtils {
                 b.append(0);
             b.append(spec.getIterationCount());
             b.append("$");
-            base64EncodeBCrypt(b, new ByteArrayIterator(spec.getSalt()));
-            base64EncodeBCrypt(b, new ByteArrayIterator(spec.getHashBytes()));
+            base64EncodeBCrypt(b, new ByteArrayInputStream(spec.getSalt()));
+            base64EncodeBCrypt(b, new ByteArrayInputStream(spec.getHashBytes()));
         } else if (passwordSpec instanceof BSDUnixDESCryptPasswordSpec) {
             b.append("_");
             final BSDUnixDESCryptPasswordSpec spec = (BSDUnixDESCryptPasswordSpec) passwordSpec;
@@ -217,18 +217,18 @@ public class PasswordUtils {
             base64EncodeA(b, salt >> 6);
             base64EncodeA(b, salt >> 12);
             base64EncodeA(b, salt >> 18);
-            base64EncodeA(b, new ByteArrayIterator(spec.getHash()));
+            base64EncodeA(b, new ByteArrayInputStream(spec.getHash()));
         } else if (passwordSpec instanceof TrivialDigestPasswordSpec) {
             final TrivialDigestPasswordSpec spec = (TrivialDigestPasswordSpec) passwordSpec;
             final String algorithm = spec.getAlgorithm();
             b.append('[').append(algorithm).append(']');
-            base64EncodeB(b, new ByteArrayIterator(spec.getDigest()));
+            base64EncodeB(b, new ByteArrayInputStream(spec.getDigest()));
         } else if (passwordSpec instanceof UnixDESCryptPasswordSpec) {
             final UnixDESCryptPasswordSpec spec = (UnixDESCryptPasswordSpec) passwordSpec;
             final short salt = spec.getSalt();
             base64EncodeA(b, salt);
             base64EncodeA(b, salt >> 6);
-            base64EncodeA(b, new ByteArrayIterator(spec.getHash()));
+            base64EncodeA(b, new ByteArrayInputStream(spec.getHash()));
         } else if (passwordSpec instanceof UnixMD5CryptPasswordSpec) {
             b.append("$1$");
             final UnixMD5CryptPasswordSpec spec = (UnixMD5CryptPasswordSpec) passwordSpec;
@@ -237,7 +237,7 @@ public class PasswordUtils {
                 b.append((char) (sb & 0xff));
             }
             b.append('$');
-            base64EncodeACryptLE(b, new IByteArrayIterator(spec.getHash(), MD5_IDX));
+            base64EncodeACryptLE(b, new IByteArrayInputStream(spec.getHash(), MD5_IDX));
         } else if (passwordSpec instanceof SunUnixMD5CryptPasswordSpec) {
             final SunUnixMD5CryptPasswordSpec spec = (SunUnixMD5CryptPasswordSpec) passwordSpec;
             final int iterationCount = spec.getIterationCount();
@@ -263,7 +263,7 @@ public class PasswordUtils {
                     throw new InvalidKeySpecException("Unrecognized key spec algorithm");
                 }
             }
-            base64EncodeACryptLE(b, new IByteArrayIterator(spec.getHash(), MD5_IDX));
+            base64EncodeACryptLE(b, new IByteArrayInputStream(spec.getHash(), MD5_IDX));
         } else if (passwordSpec instanceof UnixSHACryptPasswordSpec) {
             final UnixSHACryptPasswordSpec spec = (UnixSHACryptPasswordSpec) passwordSpec;
             final int[] interleave;
@@ -291,7 +291,7 @@ public class PasswordUtils {
                 b.append((char) (sb & 0xff));
             }
             b.append('$');
-            base64EncodeACryptLE(b, new IByteArrayIterator(spec.getHash(), interleave));
+            base64EncodeACryptLE(b, new IByteArrayInputStream(spec.getHash(), interleave));
         } else {
             throw new InvalidKeySpecException("Password spec cannot be rendered as a string");
         }
@@ -354,21 +354,22 @@ public class PasswordUtils {
         }
     }
 
-    static class IByteArrayIterator extends ByteArrayIterator {
+    static class IByteArrayInputStream extends ByteArrayInputStream {
         private final int[] interleave;
 
-        IByteArrayIterator(final byte[] b, final int[] interleave) {
-            super(b);
+        IByteArrayInputStream(final byte[] buf, final int[] interleave) {
+            super(buf);
             this.interleave = interleave;
         }
 
-        IByteArrayIterator(final byte[] b, final int i, final int[] interleave) {
-            super(b, i);
+        IByteArrayInputStream(byte buf[], int offset, int length, final int[] interleave) {
+            super(buf, offset, length);
             this.interleave = interleave;
         }
 
-        protected int lookup(final int idx) {
-            return super.lookup(interleave[idx]);
+        @Override
+        public synchronized int read() {
+            return (pos < count) ? (buf[interleave[pos++]] & 0xff) : -1;
         }
     }
 
