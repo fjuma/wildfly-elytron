@@ -20,9 +20,13 @@ package org.wildfly.security.auth;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
+import javax.net.ssl.TrustManager;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -320,6 +324,41 @@ public abstract class AuthenticationConfiguration {
     public AuthenticationConfiguration usePort(int port) {
         if (port < 1 || port > 65535) throw new IllegalArgumentException("Invalid port " + port);
         return new SetPortAuthenticationConfiguration(this, port);
+    }
+
+    /**
+     * Create a new configuration which is the same as this configuration, but which uses the given private key
+     * and uses the given URL to acquire the X.509 certificate that should be used to authenticate.
+     *
+     * @param certificateUrl the URL to the X.509 certificate to use
+     * @param privateKey the private key to use
+     * @return the new configuration
+     */
+    public AuthenticationConfiguration useCertificate(URL certificateUrl, PrivateKey privateKey) {
+        return certificateUrl == null ? this : new SetCertificateAuthenticationConfiguration(this, certificateUrl, privateKey);
+    }
+
+    /**
+     * Create a new configuration which is the same as this configuration, but which uses the given private key
+     * and X.509 certificate to authenticate.
+     *
+     * @param certificate the X.509 certificate to use
+     * @param privateKey the private key to use
+     * @return the new configuration
+     */
+    public AuthenticationConfiguration useCertificate(X509Certificate certificate, PrivateKey privateKey) {
+        return certificate == null ? this : new SetCertificateAuthenticationConfiguration(this, certificate, privateKey);
+    }
+
+    /**
+     * Create a new configuration which is the same as this configuration, but which uses the given trust manager
+     * for trust verification.
+     *
+     * @param trustManager the trust manager to use
+     * @return the new configuration
+     */
+    public AuthenticationConfiguration useTrustManager(TrustManager trustManager) {
+        return trustManager == null ? this : new SetTrustManagerAuthenticationConfiguration(this, trustManager);
     }
 
     // SASL
