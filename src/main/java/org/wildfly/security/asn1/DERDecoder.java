@@ -19,14 +19,14 @@
 package org.wildfly.security.asn1;
 
 import static org.wildfly.security.asn1.ASN1.*;
-import static org.wildfly.security._private.ElytronMessages.log;
 
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 
-import org.wildfly.security.util.PosByteArrayInputStream;
+import org.wildfly.security.util.ByteIterator;
 
 /**
  * A class used to decode ASN.1 values that have been encoded using the Distinguished Encoding Rules (DER).
@@ -35,7 +35,7 @@ import org.wildfly.security.util.PosByteArrayInputStream;
  */
 public class DERDecoder implements ASN1Decoder {
 
-    private PosByteArrayInputStream src;
+    private ByteIterator bi;
     private LinkedList<DecoderState> states = new LinkedList<DecoderState>();
 
     /**
@@ -44,7 +44,7 @@ public class DERDecoder implements ASN1Decoder {
      * @param buf the byte array to decode
      */
     public DERDecoder(byte[] buf) {
-        this.src = new PosByteArrayInputStream(buf);
+        this.bi = ByteIterator.ofBytes(buf);
     }
 
     /**
@@ -55,27 +55,27 @@ public class DERDecoder implements ASN1Decoder {
      * @param the maximum number of bytes to read from the byte array
      */
     public DERDecoder(byte[] buf, int offset, int length) {
-        this.src = new PosByteArrayInputStream(buf, offset, length);
+        this.bi = ByteIterator.ofBytes(buf, offset, length);
     }
 
     /**
-     * Create a DER decoder that will decode values from the given {@code PosByteArrayInputStream}.
+     * Create a DER decoder that will decode values from the given {@code ByteIterator}.
      *
-     * @param src the {@code PosByteArrayInputStream} from which DER encoded values will be decoded
+     * @param src the {@code ByteIterator} from which DER encoded values will be decoded
      */
-    public DERDecoder(PosByteArrayInputStream src) {
-        this.src = src;
+    public DERDecoder(ByteIterator bi) {
+        this.bi = bi;
     }
 
     @Override
-    public void startSequence() throws IOException, ASN1Exception {
+    public void startSequence() throws ASN1Exception {
         readTag(SEQUENCE_TYPE);
         int length = readLength();
-        states.add(new DecoderState(SEQUENCE_TYPE, src.getPos() + length));
+        states.add(new DecoderState(SEQUENCE_TYPE, bi.offset() + length));
     }
 
     @Override
-    public void endSequence() throws IOException {
+    public void endSequence() throws ASN1Exception {
         DecoderState lastState = states.peekLast();
         if ((lastState == null) || (lastState.getTag() != SEQUENCE_TYPE)) {
             throw new IllegalStateException("No sequence to end");
@@ -85,14 +85,14 @@ public class DERDecoder implements ASN1Decoder {
     }
 
     @Override
-    public void startSet() throws IOException, ASN1Exception {
+    public void startSet() throws ASN1Exception {
         readTag(SET_TYPE);
         int length = readLength();
-        states.add(new DecoderState(SET_TYPE, src.getPos() + length));
+        states.add(new DecoderState(SET_TYPE, bi.offset() + length));
     }
 
     @Override
-    public void endSet() throws IOException {
+    public void endSet() throws ASN1Exception {
         DecoderState lastState = states.peekLast();
         if ((lastState == null) || (lastState.getTag() != SET_TYPE)) {
             throw new IllegalStateException("No set to end");
@@ -101,12 +101,16 @@ public class DERDecoder implements ASN1Decoder {
         states.removeLast();
     }
 
-    private void endConstructedElement(int nextElementIndex) throws IOException {
-        int pos = src.getPos();
+    private void endConstructedElement(int nextElementIndex) throws ASN1Exception {
+        int pos = bi.offset();
         if (pos < nextElementIndex) {
-            long skipped = src.skip(nextElementIndex - pos);
-            if (skipped != (nextElementIndex - pos)) {
-                throw log.unexpectedEof();
+            int numSkipped = 0;
+            for (int i = 0; i < (nextElementIndex - pos) && bi.hasNext(); i++) {
+                bi.next();
+                numSkipped++;
+            }
+            if (numSkipped != (nextElementIndex - pos)) {
+                throw new ASN1Exception("Unexpected end of input");
             }
         } else if (pos > nextElementIndex) {
             // Shouldn't happen
@@ -115,79 +119,75 @@ public class DERDecoder implements ASN1Decoder {
     }
 
     @Override
-    public byte[] decodeOctetString() throws IOException {
+    public byte[] decodeOctetString() throws ASN1Exception {
         readTag(OCTET_STRING_TYPE);
         int length = readLength();
         byte[] result = new byte[length];
-        if ((length != 0) && (src.read(result, 0, length) != length)) {
-            throw log.unexpectedEof();
+        if ((length != 0) && (bi.drain(result, 0, length) != length)) {
+            throw new ASN1Exception("Unexpected end of input");
         }
         return result;
     }
 
     @Override
-    public String decodeOctetStringAsString() throws IOException {
+    public String decodeOctetStringAsString() throws ASN1Exception {
         return decodeOctetStringAsString(StandardCharsets.UTF_8.name());
     }
 
     @Override
-    public String decodeOctetStringAsString(String charSet) throws IOException {
+    public String decodeOctetStringAsString(String charSet) throws ASN1Exception {
         readTag(OCTET_STRING_TYPE);
         int length = readLength();
         byte[] octets = new byte[length];
-        if ((length != 0) && (src.read(octets, 0, length) != length)) {
-            throw log.unexpectedEof();
+        if ((length != 0) && (bi.drain(octets, 0, length) != length)) {
+            throw new ASN1Exception("Unexpected end of input");
         }
-        return new String(octets, charSet);
+        try {
+            return new String(octets, charSet);
+        } catch (UnsupportedEncodingException e) {
+            throw new ASN1Exception(e.getMessage());
+        }
     }
 
     @Override
-    public String decodeIA5String() throws IOException {
+    public String decodeIA5String() throws ASN1Exception {
         byte[] octets = decodeIA5StringAsBytes();
         return new String(octets, StandardCharsets.US_ASCII);
     }
 
     @Override
-    public byte[] decodeIA5StringAsBytes() throws IOException {
+    public byte[] decodeIA5StringAsBytes() throws ASN1Exception {
         readTag(IA5_STRING_TYPE);
         int length = readLength();
         byte[] result = new byte[length];
-        if ((length != 0) && (src.read(result, 0, length) != length)) {
-            throw log.unexpectedEof();
+        if ((length != 0) && (bi.drain(result, 0, length) != length)) {
+            throw new ASN1Exception("Unexpected end of input");
         }
         return result;
     }
 
     @Override
-    public byte[] decodeBitString() throws IOException, ASN1Exception {
+    public byte[] decodeBitString() throws ASN1Exception {
         readTag(BIT_STRING_TYPE);
         int length = readLength();
-        int numUnusedBits;
         byte[] result = new byte[length - 1];
 
-        numUnusedBits = src.read();
-        if (numUnusedBits == -1) {
-            throw log.unexpectedEof();
-        } else if (numUnusedBits < 0 || numUnusedBits > 7) {
+        int numUnusedBits = bi.next();
+        if (numUnusedBits < 0 || numUnusedBits > 7) {
             throw new ASN1Exception("Invalid number of unused bits");
         }
 
-        int next;
         if (numUnusedBits == 0) {
             for (int i = 0; i < (length -1); i++) {
-                if ((next = src.read()) == -1) {
-                    throw log.unexpectedEof();
-                }
-                result[i] = (byte) next;
+                result[i] = (byte) bi.next();
             }
         } else {
             // Any unused bits will be removed
             int leftShift = 8 - numUnusedBits;
             int previous = 0;
+            int next;
             for (int i = 0; i < (length -1); i++) {
-                if ((next = src.read()) == -1) {
-                    throw log.unexpectedEof();
-                }
+                next = bi.next();
                 if (i == 0) {
                     result[i] = (byte) (next >>> numUnusedBits);
                 } else {
@@ -200,13 +200,11 @@ public class DERDecoder implements ASN1Decoder {
     }
 
     @Override
-    public String decodeBitStringAsString() throws IOException, ASN1Exception {
+    public String decodeBitStringAsString() throws ASN1Exception {
         readTag(BIT_STRING_TYPE);
         int length = readLength();
-        int numUnusedBits;
-        if ((numUnusedBits = src.read()) == -1) {
-            throw log.unexpectedEof();
-        } else if (numUnusedBits < 0 || numUnusedBits > 7) {
+        int numUnusedBits = bi.next();
+        if (numUnusedBits < 0 || numUnusedBits > 7) {
             throw new ASN1Exception("Invalid number of unused bits");
         }
 
@@ -214,9 +212,7 @@ public class DERDecoder implements ASN1Decoder {
         int numBits = (length - 1) * 8 - numUnusedBits;
         StringBuilder result = new StringBuilder(numBits);
         for (int i = 0; i < (length - 1); i++) {
-            if ((next = src.read()) == -1) {
-                throw log.unexpectedEof();
-            }
+            next = bi.next();
             for (int j = 7; j >= 0 && k < numBits; j--) {
                 if ((next & (1 << j)) != 0) {
                     result.append("1");
@@ -230,19 +226,17 @@ public class DERDecoder implements ASN1Decoder {
     }
 
     @Override
-    public String decodeObjectIdentifier() throws IOException {
+    public String decodeObjectIdentifier() throws ASN1Exception {
         readTag(OBJECT_IDENTIFIER_TYPE);
         int length = readLength();
         int octet;
         long value = 0;
-        BigInteger bi = null;
+        BigInteger bigInt = null;
         boolean processedFirst = false;
         StringBuffer objectIdentifierStr = new StringBuffer();
 
         for (int i = 0; i < length; i++) {
-            if ((octet = src.read()) == -1) {
-                throw log.unexpectedEof();
-            }
+            octet = bi.next();
             if (value < 0x80000000000000L) {
                 value = (value << 7) + (octet & 0x7f);
                 if ((octet & 0x80) == 0) {
@@ -267,17 +261,17 @@ public class DERDecoder implements ASN1Decoder {
                     value = 0;
                 }
             } else {
-                if (bi == null) {
-                    bi = BigInteger.valueOf(value);
+                if (bigInt == null) {
+                    bigInt = BigInteger.valueOf(value);
                 }
-                bi = bi.shiftLeft(7).add(BigInteger.valueOf(octet & 0x7f));
+                bigInt = bigInt.shiftLeft(7).add(BigInteger.valueOf(octet & 0x7f));
                 if ((octet & 0x80) == 0) {
                     // Reached the end of a component value
                     objectIdentifierStr.append('.');
-                    objectIdentifierStr.append(bi);
+                    objectIdentifierStr.append(bigInt);
 
                     // Reset for the next component value
-                    bi = null;
+                    bigInt = null;
                     value = 0;
                 }
             }
@@ -286,7 +280,7 @@ public class DERDecoder implements ASN1Decoder {
     }
 
     @Override
-    public void decodeNull() throws IOException, ASN1Exception {
+    public void decodeNull() throws ASN1Exception {
         readTag(NULL_TYPE);
         int length = readLength();
         if (length != 0) {
@@ -295,51 +289,58 @@ public class DERDecoder implements ASN1Decoder {
     }
 
     @Override
-    public int peekType() throws IOException {
-        src.mark(0);
+    public int peekType() throws ASN1Exception {
+        int prevOffset = bi.offset();
         int tag = readTag();
-        src.reset();
+        while ((bi.offset() != prevOffset) && bi.hasPrev()) {
+            bi.prev();
+        }
         return tag;
     }
 
     @Override
-    public void skipElement() throws IOException {
+    public void skipElement() throws ASN1Exception {
         readTag();
         int length = readLength();
-        long skipped = src.skip(length);
-        if (skipped != length) {
-            throw log.unexpectedEof();
+        int numSkipped = 0;
+        for (int i = 0; i < length && bi.hasNext(); i++) {
+            bi.next();
+            numSkipped++;
+        }
+        if (numSkipped != length) {
+            throw new ASN1Exception("Unexpected end of input");
         }
     }
 
     @Override
     public boolean hasNextElement() {
         boolean hasNext = false;
-        src.mark(0);
+        int prevOffset = bi.offset();
         try {
             int tag = readTag();
             int length = readLength();
-            if (length <= src.available()) {
-                hasNext = true;
+            int i;
+            for (i = 0; (i < length) && bi.hasNext(); i++) {
+                bi.next();
             }
-        } catch (IOException e) {
+            hasNext = (i == length);
+        } catch (NoSuchElementException e) {
             hasNext = false;
         }
-        src.reset();
+        while ((bi.offset() != prevOffset) && bi.hasPrev()) {
+            bi.prev();
+        }
         return hasNext;
     }
 
-    private int readTag() throws IOException, ASN1Exception {
-        int tag;
-        if ((tag = src.read()) == -1) {
-            throw log.unexpectedEof();
-        }
+    private int readTag() throws ASN1Exception {
+        int tag = bi.next();
         int constructed = tag & CONSTRUCTED_MASK;
         int tagNumber = tag & TAG_NUMBER_MASK;
         if (tagNumber == 0x1f) {
             // High-tag-number form
             tagNumber = 0;
-            int octet = src.read();
+            int octet = bi.next();
             if ((octet & 0x7f) == 0) {
                 // Bits 7 to 1 of the first subsequent octet cannot be 0
                 throw new ASN1Exception("Invalid high-tag-number form");
@@ -347,30 +348,26 @@ public class DERDecoder implements ASN1Decoder {
             while ((octet >= 0) && ((octet & 0x80) != 0)) {
                 tagNumber |= (octet & 0x7f);
                 tagNumber <<= 7;
-                octet = src.read();
-            }
-            if (octet == -1) {
-                throw log.unexpectedEof();
+                octet = bi.next();
             }
             tagNumber |= (octet & 0x7f);
         }
         return (constructed | tagNumber);
     }
 
-    private void readTag(int expectedTag) throws IOException, ASN1Exception {
-        src.mark(0);
+    private void readTag(int expectedTag) throws ASN1Exception {
+        int prevOffset = bi.offset();
         int actualTag = readTag();
         if (actualTag != expectedTag) {
-            src.reset();
+            while ((bi.offset() != prevOffset) && bi.hasPrev()) {
+                bi.prev();
+            }
             throw new ASN1Exception("Unexpected ASN.1 tag encountered");
         }
     }
 
-    private int readLength() throws IOException, ASN1Exception {
-        int length;
-        if ((length = src.read()) == -1) {
-            throw log.unexpectedEof();
-        }
+    private int readLength() throws ASN1Exception {
+        int length = bi.next();
         if (length > 127) {
             // Long form
             int numOctets = length & 0x7f;
@@ -380,9 +377,7 @@ public class DERDecoder implements ASN1Decoder {
             length = 0;
             int nextOctet;
             for (int i = 0; i < numOctets; i++) {
-                if ((nextOctet = src.read()) == -1) {
-                    throw log.unexpectedEof();
-                }
+                nextOctet = bi.next();
                 length = (length << 8) + nextOctet;
             }
         }

@@ -18,7 +18,6 @@
 
 package org.wildfly.security.asn1;
 
-import java.io.IOException;
 
 /**
  * An interface for decoding ASN.1 encoded values from an input stream.
@@ -31,132 +30,121 @@ public interface ASN1Decoder {
      * Start decoding an ASN.1 sequence. All subsequent decode operations will decode
      * elements from this sequence until {@link #endSequence()} is called.
      *
-     * @throws IOException if the end of the input stream is reached unexpectedly
      * @throws ASN1Exception if the next element is not a sequence
      */
-    void startSequence() throws IOException, ASN1Exception;
+    void startSequence() throws ASN1Exception;
 
     /**
      * Advance to the end of a sequence. If there are any elements in the sequence that have
      * not yet been decoded, they will be discarded.
      *
-     * @throws IOException if the end of the input stream is reached unexpectedly
+     * @throws ASN1Exception if an error occurs while advancing to the end of the sequence
      */
-    void endSequence() throws IOException;
+    void endSequence() throws ASN1Exception;
 
     /**
      * Starting decoding an ASN.1 set. All subsequent decode operations will decode
      * elements from this set until {@link #endSet()} is called.
      *
-     * @throws IOException if the end of the input stream is reached unexpectedly
      * @throws ASN1Exception if the next element is not a set
      */
-    void startSet() throws IOException, ASN1Exception;
+    void startSet() throws ASN1Exception;
 
     /**
      * Advance to the end of a set. If there are any elements in the set that have
      * not yet been decoded, they will be discarded.
      *
-     * @throws IOException if the end of the input stream is reached unexpectedly
+     * @throws ASN1Exception if an error occurs while advacning to the end of the set
      */
-    void endSet() throws IOException;
+    void endSet() throws ASN1Exception;
 
     /**
      * Decode the next ASN.1 element as an octet string.
      *
      * @return the decoded octet string, as a byte array
-     * @throws IOException if the end of the input stream is reached unexpectedly
      * @throws ASN1Exception if the next element is not an octet string
      */
-    byte[] decodeOctetString() throws IOException, ASN1Exception;
+    byte[] decodeOctetString() throws ASN1Exception;
 
     /**
      * Decode the next ASN.1 element as an octet string.
      *
      * @return the decoded octet string, as a UTF-8 string
-     * @throws IOException if the end of the input stream is reached unexpectedly
      * @throws ASN1Exception if the next element is not an octet string
      */
-    String decodeOctetStringAsString() throws IOException, ASN1Exception;
+    String decodeOctetStringAsString() throws ASN1Exception;
 
     /**
      * Decode the next ASN.1 element as an octet string.
      *
      * @param charSet the character set to use when decoding
      * @return the decoded octet string
-     * @throws IOException if the end of the input stream is reached unexpectedly
      * @throws ASN1Exception if the next element is not an octet string
      */
-    String decodeOctetStringAsString(String charSet) throws IOException, ASN1Exception;
+    String decodeOctetStringAsString(String charSet) throws ASN1Exception;
 
     /**
      * Decode the next ASN.1 element as an IA5 string.
      *
      * @return the decoded IA5 string
-     * @throws IOException if the end of the input stream is reached unexpectedly
      * @throws ASN1Exception if the next element is not an IA5 string
      */
-    String decodeIA5String() throws IOException, ASN1Exception;
+    String decodeIA5String() throws ASN1Exception;
 
     /**
      * Decode the next ASN.1 element as an IA5 string.
      *
      * @param  the decoded IA5 string, as a byte array
-     * @throws IOException if the end of the input stream is reached unexpectedly
      * @throws ASN1Exception if the next element is not an IA5 string
      */
-    byte[] decodeIA5StringAsBytes() throws IOException, ASN1Exception;
+    byte[] decodeIA5StringAsBytes() throws ASN1Exception;
 
     /**
      * Decode the next ASN.1 element as a bit string.
      *
      * @return the decoded bit string as a byte array, with any unused bits removed
-     * @throws IOException if the end of the input stream is reached unexpectedly
      * @throws ASN1Exception if the next element is not a bit string
      */
-    byte[] decodeBitString() throws IOException, ASN1Exception;
+    byte[] decodeBitString() throws ASN1Exception;
 
     /**
      * Decode the next ASN.1 element as a bit string.
      *
      * @return the decoded bit string as a binary string, with any unused bits removed
-     * @throws IOException if the end of the input stream is reached unexpectedly
      * @throws ASN1Exception if the next element is not a bit string
      */
-    String decodeBitStringAsString() throws IOException, ASN1Exception;
+    String decodeBitStringAsString() throws ASN1Exception;
 
     /**
      * Decode the next ASN.1 element as an object identifier.
      *
      * @return the object identifier as a string
-     * @throws IOException if the end of the input stream is reached unexpectedly
      * @throws ASN1Exception if the next element is not a bit string
      */
-    String decodeObjectIdentifier() throws IOException, ASN1Exception;
+    String decodeObjectIdentifier() throws ASN1Exception;
 
     /**
      * Decode the next ASN.1 element as a null element.
      *
-     * @throws IOException if the end of the input stream is reached unexpectedly
      * @throws ASN1Exception if the next element is not null
      */
-    void decodeNull() throws IOException, ASN1Exception;
+    void decodeNull() throws ASN1Exception;
 
     /**
      * Retrieve the type of the next ASN.1 element without actually decoding
      * the next element.
      *
      * @return the type of the next ASN.1 element
-     * @throws IOException if an error occurs while determining the type of the next element
+     * @throws ASN1Exception if an error occurs while determining the type of the next element
      */
-    int peekType() throws IOException;
+    int peekType() throws ASN1Exception;
 
     /**
      * Skip over the next ASN.1 element.
      *
-     * @throws IOException if the end of the input stream is reached unexpectedly
+     * @throws ASN1Exception if the next element cannot be skipped
      */
-    void skipElement() throws IOException;
+    void skipElement() throws ASN1Exception;
 
     /**
      * Determine if there is at least one more ASN.1 element that can be read from the input stream.
