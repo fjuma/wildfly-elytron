@@ -50,6 +50,7 @@ import org.wildfly.security.auth.callback.CredentialCallback;
 import org.wildfly.security.auth.callback.KeyTypeCallback;
 import org.wildfly.security.auth.callback.TrustedAuthoritiesCallback;
 import org.wildfly.security.auth.callback.VerifyPeerTrustedCallback;
+import org.wildfly.security.x500.X509CertificateChainPrivateCredential;
 import org.wildfly.security.x500.X509CertificateCredentialDecoder;
 import org.wildfly.security.sasl.util.AbstractSaslServer;
 import org.wildfly.security.util.ByteStringBuilder;
@@ -222,17 +223,21 @@ final class EntitySaslServer extends AbstractSaslServer {
                 // Get the server's certificate data, if necessary
                 if ((entityB != null) || mutual) {
                     KeyTypeCallback keyTypeCallback = new KeyTypeCallback(keyType(signature.getAlgorithm()));
-                    // todo: switch to org.wildfly.security.x500.X509CertificateChainPrivateCredential
-                    CredentialCallback credentialCallback = new CredentialCallback(singletonMap(X509Certificate[].class, emptySet()));
-                    // todo: match the exact key algorithm name
-                    CredentialCallback privateKeyCallback = new CredentialCallback(singletonMap(PrivateKey.class, emptySet()));
-                    handleCallbacks(keyTypeCallback, credentialCallback, privateKeyCallback);
-                    serverCertChain = (X509Certificate[]) credentialCallback.getCredential();
-                    if ((serverCertChain != null) && (serverCertChain.length > 0)) {
-                        serverCert = serverCertChain[0];
+                    CredentialCallback credentialCallback = new CredentialCallback(singletonMap(X509CertificateChainPrivateCredential.class, emptySet()));
+                    handleCallbacks(keyTypeCallback, credentialCallback);
+                    X509CertificateChainPrivateCredential certChainPrivateCredential = (X509CertificateChainPrivateCredential) credentialCallback.getCredential();
+                    if (certChainPrivateCredential != null) {
+                        serverCertChain = certChainPrivateCredential.getCertificateChain();
+                        if ((serverCertChain != null) && (serverCertChain.length > 0)) {
+                            serverCert = serverCertChain[0];
+                        } else {
+                            throw log.saslCallbackHandlerNotProvidedServerCertificate(getMechanismName());
+                        }
+                        privateKey = certChainPrivateCredential.getPrivateKey();
                     } else {
                         // Try obtaining a certificate URL instead
                         credentialCallback = new CredentialCallback(singletonMap(String.class, emptySet()));
+                        CredentialCallback privateKeyCallback = new CredentialCallback(singletonMap(PrivateKey.class, emptySet()));
                         handleCallbacks(keyTypeCallback, credentialCallback, privateKeyCallback);
                         serverCertUrl = (String) credentialCallback.getCredential();
                         if (serverCertUrl != null) {
@@ -244,8 +249,8 @@ final class EntitySaslServer extends AbstractSaslServer {
                         } else {
                             throw log.saslCallbackHandlerNotProvidedServerCertificate(getMechanismName());
                         }
+                        privateKey = (PrivateKey) privateKeyCallback.getCredential();
                     }
-                    privateKey = (PrivateKey) privateKeyCallback.getCredential();
                 }
 
                 // Verify that entityB matches the server's distinguishing identifier

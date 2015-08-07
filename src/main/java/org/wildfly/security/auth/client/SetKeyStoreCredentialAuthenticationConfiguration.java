@@ -31,7 +31,6 @@ import java.security.spec.InvalidKeySpecException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.x500.X500PrivateCredential;
 
 import org.wildfly.security.OneTimeSecurityFactory;
 import org.wildfly.security.SecurityFactory;
@@ -40,6 +39,7 @@ import org.wildfly.security.keystore.PasswordEntry;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactory;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
+import org.wildfly.security.x500.X509CertificateChainPrivateCredential;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -81,9 +81,8 @@ class SetKeyStoreCredentialAuthenticationConfiguration extends AuthenticationCon
                     credentialCallback.setCredential(privateKeyEntry.getPrivateKey());
                     return;
                 } else {
-                    final Certificate certificate = privateKeyEntry.getCertificate();
-                    if (certificate instanceof X509Certificate) {
-                        credentialCallback.setCredential(new X500PrivateCredential((X509Certificate) certificate, privateKeyEntry.getPrivateKey()));
+                    if (certificateChain instanceof X509Certificate[]) {
+                        credentialCallback.setCredential(new X509CertificateChainPrivateCredential(privateKeyEntry.getPrivateKey(), (X509Certificate[]) certificateChain));
                         return;
                     }
                 }

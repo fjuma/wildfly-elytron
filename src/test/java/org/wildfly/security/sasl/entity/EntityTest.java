@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -75,6 +76,7 @@ import org.wildfly.security.util.CodePointIterator;
 import mockit.Mock;
 import mockit.MockUp;
 import mockit.integration.junit4.JMockit;
+import org.wildfly.security.x500.X509CertificateChainPrivateCredential;
 
 /**
  * Client and server side tests for the ISO/IEC 9798-3 authentication SASL mechanism.
@@ -610,10 +612,11 @@ public class EntityTest extends BaseTestCase {
                             final CredentialCallback credentialCallback = (CredentialCallback) callback;
                             for (Class<?> allowedType : credentialCallback.getAllowedTypes()) {
                                 //Load the wrong cert chain to be returned to the client
-                                if (allowedType == X509Certificate[].class) {
+                                if (allowedType == X509CertificateChainPrivateCredential.class) {
                                     Certificate[] certChain;
-                                    certChain = loadKeyStore(serverKeyStore).getCertificateChain(WRONG_KEYSTORE_ALIAS);
-                                    credentialCallback.setCredential(Arrays.copyOf(certChain, certChain.length, X509Certificate[].class));
+                                    certChain = loadKeyStore(clientKeyStore).getCertificateChain(WRONG_KEYSTORE_ALIAS);
+                                    credentialCallback.setCredential(new X509CertificateChainPrivateCredential((PrivateKey) loadKeyStore(clientKeyStore).getKey(CLIENT_KEYSTORE_ALIAS, KEYSTORE_PASSWORD),
+                                            Arrays.copyOf(certChain, certChain.length, X509Certificate[].class)));
                                     iterator.remove();
                                     break;
                                 }
@@ -649,10 +652,11 @@ public class EntityTest extends BaseTestCase {
                                     final CredentialCallback credentialCallback = (CredentialCallback) callback;
                                     for (Class<?> allowedType : credentialCallback.getAllowedTypes()) {
                                         //Load the wrong cert chain to be returned to the client
-                                        if (allowedType == X509Certificate[].class) {
+                                        if (allowedType == X509CertificateChainPrivateCredential.class) {
                                             Certificate[] certChain;
                                             certChain = loadKeyStore(serverKeyStore).getCertificateChain(WRONG_KEYSTORE_ALIAS);
-                                            credentialCallback.setCredential(Arrays.copyOf(certChain, certChain.length, X509Certificate[].class));
+                                            credentialCallback.setCredential(new X509CertificateChainPrivateCredential((PrivateKey) loadKeyStore(serverKeyStore).getKey(SERVER_KEYSTORE_ALIAS, KEYSTORE_PASSWORD),
+                                                    Arrays.copyOf(certChain, certChain.length, X509Certificate[].class)));
                                             iterator.remove();
                                             break;
                                         }

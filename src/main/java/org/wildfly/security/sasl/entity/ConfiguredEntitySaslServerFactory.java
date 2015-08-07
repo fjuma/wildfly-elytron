@@ -41,6 +41,7 @@ import org.wildfly.security.auth.callback.CredentialCallback;
 import org.wildfly.security.auth.callback.TrustedAuthoritiesCallback;
 import org.wildfly.security.auth.callback.VerifyPeerTrustedCallback;
 import org.wildfly.security.sasl.util.AbstractDelegatingSaslServerFactory;
+import org.wildfly.security.x500.X509CertificateChainPrivateCredential;
 
 /**
  * A {@link SaslServerFactory} which can be configured with the necessary information for entity auth.
@@ -89,10 +90,11 @@ public final class ConfiguredEntitySaslServerFactory extends AbstractDelegatingS
                     } else if (callback instanceof CredentialCallback) {
                         final CredentialCallback credentialCallback = (CredentialCallback) callback;
                         for (Class<?> allowedType : credentialCallback.getAllowedTypes()) {
-                            if (allowedType == X509Certificate[].class) {
+                            if (allowedType == X509CertificateChainPrivateCredential.class) {
                                 Certificate[] certChain;
                                 certChain = keyStore.getCertificateChain(keyStoreAlias);
-                                credentialCallback.setCredential(Arrays.copyOf(certChain, certChain.length, X509Certificate[].class));
+                                credentialCallback.setCredential(new X509CertificateChainPrivateCredential((PrivateKey) keyStore.getKey(keyStoreAlias, keyStorePassword),
+                                        Arrays.copyOf(certChain, certChain.length, X509Certificate[].class)));
                                 break;
                             } else if (allowedType == PrivateKey.class) {
                                 credentialCallback.setCredential(keyStore.getKey(keyStoreAlias, keyStorePassword));

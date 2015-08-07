@@ -49,6 +49,7 @@ import org.wildfly.security.auth.callback.TrustedAuthoritiesCallback;
 import org.wildfly.security.auth.callback.VerifyPeerTrustedCallback;
 import org.wildfly.security.sasl.util.AbstractSaslClient;
 import org.wildfly.security.util.ByteStringBuilder;
+import org.wildfly.security.x500.X509CertificateChainPrivateCredential;
 
 /**
  * SaslClient for the ISO/IEC 9798-3 authentication mechanism as defined by
@@ -164,21 +165,29 @@ final class EntitySaslClient extends AbstractSaslClient {
                     KeyTypeCallback keyTypeCallback = new KeyTypeCallback(keyType(signature.getAlgorithm()));
                     TrustedAuthoritiesCallback trustedAuthoritiesCallback = new TrustedAuthoritiesCallback();
                     trustedAuthoritiesCallback.setTrustedAuthorities(trustedAuthorities); // Server's preferred certificates
-                    CredentialCallback credentialCallback = new CredentialCallback(singletonMap(X509Certificate[].class, emptySet()));
-                    CredentialCallback privateKeyCallback = new CredentialCallback(singletonMap(PrivateKey.class, emptySet()));
-                    handleCallbacks(keyTypeCallback, trustedAuthoritiesCallback, credentialCallback, privateKeyCallback);
-                    clientCertChain = (X509Certificate[]) credentialCallback.getCredential();
-                    if ((clientCertChain != null) && (clientCertChain.length > 0)) {
-                        EntityUtil.encodeX509CertificateChain(encoder, clientCertChain);
+                    CredentialCallback credentialCallback = new CredentialCallback(singletonMap(X509CertificateChainPrivateCredential.class, emptySet()));
+                    handleCallbacks(keyTypeCallback, trustedAuthoritiesCallback, credentialCallback);
+                    X509CertificateChainPrivateCredential certChainPrivateCredential = (X509CertificateChainPrivateCredential) credentialCallback.getCredential();
+                    PrivateKey privateKey;
+                    if (certChainPrivateCredential != null) {
+                        clientCertChain = certChainPrivateCredential.getCertificateChain();
+                        if ((clientCertChain != null) && (clientCertChain.length > 0)) {
+                            EntityUtil.encodeX509CertificateChain(encoder, clientCertChain);
+                        } else {
+                            throw log.saslCallbackHandlerNotProvidedClientCertificate(getMechanismName());
+                        }
+                        privateKey = certChainPrivateCredential.getPrivateKey();
                     } else {
                         // Try obtaining a certificate URL
                         credentialCallback = new CredentialCallback(singletonMap(String.class, emptySet()));
+                        CredentialCallback privateKeyCallback = new CredentialCallback(singletonMap(PrivateKey.class, emptySet()));
                         handleCallbacks(keyTypeCallback, trustedAuthoritiesCallback, credentialCallback, privateKeyCallback);
                         clientCertUrl = (String) credentialCallback.getCredential();
                         if (clientCertUrl == null) {
                             throw log.saslCallbackHandlerNotProvidedClientCertificate(getMechanismName());
                         }
                         encoder.encodeIA5String(clientCertUrl);
+                        privateKey = (PrivateKey) privateKeyCallback.getCredential();
                     }
                     encoder.endExplicit();
 
@@ -195,7 +204,6 @@ final class EntitySaslClient extends AbstractSaslClient {
                     }
 
                     // Private key
-                    PrivateKey privateKey = (PrivateKey) privateKeyCallback.getCredential();
                     if (privateKey == null) {
                         throw log.saslCallbackHandlerNotProvidedPrivateKey(getMechanismName());
                     }

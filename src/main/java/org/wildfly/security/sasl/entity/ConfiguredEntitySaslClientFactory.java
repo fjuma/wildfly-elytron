@@ -44,6 +44,7 @@ import org.wildfly.security.auth.callback.CredentialCallback;
 import org.wildfly.security.auth.callback.TrustedAuthoritiesCallback;
 import org.wildfly.security.auth.callback.VerifyPeerTrustedCallback;
 import org.wildfly.security.sasl.util.AbstractDelegatingSaslClientFactory;
+import org.wildfly.security.x500.X509CertificateChainPrivateCredential;
 
 /**
  * A {@link SaslClientFactory} which can be configured with the necessary information for entity auth.
@@ -92,7 +93,7 @@ public final class ConfiguredEntitySaslClientFactory extends AbstractDelegatingS
                     } else if (callback instanceof CredentialCallback) {
                         final CredentialCallback credentialCallback = (CredentialCallback) callback;
                         for (Class<?> allowedType : credentialCallback.getAllowedTypes()) {
-                            if (allowedType == X509Certificate[].class) {
+                            if (allowedType == X509CertificateChainPrivateCredential.class) {
                                 Certificate[] certChain = null;
                                 if (trustedAuthorities != null) {
                                     boolean compliantCertFound = false;
@@ -123,7 +124,8 @@ public final class ConfiguredEntitySaslClientFactory extends AbstractDelegatingS
                                 } else {
                                     certChain = keyStore.getCertificateChain(keyStoreAlias);
                                 }
-                                credentialCallback.setCredential(Arrays.copyOf(certChain, certChain.length, X509Certificate[].class));
+                                credentialCallback.setCredential(new X509CertificateChainPrivateCredential((PrivateKey) keyStore.getKey(privateKeyAlias, keyStorePassword),
+                                        Arrays.copyOf(certChain, certChain.length, X509Certificate[].class)));
                                 break;
                             } else if (allowedType == PrivateKey.class) {
                                 credentialCallback.setCredential(keyStore.getKey(privateKeyAlias, keyStorePassword));
