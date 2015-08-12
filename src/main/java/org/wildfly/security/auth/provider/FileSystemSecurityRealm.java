@@ -427,7 +427,7 @@ public final class FileSystemSecurityRealm implements ModifiableSecurityRealm {
 
         public void setAttributes(final Attributes attributes) throws RealmUnavailableException {
             Assert.checkNotNullParam("attributes", attributes);
-            final LoadedIdentity loadedIdentity = loadIdentity(false, true);
+            final LoadedIdentity loadedIdentity = loadIdentity(false, false);
             if (loadedIdentity == null) {
                 throw ElytronMessages.log.fileSystemRealmNotFound(name);
             }
