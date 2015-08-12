@@ -494,6 +494,9 @@ public interface ElytronMessages extends BasicLogger {
     @Message(id = 1119, value = "The security realm does not support updating a credential")
     UnsupportedOperationException credentialUpdateNotSupportedByRealm();
 
+    @Message(id = 1120, value = "The security realm does not support attributes")
+    UnsupportedOperationException attributesNotSupportedByRealm();
+
     /* keystore package */
 
     @Message(id = 2001, value = "Invalid key store entry password for alias \"%s\"")
