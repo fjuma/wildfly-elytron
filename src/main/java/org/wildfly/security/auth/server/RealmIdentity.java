@@ -24,6 +24,7 @@ import java.security.Principal;
 
 import org.wildfly.common.Assert;
 import org.wildfly.security.auth.principal.AnonymousPrincipal;
+import org.wildfly.security.authz.Attributes;
 import org.wildfly.security.authz.AuthorizationIdentity;
 import org.wildfly.security.credential.AlgorithmCredential;
 import org.wildfly.security.credential.Credential;
@@ -145,6 +146,17 @@ public interface RealmIdentity {
         } else {
             throw log.userDoesNotExist();
         }
+    }
+
+    /**
+     * Get the attributes for the realm identity.
+     *
+     * @return the attributes
+     * @throws UnsupportedOperationException if the implementing class does not support getting attributes
+     * @throws RealmUnavailableException if accessing the attributes fails for some reason
+     */
+    default Attributes getAttributes() throws RealmUnavailableException {
+        throw log.attributesNotSupportedByRealm();
     }
 
     /**
