@@ -18,6 +18,8 @@
 
 package org.wildfly.security._private;
 
+import static org.jboss.logging.Logger.Level.WARN;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -30,7 +32,6 @@ import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 
-import static org.jboss.logging.Logger.Level.WARN;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLProtocolException;
@@ -341,6 +342,13 @@ public interface ElytronMessages extends BasicLogger {
 
     @Message(id = 1082, value = "Filesystem-backed realm encountered invalid OTP algorithm \"%s\" in path \"%s\" line %d for identity name \"%s\"")
     RealmUnavailableException fileSystemRealmInvalidOtpAlgorithm(String algorithm, Path path, int lineNumber, String name, @Cause Throwable cause);
+
+    @Message(id = 1083, value = "The security realm does not support attributes")
+    UnsupportedOperationException attributesNotSupportedByRealm();
+
+    @Message(id = 1084, value = "The security realm is not modifiable for identity name \"%s\"")
+    RealmUnavailableException realmIsNotModifiable(String realmIdentity);
+
 
     /* keystore package */
 

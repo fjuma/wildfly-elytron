@@ -427,12 +427,21 @@ public final class FileSystemSecurityRealm implements ModifiableSecurityRealm {
 
         public void setAttributes(final Attributes attributes) throws RealmUnavailableException {
             Assert.checkNotNullParam("attributes", attributes);
-            final LoadedIdentity loadedIdentity = loadIdentity(false, true);
+            final LoadedIdentity loadedIdentity = loadIdentity(false, false);
             if (loadedIdentity == null) {
                 throw ElytronMessages.log.fileSystemRealmNotFound(name);
             }
             final LoadedIdentity newIdentity = new LoadedIdentity(getName(), loadedIdentity.getCredentials(), attributes);
             replaceIdentity(newIdentity);
+        }
+
+        @Override
+        public Attributes getAttributes() throws RealmUnavailableException {
+            final LoadedIdentity loadedIdentity = loadIdentity(false, false);
+            if (loadedIdentity == null) {
+                throw ElytronMessages.log.fileSystemRealmNotFound(name);
+            }
+            return loadedIdentity.getAttributes().asReadOnly();
         }
 
         private void replaceIdentity(final LoadedIdentity newIdentity) throws RealmUnavailableException {
