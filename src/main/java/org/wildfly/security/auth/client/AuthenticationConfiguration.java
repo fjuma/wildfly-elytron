@@ -464,6 +464,16 @@ public abstract class AuthenticationConfiguration {
     }
 
     /**
+     * Create a new configuration which is the same as this configuration, but which uses the given choice.
+     *
+     * @param choice the choice to use
+     * @return the new configuration
+     */
+    public AuthenticationConfiguration useChoice(String choice) {
+        return new SetChoiceAuthenticationConfiguration(this, choice);
+    }
+
+    /**
      * Create a new configuration which is the same as this configuration, but which uses the given trust manager
      * for trust verification.
      *
