@@ -19,8 +19,8 @@
 package org.wildfly.security.sasl.otp;
 
 import static org.wildfly.security._private.ElytronMessages.log;
+import static org.wildfly.security.sasl.otp._private.OTPUtil.*;
 import static org.wildfly.security.sasl.otp.OTP.*;
-import static org.wildfly.security.sasl.otp.OTPUtil.*;
 
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;

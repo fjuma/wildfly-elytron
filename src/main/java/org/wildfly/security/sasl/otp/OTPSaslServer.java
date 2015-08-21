@@ -22,8 +22,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableSet;
 import static org.wildfly.security._private.ElytronMessages.log;
+import static org.wildfly.security.sasl.otp._private.OTPUtil.*;
 import static org.wildfly.security.sasl.otp.OTP.*;
-import static org.wildfly.security.sasl.otp.OTPUtil.*;
 
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
