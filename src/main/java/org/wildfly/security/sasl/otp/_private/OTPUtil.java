@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.wildfly.security.sasl.otp;
+package org.wildfly.security.sasl.otp._private;
 
 import static org.wildfly.security._private.ElytronMessages.log;
 import static org.wildfly.security.password.interfaces.OneTimePassword.*;
@@ -39,7 +39,7 @@ import org.wildfly.security.util.CodePointIterator;
 /**
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-class OTPUtil {
+public class OTPUtil {
 
     public static final int[] DELIMS = new int[] {'\n', '\r', '\t', ' '};
     public static final String[] RESPONSE_TYPES = new String[] { WORD_RESPONSE, INIT_WORD_RESPONSE, HEX_RESPONSE, INIT_HEX_RESPONSE };
