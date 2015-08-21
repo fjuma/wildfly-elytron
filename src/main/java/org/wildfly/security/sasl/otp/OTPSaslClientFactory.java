@@ -18,7 +18,7 @@
 
 package org.wildfly.security.sasl.otp;
 
-import static org.wildfly.security.sasl.otp.OTPUtil.*;
+import static org.wildfly.security.sasl.otp._private.OTPUtil.*;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
