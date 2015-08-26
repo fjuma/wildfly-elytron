@@ -71,6 +71,7 @@ import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.authz.Attributes;
 import org.wildfly.security.authz.AuthorizationIdentity;
 import org.wildfly.security.authz.MapAttributes;
+import org.wildfly.security.password.MutablePassword;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactory;
 import org.wildfly.security.password.interfaces.ClearPassword;
@@ -291,7 +292,11 @@ public final class FileSystemSecurityRealm implements ModifiableSecurityRealm {
                         final Password password = (Password) ours;
                         final String algorithm = password.getAlgorithm();
                         final PasswordFactory passwordFactory = PasswordFactory.getInstance(algorithm);
-                        return passwordFactory.verify(password, clearPassword.getPassword());
+                        final boolean verified = passwordFactory.verify(password, clearPassword.getPassword());
+                        if (verified && (password instanceof MutablePassword)) {
+                            setCredential(password); // update the stored credential
+                        }
+                        return verified;
                     } catch (NoSuchAlgorithmException | InvalidKeyException ignored) {
                         // try next credential
                     }

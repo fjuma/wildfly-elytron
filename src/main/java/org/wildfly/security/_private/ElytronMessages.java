@@ -943,10 +943,10 @@ public interface ElytronMessages extends BasicLogger {
     SaslException saslInvalidOTPAlgorithm(String algorithm);
 
     @Message(id = 5152, value = "Invalid OTP response type")
-    IllegalArgumentException saslInvalidOTPResponseType();
+    SaslException saslInvalidOTPResponseType();
 
-    @Message(id = 5153, value = "[%s] Incorrect parity in SASL client message")
-    SaslException saslIncorrectParity(String mechName);
+    @Message(id = 5153, value = "Incorrect parity in OTP")
+    IllegalArgumentException saslIncorrectOTPParity();
 
     @Message(id = 5154, value = "[%s] Invalid character in seed")
     SaslException saslInvalidCharacterInSeed(String mechName);
@@ -961,7 +961,7 @@ public interface ElytronMessages extends BasicLogger {
     SaslException saslInvalidOTPSequenceNumber();
 
     @Message(id = 5158, value = "Invalid OTP")
-    SaslException saslInvalidOTP();
+    IllegalArgumentException saslInvalidOTP();
 
     @Message(id = 5159, value = "OTP pass phrase and seed must not match")
     SaslException saslOTPPassPhraseAndSeedMustNotMatch();

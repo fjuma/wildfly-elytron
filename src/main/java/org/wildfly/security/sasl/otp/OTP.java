@@ -18,8 +18,6 @@
 
 package org.wildfly.security.sasl.otp;
 
-import static org.wildfly.security._private.ElytronMessages.log;
-
 import java.util.Map;
 
 import javax.security.sasl.Sasl;
@@ -64,10 +62,10 @@ public final class OTP {
      * Get the index in the response type choices list that corresponds to the given response type.
      *
      * @param responseType the response type
-     * @return the index in the response type choices list that corresponds to the given response type
-     * @throws IllegalArgumentException if the given response type is invalid
+     * @return the index in the response type choices list that corresponds to the given response type (or -1
+     * if the given response type is invalid)
      */
-    public static int getResponseTypeChoiceIndex(String responseType) throws IllegalArgumentException {
+    public static int getResponseTypeChoiceIndex(String responseType) {
         switch (responseType) {
             case WORD_RESPONSE:
                 return 0;
@@ -77,7 +75,7 @@ public final class OTP {
                 return 2;
             case INIT_HEX_RESPONSE:
                 return 3;
-            default: throw log.saslInvalidOTPResponseType();
+            default: return -1;
         }
     }
 

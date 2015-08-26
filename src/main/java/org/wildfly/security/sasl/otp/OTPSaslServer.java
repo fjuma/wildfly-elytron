@@ -29,7 +29,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 
@@ -41,6 +40,7 @@ import javax.security.sasl.SaslException;
 import org.wildfly.common.Assert;
 import org.wildfly.security.auth.callback.CredentialCallback;
 import org.wildfly.security.auth.callback.CredentialUpdateCallback;
+import org.wildfly.security.auth.callback.CredentialVerifyCallback;
 import org.wildfly.security.auth.callback.TimeoutCallback;
 import org.wildfly.security.auth.callback.TimeoutUpdateCallback;
 import org.wildfly.security.password.PasswordFactory;
@@ -150,34 +150,18 @@ final class OTPSaslServer extends AbstractSaslServer {
                 final CodePointIterator cpi = CodePointIterator.ofUtf8Bytes(response);
                 final CodePointIterator di = cpi.delimitedBy(':');
                 final String responseType = di.drainToString().toLowerCase(Locale.ENGLISH);
-                final byte[] currentHash;
-                OneTimePasswordSpec passwordSpec;
-                String algorithm;
                 skipDelims(di, cpi, ':');
+                final String currentOTP = responseType + ":" + di.drainToString();
+                String newAlgorithm = null;
+                OneTimePasswordSpec newPasswordSpec = null;
                 switch (responseType) {
-                    case HEX_RESPONSE:
-                    case WORD_RESPONSE: {
-                        if (responseType.equals(HEX_RESPONSE)) {
-                            currentHash = convertFromHex(di.drainToString());
-                        } else {
-                            currentHash = convertFromWords(di.drainToString(), previousAlgorithm);
-                        }
-                        passwordSpec = new OneTimePasswordSpec(currentHash, previousSeed.getBytes(StandardCharsets.US_ASCII), previousSequenceNumber - 1);
-                        algorithm = previousAlgorithm;
-                        break;
-                    }
                     case INIT_HEX_RESPONSE:
                     case INIT_WORD_RESPONSE: {
-                        if (responseType.equals(INIT_HEX_RESPONSE)) {
-                            currentHash = convertFromHex(di.drainToString());
-                        } else {
-                            currentHash = convertFromWords(di.drainToString(), previousAlgorithm);
-                        }
                         try {
                             // Attempt to parse the new params and new OTP
                             skipDelims(di, cpi, ':');
                             final CodePointIterator si = di.delimitedBy(' ');
-                            String newAlgorithm = OTP_PREFIX + si.drainToString();
+                            newAlgorithm = OTP_PREFIX + si.drainToString();
                             validateAlgorithm(newAlgorithm);
                             skipDelims(si, di, ' ');
                             int newSequenceNumber = Integer.parseInt(si.drainToString());
@@ -192,24 +176,30 @@ final class OTPSaslServer extends AbstractSaslServer {
                             } else {
                                 newHash = convertFromWords(di.drainToString(), newAlgorithm);
                             }
-                            passwordSpec = new OneTimePasswordSpec(newHash, newSeed.getBytes(StandardCharsets.US_ASCII), newSequenceNumber);
-                            algorithm = newAlgorithm;
-                        } catch (SaslException e) {
+                            newPasswordSpec = new OneTimePasswordSpec(newHash, newSeed.getBytes(StandardCharsets.US_ASCII), newSequenceNumber);
+                        } catch (SaslException | NoSuchAlgorithmException | IllegalArgumentException e) {
                             // If the new params or new OTP could not be processed for any reason, the sequence
                             // number should be decremented if a valid current OTP is provided
-                            passwordSpec = new OneTimePasswordSpec(currentHash, previousSeed.getBytes(StandardCharsets.US_ASCII), previousSequenceNumber - 1);
-                            algorithm = previousAlgorithm;
-                            verifyAndUpdateCredential(currentHash, algorithm, passwordSpec);
+                            verifyCredential(currentOTP);
                             throw log.saslOTPReinitializationFailed(e);
+                        }
+                        // Fall through
+                    }
+                    case HEX_RESPONSE:
+                    case WORD_RESPONSE: {
+                        if (cpi.hasNext()) {
+                            throw log.saslInvalidMessageReceived(getMechanismName());
                         }
                         break;
                     }
                     default: throw log.saslInvalidOTPResponseType();
                 }
-                if (cpi.hasNext()) {
-                    throw log.saslInvalidMessageReceived(getMechanismName());
+
+                verifyCredential(currentOTP);
+                if (newPasswordSpec != null) {
+                    // Re-initialize the OTP sequence
+                    updateCredential(newAlgorithm, newPasswordSpec);
                 }
-                verifyAndUpdateCredential(currentHash, algorithm, passwordSpec);
 
                 // Check the authorization id
                 if (authorizationID == null) {
@@ -245,21 +235,26 @@ final class OTPSaslServer extends AbstractSaslServer {
      * Verify that the result of passing the user's password through the hash function once matches
      * the stored password and then update the stored password.
      *
-     * @param currentHash the current OTP hash
-     * @param newAlgorithm the new OTP algorithm
-     * @param newPasswordSpec the new OTP password spec
+     * @param currentOTP the current OTP, as a string
      * @throws SaslException if the password was not verified
      */
-    private void verifyAndUpdateCredential(final byte[] currentHash, final String newAlgorithm,
-            final OneTimePasswordSpec newPasswordSpec) throws SaslException {
-        if (! Arrays.equals(previousHash, hashAndFold(previousAlgorithm, currentHash))) {
+    private void verifyCredential(final String currentOTP) throws SaslException {
+        final CredentialVerifyCallback credentialVerifyCallback = new CredentialVerifyCallback(currentOTP.toCharArray());
+        handleCallbacks(nameCallback, credentialVerifyCallback);
+        if (! credentialVerifyCallback.isVerified()) {
             throw log.saslPasswordNotVerified(getMechanismName());
         }
-        updateCredential(newAlgorithm, newPasswordSpec);
         updateTimeout(0);
         locked = false;
     }
 
+    /**
+     * Reset the user's password.
+     *
+     * @param newAlgorithm the new algorithm
+     * @param newPasswordSpec the new password spec
+     * @throws SaslException if the stored password was not updated
+     */
     private void updateCredential(final String newAlgorithm, final OneTimePasswordSpec newPasswordSpec) throws SaslException {
         try {
             final PasswordFactory passwordFactory = PasswordFactory.getInstance(newAlgorithm);
