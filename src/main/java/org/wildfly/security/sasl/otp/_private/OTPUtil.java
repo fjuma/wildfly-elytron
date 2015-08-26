@@ -137,15 +137,11 @@ public class OTPUtil {
      * @param algorithm the OTP algorithm
      * @param input the data to hash
      * @return the folded hash
-     * @throws SaslException if the given OTP algorithm is invalid
+     * @throws NoSuchAlgorithmException if the given OTP algorithm is invalid
      */
-    public static byte[] hashAndFold(String algorithm, byte[] input) throws SaslException {
+    public static byte[] hashAndFold(String algorithm, byte[] input) throws NoSuchAlgorithmException {
         final MessageDigest messageDigest;
-        try {
-            messageDigest = getMessageDigest(algorithm);
-        } catch (NoSuchAlgorithmException e) {
-            throw log.saslInvalidOTPAlgorithm(algorithm);
-        }
+        messageDigest = getMessageDigest(algorithm);
         return hashAndFold(algorithm, messageDigest, input);
     }
 
@@ -164,16 +160,20 @@ public class OTPUtil {
      *
      * @param otp the OTP in hexadecimal format
      * @return the OTP hash that corresponds to the given hexadecimal value
-     * @throws SaslException if an error occurs while parsing the hexadecimal value
+     * @throws IllegalArgumentException if the OTP is not in hexadecimal format
      */
-    public static byte[] convertFromHex(String otp) throws SaslException {
+    public static byte[] convertFromHex(String otp) throws IllegalArgumentException {
         final CodePointIterator cpi = CodePointIterator.ofString(otp);
         final CodePointIterator di = cpi.delimitedBy(DELIMS);
         // Remove any white space
         final StringBuilder sb = new StringBuilder();
-        while (di.hasNext()) {
-            di.drainTo(sb);
-            skipDelims(di, cpi);
+        try {
+            while (di.hasNext()) {
+                di.drainTo(sb);
+                skipDelims(di, cpi);
+            }
+        } catch (SaslException e) {
+            throw log.saslInvalidOTP();
         }
         return CodePointIterator.ofString(sb.toString()).hexDecode().drain();
     }
@@ -226,10 +226,11 @@ public class OTPUtil {
      * @param words the OTP formatted as a sequence of six words
      * @param algorithm the OTP algorithm
      * @return the OTP hash that corresponds to the given sequence of six words
-     * @throws SaslException if the given algorithm is invalid or if the parity encoded in the
-     * last two bits of the final word is incorrect or if an error occurs while parsing the words
+     * @throws NoSuchAlgorithmException if the given algorithm is invalid
+     * @throws IllegalArgumentException if the parity encoded in the last two bits of the final word is
+     * incorrect or if the OTP is not in word format
      */
-    public static byte[] convertFromWords(String words, String algorithm) throws SaslException {
+    public static byte[] convertFromWords(String words, String algorithm) throws NoSuchAlgorithmException, IllegalArgumentException {
         final CodePointIterator cpi = CodePointIterator.ofString(words);
         final CodePointIterator di = cpi.delimitedBy(DELIMS);
         final MessageDigest messageDigest;
@@ -239,11 +240,7 @@ public class OTPUtil {
         String word;
         byte[] result;
         boolean useStandardDictionary = true;
-        try {
-            messageDigest = getMessageDigest(algorithm);
-        } catch (NoSuchAlgorithmException e) {
-            throw log.saslInvalidOTPAlgorithm(algorithm);
-        }
+        messageDigest = getMessageDigest(algorithm);
         for (int i = 0; i < 6; i++) {
             word = di.drainToString();
             if (useStandardDictionary) {
@@ -264,18 +261,54 @@ public class OTPUtil {
                 dictionaryIndex = ((result[result.length - 2] & 0x7) << 8) | (result[result.length - 1] & 0xff);
                 messageDigest.reset();
             }
-            skipDelims(di, cpi);
+            try {
+                skipDelims(di, cpi);
+            } catch (SaslException e) {
+                throw log.saslInvalidOTP();
+            }
             if (i < 5) {
                 otpValue |= (((long) dictionaryIndex) << (53 - (11 * i)));
             } else {
                 otpValue |= ((((long) dictionaryIndex) & 0x7fc) >> 2);
                 parity = dictionaryIndex & 0x3;
                 if (parity != calculateParity(otpValue)) {
-                    throw log.saslIncorrectParity(SaslMechanismInformation.Names.OTP);
+                    throw log.saslIncorrectOTPParity();
                 }
             }
         }
         return longToEightBytes(otpValue);
+    }
+
+    /**
+     * Convert the given OTP value into a hash.
+     *
+     * @param responseTypeAndOTP the OTP in hexadecimal or word format, prepended by the response type
+     * @param algorithm the OTP algorithm
+     * @return the OTP hash that corresponds to the given OTP value
+     * @throws NoSuchAlgorithmException if the given algorithm is invalid
+     * @throws IllegalArgumentException if the OTP is not in hexadecimal or word format
+     */
+    public static byte[] convertFromHexOrWords(byte[] responseTypeAndOTP, String algorithm) throws NoSuchAlgorithmException, IllegalArgumentException {
+        final CodePointIterator cpi = CodePointIterator.ofUtf8Bytes(responseTypeAndOTP);
+        final CodePointIterator di = cpi.delimitedBy(':');
+        final String responseType = di.drainToString().toLowerCase(Locale.ENGLISH);
+        try {
+            skipDelims(di, cpi, ':');
+            switch (responseType) {
+                case HEX_RESPONSE:
+                case INIT_HEX_RESPONSE: {
+                    return convertFromHex(di.drainToString());
+                }
+                case WORD_RESPONSE:
+                case INIT_WORD_RESPONSE: {
+                    return convertFromWords(di.drainToString(), algorithm);
+                }
+                default:
+                    throw log.saslInvalidOTPResponseType();
+            }
+        } catch (SaslException e) {
+            throw log.saslInvalidOTP();
+        }
     }
 
     /**

@@ -18,11 +18,16 @@
 
 package org.wildfly.security.password.impl;
 
+import static org.wildfly.security.sasl.otp._private.OTPUtil.convertFromHexOrWords;
+import static org.wildfly.security.sasl.otp._private.OTPUtil.hashAndFold;
+
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.Arrays;
 
 import org.wildfly.security.password.interfaces.OneTimePassword;
 import org.wildfly.security.password.spec.OneTimePasswordSpec;
@@ -36,10 +41,10 @@ class OneTimePasswordImpl extends AbstractPasswordImpl implements OneTimePasswor
 
     private static final long serialVersionUID = 5524179164918986449L;
 
-    private final String algorithm;
-    private final byte[] hash;
-    private final byte[] seed;
-    private final int sequenceNumber;
+    private String algorithm;
+    private byte[] hash;
+    private byte[] seed;
+    private int sequenceNumber;
 
     OneTimePasswordImpl(final String algorithm, final byte[] hash, final byte[] seed, final int sequenceNumber) {
         this.algorithm = algorithm;
@@ -86,8 +91,19 @@ class OneTimePasswordImpl extends AbstractPasswordImpl implements OneTimePasswor
 
     @Override
     boolean verify(char[] guess) throws InvalidKeyException {
-        // The OTP SASL mechanism handles this (this involves updating the stored password)
-        throw new InvalidKeyException();
+        try {
+            // The guess should be prepended with the OTP extended response type
+            final byte[] currentHash = convertFromHexOrWords(getNormalizedPasswordBytes(guess), algorithm);
+            boolean verified = Arrays.equals(hash, hashAndFold(algorithm, currentHash));
+            if (verified) {
+                // Update this password
+                hash = currentHash;
+                sequenceNumber = sequenceNumber - 1;
+            }
+            return verified;
+        } catch (NoSuchAlgorithmException | IllegalArgumentException e) {
+            throw new InvalidKeyException(e);
+        }
     }
 
     @Override
