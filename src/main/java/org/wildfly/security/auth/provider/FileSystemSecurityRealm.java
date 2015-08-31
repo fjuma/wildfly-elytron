@@ -32,7 +32,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
-import java.security.Key;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -382,33 +381,31 @@ public final class FileSystemSecurityRealm implements ModifiableSecurityRealm {
             }
         }
 
-        public void setCredential(final Object credential) throws RealmUnavailableException {
-            Assert.checkNotNullParam("credential", credential);
+        public void setCredential(final Class<?> credentialType, final String algorithmName, final Object newCredential) throws RealmUnavailableException {
+            Assert.checkNotNullParam("newCredential", newCredential);
             final LoadedIdentity loadedIdentity = loadIdentity(false, false);
             if (loadedIdentity == null) {
                 throw ElytronMessages.log.fileSystemRealmNotFound(name);
             }
+            if (! credentialType.isInstance(newCredential)) {
+                throw ElytronMessages.log.invalidCredentialTypeSpecified();
+            }
             List<Object> credentials = loadedIdentity.getCredentials();
-            removeCredentialOfTheSameType(credentials, credential);
-            credentials.add(credential);
-
-            final LoadedIdentity newIdentity = new LoadedIdentity(getName(), credentials, loadedIdentity.getAttributes());
-            replaceIdentity(newIdentity);
-        }
-
-        private void removeCredentialOfTheSameType(List<Object> credentials, Object pattern) {
-            for (Iterator iterator = credentials.iterator(); iterator.hasNext();) {
-                Object credential = iterator.next();
-                if (credential instanceof Key && pattern instanceof Key) { // keys comparison
-                    if (((Key)credential).getAlgorithm().equals(((Key)pattern).getAlgorithm())) {
-                        iterator.remove();
-                    }
-                } else { // non-keys comparison
-                    if(credential.getClass() == pattern.getClass()) {
-                        iterator.remove();
-                    }
+            List<Object> newCredentials = new ArrayList<>(credentials.size());
+            boolean credentialTypeFound = false;
+            for (Object credential : credentials) {
+                if (credentialType.isInstance(credential)) {
+                    newCredentials.add(credentialType.cast(newCredential));
+                    credentialTypeFound = true;
+                } else {
+                    newCredentials.add(credential);
                 }
             }
+            if (! credentialTypeFound) {
+                newCredentials.add(credentialType.cast(newCredential));
+            }
+            final LoadedIdentity newIdentity = new LoadedIdentity(getName(), newCredentials, loadedIdentity.getAttributes());
+            replaceIdentity(newIdentity);
         }
 
         public void setCredentials(final List<Object> credentials) throws RealmUnavailableException {

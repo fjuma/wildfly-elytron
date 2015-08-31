@@ -320,7 +320,7 @@ public class FileSystemSecurityRealmTest {
         OneTimePassword otpPassword2 = (OneTimePassword) otpFactory2.generatePassword(
                 new OneTimePasswordSpec(hash2, seed2, 6789)
         );
-        identity2.setCredential(otpPassword2);
+        identity2.setCredential(OneTimePassword.class, null, otpPassword2);
 
         // checking result
         securityRealm = new FileSystemSecurityRealm(getRootPath(false), 1);

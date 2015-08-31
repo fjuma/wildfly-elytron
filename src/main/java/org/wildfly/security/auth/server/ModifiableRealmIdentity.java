@@ -54,13 +54,16 @@ public interface ModifiableRealmIdentity extends RealmIdentity {
     void setCredentials(List<Object> credentials) throws RealmUnavailableException;
 
     /**
-     * Add new credential of this identity.  If the identity does not exist, an exception is thrown.
-     * If credential of the same type of the same identity already exist, it is replaced.
+     * Set a credential of the given type for this identity. If a credential of the given type already exists, it is
+     * replaced. The credential type is defined by its {@code Class} and an optional {@code algorithmName}. If the
+     * identity does not exist, an exception is thrown.
      *
-     * @param credential the new credential
-     * @throws RealmUnavailableException if updating the credentials fails for some reason
+     * @param credentialType the credential type class
+     * @param algorithmName the optional algorithm name for the credential type
+     * @param newCredential the new credential
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
      */
-    void setCredential(Object credential) throws RealmUnavailableException;
+    void setCredential(Class<?> credentialType, String algorithmName, Object newCredential) throws RealmUnavailableException;
 
     /**
      * Modify the attributes collection of this identity.  If the identity does not exist, an exception is thrown.
