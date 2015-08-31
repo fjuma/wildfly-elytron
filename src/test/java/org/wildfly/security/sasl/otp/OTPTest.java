@@ -638,9 +638,10 @@ public class OTPTest extends BaseTestCase {
         PasswordFactory passwordFactory = PasswordFactory.getInstance(algorithm);
         final Password password = passwordFactory.generatePassword(new OneTimePasswordSpec(CodePointIterator.ofString("505d889f90085847").hexDecode().drain(),
                 "ke1234".getBytes(StandardCharsets.US_ASCII), 500));
+        final SaslServerBuilder.BuilderReference<SecurityDomain> securityDomainReference = new SaslServerBuilder.BuilderReference<>();
         final SaslServerBuilder.BuilderReference<Closeable> closeableReference = new SaslServerBuilder.BuilderReference<>();
         try {
-            final SaslServer saslServer = createSaslServer(password, closeableReference, null);
+            final SaslServer saslServer = createSaslServer(password, closeableReference, securityDomainReference);
 
             final CallbackHandler handler =
                     createClientCallbackHandler(algorithm, "userName", "TONE NELL RACY GRIN ROOM GELD", PasswordFormat.OTP, getResponseTypeChoiceIndex(WORD_RESPONSE));
@@ -665,6 +666,8 @@ public class OTPTest extends BaseTestCase {
                 fail("Expected SaslException not thrown");
             } catch (SaslException expected) {
             }
+            // The password should remain unchanged
+            checkPassword(securityDomainReference, "userName", (OneTimePassword) password, algorithm);
         } finally {
             closeableReference.getReference().close();
         }
@@ -679,9 +682,10 @@ public class OTPTest extends BaseTestCase {
         PasswordFactory passwordFactory = PasswordFactory.getInstance(algorithm);
         final Password password = passwordFactory.generatePassword(new OneTimePasswordSpec(CodePointIterator.ofString("505d889f90085847").hexDecode().drain(),
                 "ke1234".getBytes(StandardCharsets.US_ASCII), 500));
+        final SaslServerBuilder.BuilderReference<SecurityDomain> securityDomainReference = new SaslServerBuilder.BuilderReference<>();
         final SaslServerBuilder.BuilderReference<Closeable> closeableReference = new SaslServerBuilder.BuilderReference<>();
         try {
-            final SaslServer saslServer = createSaslServer(password, closeableReference, null);
+            final SaslServer saslServer = createSaslServer(password, closeableReference, securityDomainReference);
 
             final CallbackHandler handler =
                     createClientCallbackHandler(algorithm, "userName", "GAFF WAIT SKID GIG SKY EYED", PasswordFormat.OTP, getResponseTypeChoiceIndex(WORD_RESPONSE));
@@ -697,6 +701,8 @@ public class OTPTest extends BaseTestCase {
                 fail("Expected SaslException not thrown");
             } catch (SaslException expected) {
             }
+            // The password should remain unchanged
+            checkPassword(securityDomainReference, "userName", (OneTimePassword) password, algorithm);
         } finally {
             closeableReference.getReference().close();
         }
@@ -711,9 +717,12 @@ public class OTPTest extends BaseTestCase {
         PasswordFactory passwordFactory = PasswordFactory.getInstance(algorithm);
         final Password password = passwordFactory.generatePassword(new OneTimePasswordSpec(CodePointIterator.ofString("505d889f90085847").hexDecode().drain(),
                 "ke1234".getBytes(StandardCharsets.US_ASCII), 500));
+        final OneTimePassword expectedUpdatedPassword = (OneTimePassword) passwordFactory.generatePassword(new OneTimePasswordSpec(CodePointIterator.ofString("5bf075d9959d036f").hexDecode().drain(),
+                "ke1234".getBytes(StandardCharsets.US_ASCII), 499));
+        final SaslServerBuilder.BuilderReference<SecurityDomain> securityDomainReference = new SaslServerBuilder.BuilderReference<>();
         final SaslServerBuilder.BuilderReference<Closeable> closeableReference = new SaslServerBuilder.BuilderReference<>();
         try {
-            final SaslServer saslServer = createSaslServer(password, closeableReference, null);
+            final SaslServer saslServer = createSaslServer(password, closeableReference, securityDomainReference);
 
             final CallbackHandler handler =
                     createClientCallbackHandler(algorithm, "userName", "BOND FOGY DRAB NE RISE MART", PasswordFormat.OTP, getResponseTypeChoiceIndex(INIT_WORD_RESPONSE));
@@ -731,6 +740,8 @@ public class OTPTest extends BaseTestCase {
                 fail("Expected SaslException not thrown");
             } catch (SaslException expected) {
             }
+            // The password should be updated to the current OTP
+            checkPassword(securityDomainReference, "userName", expectedUpdatedPassword, algorithm);
         } finally {
             closeableReference.getReference().close();
         }
@@ -745,9 +756,10 @@ public class OTPTest extends BaseTestCase {
         PasswordFactory passwordFactory = PasswordFactory.getInstance(algorithm);
         final Password password = passwordFactory.generatePassword(new OneTimePasswordSpec(CodePointIterator.ofString("505d889f90085847").hexDecode().drain(),
                 "ke1234".getBytes(StandardCharsets.US_ASCII), 500));
+        final SaslServerBuilder.BuilderReference<SecurityDomain> securityDomainReference = new SaslServerBuilder.BuilderReference<>();
         final SaslServerBuilder.BuilderReference<Closeable> closeableReference = new SaslServerBuilder.BuilderReference<>();
         try {
-            final SaslServer saslServer = createSaslServer(password, closeableReference, null);
+            final SaslServer saslServer = createSaslServer(password, closeableReference, securityDomainReference);
 
             final CallbackHandler handler =
                     createClientCallbackHandler(algorithm, "userName", "tooShort", PasswordFormat.PASS_PHRASE, getResponseTypeChoiceIndex(HEX_RESPONSE));
@@ -761,6 +773,8 @@ public class OTPTest extends BaseTestCase {
                 fail("Expected SaslException not thrown");
             } catch (SaslException expected) {
             }
+            // The password should remain unchanged
+            checkPassword(securityDomainReference, "userName", (OneTimePassword) password, algorithm);
         } finally {
             closeableReference.getReference().close();
         }
@@ -775,9 +789,10 @@ public class OTPTest extends BaseTestCase {
         PasswordFactory passwordFactory = PasswordFactory.getInstance(algorithm);
         final Password password = passwordFactory.generatePassword(new OneTimePasswordSpec(CodePointIterator.ofString("505d889f90085847").hexDecode().drain(),
                 "thisSeedIsTooLong".getBytes(StandardCharsets.US_ASCII), 500));
+        final SaslServerBuilder.BuilderReference<SecurityDomain> securityDomainReference = new SaslServerBuilder.BuilderReference<>();
         final SaslServerBuilder.BuilderReference<Closeable> closeableReference = new SaslServerBuilder.BuilderReference<>();
         try {
-            final SaslServer saslServer = createSaslServer(password, closeableReference, null);
+            final SaslServer saslServer = createSaslServer(password, closeableReference, securityDomainReference);
 
             final CallbackHandler handler =
                     createClientCallbackHandler(algorithm, "userName", "This is a test.", PasswordFormat.PASS_PHRASE, getResponseTypeChoiceIndex(HEX_RESPONSE));
@@ -790,6 +805,8 @@ public class OTPTest extends BaseTestCase {
                 fail("Expected SaslException not thrown");
             } catch (SaslException expected) {
             }
+            // The password should remain unchanged
+            checkPassword(securityDomainReference, "userName", (OneTimePassword) password, algorithm);
         } finally {
             closeableReference.getReference().close();
         }
@@ -805,9 +822,10 @@ public class OTPTest extends BaseTestCase {
         PasswordFactory passwordFactory = PasswordFactory.getInstance(algorithm);
         final Password password = passwordFactory.generatePassword(new OneTimePasswordSpec(CodePointIterator.ofString("505d889f90085847").hexDecode().drain(),
                 "A seed!".getBytes(StandardCharsets.US_ASCII), 500));
+        final SaslServerBuilder.BuilderReference<SecurityDomain> securityDomainReference = new SaslServerBuilder.BuilderReference<>();
         final SaslServerBuilder.BuilderReference<Closeable> closeableReference = new SaslServerBuilder.BuilderReference<>();
         try {
-            final SaslServer saslServer = createSaslServer(password, closeableReference, null);
+            final SaslServer saslServer = createSaslServer(password, closeableReference, securityDomainReference);
 
             final CallbackHandler handler =
                     createClientCallbackHandler(algorithm, "userName", "This is a test.", PasswordFormat.PASS_PHRASE, getResponseTypeChoiceIndex(HEX_RESPONSE));
@@ -820,6 +838,8 @@ public class OTPTest extends BaseTestCase {
                 fail("Expected SaslException not thrown");
             } catch (SaslException expected) {
             }
+            // The password should remain unchanged
+            checkPassword(securityDomainReference, "userName", (OneTimePassword) password, algorithm);
         }finally {
             closeableReference.getReference().close();
         }
@@ -835,9 +855,10 @@ public class OTPTest extends BaseTestCase {
         PasswordFactory passwordFactory = PasswordFactory.getInstance(algorithm);
         final Password password = passwordFactory.generatePassword(new OneTimePasswordSpec(CodePointIterator.ofString("505d889f90085847").hexDecode().drain(),
                 "ke1234".getBytes(StandardCharsets.US_ASCII), 0));
+        final SaslServerBuilder.BuilderReference<SecurityDomain> securityDomainReference = new SaslServerBuilder.BuilderReference<>();
         final SaslServerBuilder.BuilderReference<Closeable> closeableReference = new SaslServerBuilder.BuilderReference<>();
         try {
-            final SaslServer saslServer = createSaslServer(password, closeableReference, null);
+            final SaslServer saslServer = createSaslServer(password, closeableReference, securityDomainReference);
 
             final CallbackHandler handler =
                     createClientCallbackHandler(algorithm, "userName", "This is a test.", PasswordFormat.PASS_PHRASE, getResponseTypeChoiceIndex(HEX_RESPONSE));
@@ -850,6 +871,8 @@ public class OTPTest extends BaseTestCase {
                 fail("Expected SaslException not thrown");
             } catch (SaslException expected) {
             }
+            // The password should remain unchanged
+            checkPassword(securityDomainReference, "userName", (OneTimePassword) password, algorithm);
         }finally {
             closeableReference.getReference().close();
         }
@@ -864,9 +887,12 @@ public class OTPTest extends BaseTestCase {
         PasswordFactory passwordFactory = PasswordFactory.getInstance(algorithm);
         final Password password = passwordFactory.generatePassword(new OneTimePasswordSpec(CodePointIterator.ofString("103029b112deb117").hexDecode().drain(),
                 "TeSt".getBytes(StandardCharsets.US_ASCII), 100));
+        OneTimePassword expectedUpdatedPassword = (OneTimePassword) passwordFactory.generatePassword(new OneTimePasswordSpec(CodePointIterator.ofString("87fec7768b73ccf9").hexDecode().drain(),
+                "TeSt".getBytes(StandardCharsets.US_ASCII), 99));
+        final SaslServerBuilder.BuilderReference<SecurityDomain> securityDomainReference = new SaslServerBuilder.BuilderReference<>();
         final SaslServerBuilder.BuilderReference<Closeable> closeableReference = new SaslServerBuilder.BuilderReference<>();
         try {
-            final SaslServer saslServer = createSaslServer(password, closeableReference, null);
+            final SaslServer saslServer = createSaslServer(password, closeableReference, securityDomainReference);
 
             final CallbackHandler handler =
                     createClientCallbackHandler(algorithm, "userName", "This is a test.", PasswordFormat.PASS_PHRASE, getResponseTypeChoiceIndex(HEX_RESPONSE));
@@ -881,6 +907,8 @@ public class OTPTest extends BaseTestCase {
                 fail("Expected SaslException not thrown");
             } catch (SaslException expected) {
             }
+            // The password should be updated
+            checkPassword(securityDomainReference, "userName", expectedUpdatedPassword, algorithm);
         }finally {
             closeableReference.getReference().close();
         }
