@@ -19,6 +19,7 @@
 package org.wildfly.security.password.interfaces;
 
 import org.wildfly.common.Assert;
+import org.wildfly.security.password.MutablePassword;
 import org.wildfly.security.password.OneWayPassword;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactory;
@@ -28,7 +29,7 @@ import org.wildfly.security.password.PasswordFactory;
  *
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-public interface OneTimePassword extends OneWayPassword {
+public interface OneTimePassword extends OneWayPassword, MutablePassword {
 
     /**
      * The algorithm name "otp-md5".
