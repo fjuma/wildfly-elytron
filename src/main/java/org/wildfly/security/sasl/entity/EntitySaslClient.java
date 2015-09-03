@@ -27,6 +27,7 @@ import static org.wildfly.security.sasl.entity.GeneralName.*;
 import static org.wildfly.security._private.ElytronMessages.log;
 
 import java.io.IOException;
+import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
@@ -69,7 +70,7 @@ final class EntitySaslClient extends AbstractSaslClient {
     private byte[] randomA;
     private byte[] randomB;
     private X509Certificate[] clientCertChain;
-    private String clientCertUrl;
+    private URL clientCertUrl;
 
     EntitySaslClient(final String mechanismName, final boolean mutual, final Signature signature, final SecureRandom secureRandom, final String protocol,
             final String serverName, final CallbackHandler callbackHandler, final String authorizationId, final Map<String, ?> props) {
@@ -179,15 +180,15 @@ final class EntitySaslClient extends AbstractSaslClient {
                         privateKey = clientCertChainPrivateCredential.getPrivateKey();
                     } else {
                         // Try obtaining a certificate URL
-                        credentialCallback = new CredentialCallback(singletonMap(String.class, emptySet()));
+                        credentialCallback = new CredentialCallback(singletonMap(URL.class, emptySet()));
                         CredentialCallback privateKeyCallback = new CredentialCallback(singletonMap(PrivateKey.class,
                                 singleton(keyType(signature.getAlgorithm()))));
                         handleCallbacks(trustedAuthoritiesCallback, credentialCallback, privateKeyCallback);
-                        clientCertUrl = (String) credentialCallback.getCredential();
+                        clientCertUrl = (URL) credentialCallback.getCredential();
                         if (clientCertUrl == null) {
                             throw log.saslCallbackHandlerNotProvidedClientCertificate(getMechanismName());
                         }
-                        encoder.encodeIA5String(clientCertUrl);
+                        encoder.encodeIA5String(clientCertUrl.toString());
                         privateKey = (PrivateKey) privateKeyCallback.getCredential();
                     }
                     encoder.endExplicit();
@@ -332,7 +333,7 @@ final class EntitySaslClient extends AbstractSaslClient {
             try {
                 return EntityUtil.getCertificateFromUrl(clientCertUrl);
             } catch (IOException e) {
-                throw log.saslUnableToObtainServerCertificate(getMechanismName(), clientCertUrl, e);
+                throw log.saslUnableToObtainServerCertificate(getMechanismName(), clientCertUrl.toString(), e);
             }
         } else {
             throw log.saslCallbackHandlerNotProvidedServerCertificate(getMechanismName());

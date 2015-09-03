@@ -518,20 +518,30 @@ class EntityUtil {
     /**
      * Obtain an X509Certificate using the given URL.
      *
-     * @param certUrl the URL to the X.509 certificate to use, must be a non-relative URL
+     * @param certUrl the URL to the X.509 certificate to use, as a string, must be a non-relative URL
      * @return the X.509 certificate
      * @throws IOException if the X.509 certificate cannot be obtained
      */
     public static X509Certificate getCertificateFromUrl(String certUrl) throws IOException {
+        return getCertificateFromUrl(new URL(certUrl));
+    }
+
+    /**
+     * Obtain an X509Certificate using the given URL.
+     *
+     * @param certUrl the URL to the X.509 certificate to use
+     * @return the X.509 certificate
+     * @throws IOException if the X.509 certificate cannot be obtained
+     */
+    public static X509Certificate getCertificateFromUrl(URL certUrl) throws IOException {
         X509Certificate cert;
         InputStream in = null;
         try {
-            URL url = new URL(certUrl);
-            in = url.openStream();
+            in = certUrl.openStream();
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
             cert = (X509Certificate) certFactory.generateCertificate(in);
         } catch (CertificateException e) {
-            throw log.asnUnableToReadCertificateFromUrl(certUrl, e);
+            throw log.asnUnableToReadCertificateFromUrl(certUrl.toString(), e);
         } finally {
             safeClose(in);
         }
