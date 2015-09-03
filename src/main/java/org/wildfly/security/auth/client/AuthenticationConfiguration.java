@@ -155,7 +155,7 @@ public abstract class AuthenticationConfiguration {
         Supplier<Provider[]> getProviderSupplier() {
             return Security::getProviders;
         }
-    }.useAnonymous();
+    }.useAnonymous().useTrustManager(null);
 
     private final AuthenticationConfiguration parent;
     private final CallbackHandler callbackHandler = callbacks -> AuthenticationConfiguration.this.handleCallbacks(AuthenticationConfiguration.this, callbacks);
@@ -419,6 +419,62 @@ public abstract class AuthenticationConfiguration {
      */
     public AuthenticationConfiguration useKeyStoreCredential(KeyStore keyStore, String alias, KeyStore.ProtectionParameter protectionParameter) {
         return keyStore == null || alias == null ? this : new SetKeyStoreCredentialAuthenticationConfiguration(this, keyStore, alias, protectionParameter);
+    }
+
+    /**
+     * Create a new configuration which is the same as this configuration, but which uses the given private key and X.509
+     * certificate chain to authenticate.
+     *
+     * @param privateKey the client private key
+     * @param certificateChain the client certificate chain
+     * @return the new configuration
+     */
+    public AuthenticationConfiguration useCertificateCredential(PrivateKey privateKey, X509Certificate... certificateChain) {
+        return certificateChain == null || certificateChain.length == 0 || privateKey == null ? without(SetCertificateCredentialAuthenticationConfiguration.class) : useCertificateCredential(new X509CertificateChainPrivateCredential(privateKey, certificateChain));
+    }
+
+    /**
+     * Create a new configuration which is the same as this configuration, but which uses the given private key and X.509
+     * certificate chain to authenticate.
+     *
+     * @param credential the credential containing the private key and certificate chain
+     * @return the new configuration
+     */
+    public AuthenticationConfiguration useCertificateCredential(X509CertificateChainPrivateCredential credential) {
+        return credential == null ? without(SetCertificateCredentialAuthenticationConfiguration.class) : useCertificateCredential(new FixedSecurityFactory<>(credential));
+    }
+
+    /**
+     Create a new configuration which is the same as this configuration, but which uses the given private key and X.509
+     * certificate chain to authenticate.
+     *
+     * @param credentialFactory a factory which produces the credential containing the private key and certificate chain
+     * @return the new configuration
+     */
+    public AuthenticationConfiguration useCertificateCredential(SecurityFactory<X509CertificateChainPrivateCredential> credentialFactory) {
+        return credentialFactory == null ? without(SetCertificateCredentialAuthenticationConfiguration.class) : new SetCertificateCredentialAuthenticationConfiguration(this, credentialFactory);
+    }
+
+    /**
+     * Create a new configuration which is the same as this configuration, but which uses the given key manager
+     * to acquire the credential required for authentication.
+     *
+     * @param keyManager the key manager to use
+     * @return the new configuration
+     */
+    public AuthenticationConfiguration useKeyManagerCredential(X509KeyManager keyManager) {
+        return keyManager == null ? without(SetKeyManagerCredentialAuthenticationConfiguration.class) : new SetKeyManagerCredentialAuthenticationConfiguration(this, new FixedSecurityFactory<>(keyManager));
+    }
+
+    /**
+     * Create a new configuration which is the same as this configuration, but which uses the given trust manager
+     * for trust verification.
+     *
+     * @param trustManager the trust manager to use or {@code null} if the default trust manager should be used
+     * @return the new configuration
+     */
+    public AuthenticationConfiguration useTrustManager(X509TrustManager trustManager) {
+        return trustManager == null ? new SetTrustManagerAuthenticationConfiguration(this, getX509TrustManagerFactory()) : new SetTrustManagerAuthenticationConfiguration(this, new FixedSecurityFactory<>(trustManager));
     }
 
     /**

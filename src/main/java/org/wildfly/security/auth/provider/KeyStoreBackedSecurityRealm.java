@@ -38,6 +38,7 @@ import org.wildfly.security.auth.server.SecurityRealm;
 import org.wildfly.security.keystore.PasswordEntry;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactory;
+import org.wildfly.security.x500.X509CertificateChainPrivateCredential;
 
 /**
  * A {@link KeyStore} backed {@link SecurityRealm} implementation.
@@ -64,7 +65,7 @@ public class KeyStoreBackedSecurityRealm implements SecurityRealm {
 
     @Override
     public CredentialSupport getCredentialSupport(final Class<?> credentialType, final String algorithmName) {
-        return credentialType.isAssignableFrom(SecretKey.class) || credentialType.isAssignableFrom(Password.class) || credentialType.isAssignableFrom(X500PrivateCredential.class) ? CredentialSupport.UNKNOWN : CredentialSupport.UNSUPPORTED;
+        return credentialType.isAssignableFrom(SecretKey.class) || credentialType.isAssignableFrom(Password.class) || credentialType.isAssignableFrom(X500PrivateCredential.class) || credentialType.isAssignableFrom(X509CertificateChainPrivateCredential.class) ? CredentialSupport.UNKNOWN : CredentialSupport.UNSUPPORTED;
     }
 
     private KeyStore.Entry getEntry(String name) {
@@ -108,7 +109,8 @@ public class KeyStoreBackedSecurityRealm implements SecurityRealm {
                 final KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
                 final PrivateKey privateKey = privateKeyEntry.getPrivateKey();
                 final Certificate certificate = privateKeyEntry.getCertificate();
-                return credentialType.isInstance(privateKey) || credentialType.isInstance(certificate) || certificate instanceof X509Certificate && X500PrivateCredential.class.isAssignableFrom(credentialType) ? CredentialSupport.FULLY_SUPPORTED : CredentialSupport.UNSUPPORTED;
+                final Certificate[] certificateChain = privateKeyEntry.getCertificateChain();
+                return credentialType.isInstance(privateKey) || credentialType.isInstance(certificate) || certificate instanceof X509Certificate && X500PrivateCredential.class.isAssignableFrom(credentialType) || certificateChain instanceof X509Certificate[] && X509CertificateChainPrivateCredential.class.isAssignableFrom(credentialType) ? CredentialSupport.FULLY_SUPPORTED : CredentialSupport.UNSUPPORTED;
             } else if (entry instanceof KeyStore.TrustedCertificateEntry) {
                 return credentialType.isInstance(((KeyStore.TrustedCertificateEntry) entry).getTrustedCertificate()) ? CredentialSupport.FULLY_SUPPORTED : CredentialSupport.UNSUPPORTED;
             } else if (entry instanceof KeyStore.SecretKeyEntry) {
@@ -130,12 +132,15 @@ public class KeyStoreBackedSecurityRealm implements SecurityRealm {
                 final KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
                 final PrivateKey privateKey = privateKeyEntry.getPrivateKey();
                 final Certificate certificate = privateKeyEntry.getCertificate();
+                final Certificate[] certificateChain = privateKeyEntry.getCertificateChain();
                 if (credentialType.isInstance(privateKey)) {
                     return credentialType.cast(privateKey);
                 } else if (credentialType.isInstance(certificate)) {
                     return credentialType.cast(certificate);
                 } else if (credentialType.isAssignableFrom(X500PrivateCredential.class) && certificate instanceof X509Certificate) {
                     return credentialType.cast(new X500PrivateCredential((X509Certificate) certificate, privateKey, name));
+                } else if (credentialType.isAssignableFrom(X509CertificateChainPrivateCredential.class) && certificateChain instanceof X509Certificate[]) {
+                    return credentialType.cast(new X509CertificateChainPrivateCredential(privateKey, (X509Certificate[]) certificateChain));
                 }
             } else if (entry instanceof KeyStore.TrustedCertificateEntry) {
                 final Certificate certificate = ((KeyStore.TrustedCertificateEntry) entry).getTrustedCertificate();
