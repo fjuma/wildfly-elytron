@@ -23,10 +23,13 @@ package org.wildfly.security.sasl.test;
 
 import static org.wildfly.security.sasl.test.BaseTestCase.obtainSaslServerFactory;
 
+import java.security.KeyStore;
 import java.security.Permissions;
 import java.security.spec.KeySpec;
 import java.util.Map;
 
+import javax.net.ssl.X509KeyManager;
+import javax.net.ssl.X509TrustManager;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 import javax.security.sasl.SaslServerFactory;
@@ -39,9 +42,11 @@ import org.wildfly.security.password.PasswordFactory;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
 import org.wildfly.security.sasl.util.ChannelBindingSaslServerFactory;
+import org.wildfly.security.sasl.util.KeyManagerSaslServerFactory;
 import org.wildfly.security.sasl.util.PropertiesSaslServerFactory;
 import org.wildfly.security.sasl.util.ProtocolSaslServerFactory;
 import org.wildfly.security.sasl.util.ServerNameSaslServerFactory;
+import org.wildfly.security.sasl.util.TrustManagerSaslServerFactory;
 
 /**
  * @author Kabir Khan
@@ -63,6 +68,9 @@ public class SaslServerBuilder {
     private Tuple<String, byte[]> bindingTypeAndData;
     private String protocol;
     private String serverName;
+    private X509TrustManager trustManager;
+    private X509KeyManager keyManager;
+    private KeyStore keyStore;
     private boolean dontAssertBuiltServer;
 
     public SaslServerBuilder(Class<? extends SaslServerFactory> serverFactoryClass, String mechanismName) {
@@ -130,6 +138,16 @@ public class SaslServerBuilder {
         return this;
     }
 
+    public SaslServerBuilder setTrustManager(final X509TrustManager trustManager) {
+        this.trustManager = trustManager;
+        return this;
+    }
+
+    public SaslServerBuilder setKeyManager(final X509KeyManager keyManager) {
+        this.keyManager = keyManager;
+        return this;
+    }
+
     public SaslServerBuilder setDontAssertBuiltServer() {
         this.dontAssertBuiltServer = true;
         return this;
@@ -139,6 +157,7 @@ public class SaslServerBuilder {
         final SimpleMapBackedSecurityRealm mainRealm = new SimpleMapBackedSecurityRealm();
         domainBuilder.addRealm(realmName, mainRealm);
         domainBuilder.setDefaultRealmName(defaultRealmName);
+
 
         if (username != null) {
             mainRealm.setPasswordMap(username, password);
@@ -166,6 +185,12 @@ public class SaslServerBuilder {
         }
         if (serverName != null) {
             factory = new ServerNameSaslServerFactory(factory, serverName);
+        }
+        if (trustManager != null) {
+            factory = new TrustManagerSaslServerFactory(factory, trustManager);
+        }
+        if (keyManager != null) {
+            factory = new KeyManagerSaslServerFactory(factory, keyManager);
         }
         SaslServer server = domain.createNewAuthenticationContext().createSaslServer(factory, mechanismName);
         if (!dontAssertBuiltServer) {

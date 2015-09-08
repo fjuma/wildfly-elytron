@@ -474,7 +474,7 @@ public abstract class AuthenticationConfiguration {
      * @return the new configuration
      */
     public AuthenticationConfiguration useTrustManager(X509TrustManager trustManager) {
-        return trustManager == null ? new SetTrustManagerAuthenticationConfiguration(this, getX509TrustManagerFactory()) : new SetTrustManagerAuthenticationConfiguration(this, new FixedSecurityFactory<>(trustManager));
+        return trustManager == null ? new SetTrustManagerAuthenticationConfiguration(this, SSLUtils.getDefaultX509TrustManagerSecurityFactory()) : new SetTrustManagerAuthenticationConfiguration(this, new FixedSecurityFactory<>(trustManager));
     }
 
     /**
