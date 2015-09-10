@@ -23,7 +23,6 @@ package org.wildfly.security.sasl.test;
 
 import static org.wildfly.security.sasl.test.BaseTestCase.obtainSaslServerFactory;
 
-import java.security.KeyStore;
 import java.security.Permissions;
 import java.security.spec.KeySpec;
 import java.util.Map;
@@ -35,6 +34,7 @@ import javax.security.sasl.SaslServer;
 import javax.security.sasl.SaslServerFactory;
 
 import org.junit.Assert;
+import org.wildfly.security.FixedSecurityFactory;
 import org.wildfly.security.auth.provider.SimpleMapBackedSecurityRealm;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.password.Password;
@@ -62,15 +62,14 @@ public class SaslServerBuilder {
     private String realmName = "mainRealm";
     private String defaultRealmName = realmName;
     private Map<String, Permissions> permissionsMap = null;
+    private X509TrustManager trustManager;
 
     //Server factory decorators
     private Map<String, Object> properties;
     private Tuple<String, byte[]> bindingTypeAndData;
     private String protocol;
     private String serverName;
-    private X509TrustManager trustManager;
     private X509KeyManager keyManager;
-    private KeyStore keyStore;
     private boolean dontAssertBuiltServer;
 
     public SaslServerBuilder(Class<? extends SaslServerFactory> serverFactoryClass, String mechanismName) {
@@ -157,7 +156,7 @@ public class SaslServerBuilder {
         final SimpleMapBackedSecurityRealm mainRealm = new SimpleMapBackedSecurityRealm();
         domainBuilder.addRealm(realmName, mainRealm);
         domainBuilder.setDefaultRealmName(defaultRealmName);
-
+        domainBuilder.setX509TrustManagerFactory(new FixedSecurityFactory<>(trustManager));
 
         if (username != null) {
             mainRealm.setPasswordMap(username, password);

@@ -28,8 +28,10 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.X509TrustManager;
 
 import org.wildfly.common.Assert;
+import org.wildfly.security.SecurityFactory;
 import org.wildfly.security._private.ElytronMessages;
 import org.wildfly.security.auth.principal.AnonymousPrincipal;
 import org.wildfly.security.authz.Attributes;
@@ -38,6 +40,7 @@ import org.wildfly.security.authz.PermissionMapper;
 import org.wildfly.security.authz.RoleDecoder;
 import org.wildfly.security.authz.RoleMapper;
 import org.wildfly.security.permission.ElytronPermission;
+import org.wildfly.security.ssl.SSLUtils;
 
 /**
  * A security domain.  Security domains encapsulate a set of security policies.
@@ -59,6 +62,7 @@ public final class SecurityDomain {
     private final PrincipalDecoder principalDecoder;
     private final SecurityIdentity anonymousIdentity;
     private final PermissionMapper permissionMapper;
+    private final SecurityFactory<X509TrustManager> trustManagerFactory;
 
     SecurityDomain(Builder builder, final HashMap<String, RealmInfo> realmMap) {
         this.realmMap = realmMap;
@@ -69,6 +73,7 @@ public final class SecurityDomain {
         this.permissionMapper = builder.permissionMapper;
         this.postRealmRewriter = builder.postRealmRewriter;
         this.principalDecoder = builder.principalDecoder;
+        this.trustManagerFactory = builder.trustManagerFactory;
         // todo configurable
         anonymousAllowed = false;
         final RealmInfo realmInfo = new RealmInfo(SecurityRealm.EMPTY_REALM, "default", RoleMapper.IDENTITY_ROLE_MAPPER, NameRewriter.IDENTITY_REWRITER, RoleDecoder.DEFAULT);
@@ -294,6 +299,10 @@ public final class SecurityDomain {
         return principalDecoder;
     }
 
+    SecurityFactory<X509TrustManager> getX509TrustManagerFactory() {
+        return trustManagerFactory;
+    }
+
     /**
      * A builder for creating new security domains.
      */
@@ -308,6 +317,7 @@ public final class SecurityDomain {
         private RoleMapper roleMapper = RoleMapper.IDENTITY_ROLE_MAPPER;
         private PermissionMapper permissionMapper = PermissionMapper.EMPTY_PERMISSION_MAPPER;
         private PrincipalDecoder principalDecoder = PrincipalDecoder.DEFAULT;
+        private SecurityFactory<X509TrustManager> trustManagerFactory = SSLUtils.getDefaultX509TrustManagerSecurityFactory();
 
         Builder() {
         }
@@ -393,6 +403,19 @@ public final class SecurityDomain {
             Assert.checkNotNullParam("principalDecoder", principalDecoder);
             assertNotBuilt();
             this.principalDecoder = principalDecoder;
+            return this;
+        }
+
+        /**
+         * Set the trust manager factory for this security domain, which will be used for trust verification.
+         *
+         * @param trustManagerFactory the trust manager factory (must not be {@code null})
+         * @return this builder
+         */
+        public Builder setX509TrustManagerFactory(SecurityFactory<X509TrustManager> trustManagerFactory) {
+            Assert.checkNotNullParam("trustManagerFactory", trustManagerFactory);
+            assertNotBuilt();
+            this.trustManagerFactory = trustManagerFactory;
             return this;
         }
 

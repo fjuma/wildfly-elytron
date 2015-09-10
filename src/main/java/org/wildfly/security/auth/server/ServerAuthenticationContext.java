@@ -21,8 +21,11 @@ package org.wildfly.security.auth.server;
 import static org.wildfly.security._private.ElytronMessages.log;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,11 +38,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.X509TrustManager;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.x500.X500Principal;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 import javax.security.sasl.SaslException;
@@ -59,6 +64,8 @@ import org.wildfly.security.auth.callback.PasswordVerifyCallback;
 import org.wildfly.security.auth.callback.PeerPrincipalCallback;
 import org.wildfly.security.auth.callback.SecurityIdentityCallback;
 import org.wildfly.security.auth.callback.SocketAddressCallback;
+import org.wildfly.security.auth.callback.TrustedAuthoritiesCallback;
+import org.wildfly.security.auth.callback.VerifyPeerTrustedCallback;
 import org.wildfly.security.auth.permission.RunAsPrincipalPermission;
 import org.wildfly.security.auth.principal.NamePrincipal;
 import org.wildfly.security.authz.AuthorizationIdentity;
@@ -70,6 +77,7 @@ import org.wildfly.security.password.TwoWayPassword;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
 import org.wildfly.security.sasl.WildFlySasl;
+import org.wildfly.security.sasl.entity.TrustedAuthority;
 import org.wildfly.security.sasl.util.AbstractDelegatingSaslServerFactory;
 import org.wildfly.security.sasl.util.AuthenticationCompleteCallbackSaslServerFactory;
 import org.wildfly.security.sasl.util.SaslMechanismInformation;
@@ -682,11 +690,45 @@ public final class ServerAuthenticationContext {
                     handleOne(callbacks, idx + 1);
                 } else if (callback instanceof RealmCallback) {
                     handleOne(callbacks, idx + 1);
+                } else if (callback instanceof VerifyPeerTrustedCallback) {
+                    final X509TrustManager trustManager = getX509TrustManager();
+                    final VerifyPeerTrustedCallback verifyPeerTrustedCallback = (VerifyPeerTrustedCallback) callback;
+                    final X509Certificate[] certificateChain = verifyPeerTrustedCallback.getCertificateChain();
+                    final String authType = verifyPeerTrustedCallback.getAuthType();
+                    boolean verified = true;
+                    try {
+                        trustManager.checkClientTrusted(certificateChain, authType);
+                    } catch (CertificateException e) {
+                        verified = false;
+                    }
+                    verifyPeerTrustedCallback.setVerified(verified);
+                    handleOne(callbacks, idx + 1);
+                } else if (callback instanceof TrustedAuthoritiesCallback) {
+                    final X509TrustManager trustManager = getX509TrustManager();
+                    final TrustedAuthoritiesCallback trustedAuthoritiesCallback = (TrustedAuthoritiesCallback) callback;
+                    final X509Certificate[] acceptedIssuers = trustManager.getAcceptedIssuers();
+                    List<TrustedAuthority> trustedAuthorities = null;
+                    if (acceptedIssuers != null) {
+                        trustedAuthorities = new ArrayList<TrustedAuthority>(acceptedIssuers.length);
+                        for (X509Certificate acceptedIssuer : acceptedIssuers) {
+                            trustedAuthorities.add(new TrustedAuthority.NameTrustedAuthority(acceptedIssuer.getSubjectX500Principal().getName(X500Principal.CANONICAL)));
+                        }
+                    }
+                    trustedAuthoritiesCallback.setTrustedAuthorities(trustedAuthorities);
+                    handleOne(callbacks, idx + 1);
                 } else {
                     CallbackUtil.unsupported(callback);
                 }
             }
         };
+    }
+
+    private X509TrustManager getX509TrustManager() throws IOException {
+        try {
+            return domain.getX509TrustManagerFactory().create();
+        } catch (GeneralSecurityException e) {
+            throw new IOException(e);
+        }
     }
 
     private static final int INITIAL_ID = 0;
