@@ -27,6 +27,7 @@ import static org.wildfly.security.sasl.entity.Entity.*;
 import static org.wildfly.security.sasl.entity.GeneralName.*;
 
 import java.io.IOException;
+import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
@@ -147,7 +148,7 @@ final class EntitySaslServer extends AbstractSaslServer {
                 X509Certificate clientCert;
                 X509Certificate[] serverCertChain = null;
                 X509Certificate serverCert = null;
-                String serverCertUrl = null;
+                URL serverCertUrl = null;
                 PrivateKey privateKey = null;
                 String clientName;
                 List<GeneralName> entityB = null;
@@ -236,16 +237,16 @@ final class EntitySaslServer extends AbstractSaslServer {
                         privateKey = serverCertChainPrivateCredential.getPrivateKey();
                     } else {
                         // Try obtaining a certificate URL instead
-                        credentialCallback = new CredentialCallback(singletonMap(String.class, emptySet()));
+                        credentialCallback = new CredentialCallback(singletonMap(URL.class, emptySet()));
                         CredentialCallback privateKeyCallback = new CredentialCallback(singletonMap(PrivateKey.class,
                                 singleton(keyType(signature.getAlgorithm()))));
                         handleCallbacks(credentialCallback, privateKeyCallback);
-                        serverCertUrl = (String) credentialCallback.getCredential();
+                        serverCertUrl = (URL) credentialCallback.getCredential();
                         if (serverCertUrl != null) {
                             try {
                                 serverCert = EntityUtil.getCertificateFromUrl(serverCertUrl);
                             } catch (IOException e) {
-                                throw log.saslUnableToObtainServerCertificate(getMechanismName(), serverCertUrl, e);
+                                throw log.saslUnableToObtainServerCertificate(getMechanismName(), serverCertUrl.toString(), e);
                             }
                         } else {
                             throw log.saslCallbackHandlerNotProvidedServerCertificate(getMechanismName());
@@ -315,7 +316,7 @@ final class EntitySaslServer extends AbstractSaslServer {
                             EntityUtil.encodeX509CertificateChain(encoder, serverCertChain);
                         } else if (serverCertUrl != null) {
                             // Use a certificate URL instead
-                            encoder.encodeIA5String(serverCertUrl);
+                            encoder.encodeIA5String(serverCertUrl.toString());
                         } else {
                             throw log.saslCallbackHandlerNotProvidedServerCertificate(getMechanismName());
                         }

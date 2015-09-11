@@ -70,8 +70,10 @@ import org.wildfly.security.password.TwoWayPassword;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
 import org.wildfly.security.sasl.WildFlySasl;
+import org.wildfly.security.sasl.util.AbstractDelegatingSaslServerFactory;
 import org.wildfly.security.sasl.util.AuthenticationCompleteCallbackSaslServerFactory;
 import org.wildfly.security.sasl.util.SaslMechanismInformation;
+import org.wildfly.security.sasl.util.TrustManagerSaslServerFactory;
 
 /**
  * Server-side authentication context.
@@ -130,7 +132,10 @@ public final class ServerAuthenticationContext {
     public SaslServer createSaslServer(SaslServerFactory saslServerFactory, String mechanismName) throws SaslException, IllegalStateException {
         Assert.checkNotNullParam("saslServerFactory", saslServerFactory);
         Assert.checkNotNullParam("mechanismName", mechanismName);
-        final AuthenticationCompleteCallbackSaslServerFactory factory = new AuthenticationCompleteCallbackSaslServerFactory(saslServerFactory);
+        AbstractDelegatingSaslServerFactory factory = new AuthenticationCompleteCallbackSaslServerFactory(saslServerFactory);
+        if (! factory.delegatesThrough(TrustManagerSaslServerFactory.class)) {
+            factory = new TrustManagerSaslServerFactory(factory, null); // Use the default trust manager
+        }
         final CallbackHandler callbackHandler;
         if (mechanismName.equals(SaslMechanismInformation.Names.ANONYMOUS)) {
             callbackHandler = createAnonymousCallbackHandler();
