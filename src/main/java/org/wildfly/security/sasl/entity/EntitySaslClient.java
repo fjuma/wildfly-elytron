@@ -43,10 +43,10 @@ import org.wildfly.security.asn1.ASN1Exception;
 import org.wildfly.security.asn1.DERDecoder;
 import org.wildfly.security.asn1.DEREncoder;
 import org.wildfly.security.auth.callback.CredentialCallback;
+import org.wildfly.security.auth.callback.EvidenceVerifyCallback;
 import org.wildfly.security.auth.callback.TrustedAuthoritiesCallback;
-import org.wildfly.security.auth.callback.VerifyPeerTrustedCallback;
 import org.wildfly.security.credential.X509CertificateChainPrivateCredential;
-import org.wildfly.security.credential.X509CertificateChainPublicCredential;
+import org.wildfly.security.evidence.X509PeerCertificateChainEvidence;
 import org.wildfly.security.sasl.entity.GeneralName.DNSName;
 import org.wildfly.security.sasl.entity.GeneralName.DirectoryName;
 import org.wildfly.security.sasl.util.AbstractSaslClient;
@@ -261,13 +261,14 @@ final class EntitySaslClient extends AbstractSaslClient {
 
                         // Get the server's certificate data and verify it
                         decoder.startExplicit(1);
-                        X509CertificateChainPublicCredential credential = new X509CertificateChainPublicCredential(EntityUtil.decodeCertificateData(decoder));
+                        X509PeerCertificateChainEvidence peerCertificateChainEvidence = new X509PeerCertificateChainEvidence(EntityUtil.decodeCertificateData(decoder));
                         decoder.endExplicit();
-                        X509Certificate serverCert = credential.getFirstCertificate();
+                        X509Certificate serverCert = peerCertificateChainEvidence.getFirstCertificate();
 
-                        VerifyPeerTrustedCallback verifyPeerTrustedCallback = new VerifyPeerTrustedCallback(serverCert.getSubjectX500Principal(), credential);
-                        handleCallbacks(verifyPeerTrustedCallback);
-                        if (! verifyPeerTrustedCallback.isVerified()) {
+                        // FJ PRINCIPAL serverCert.getSubjectX500Principal()
+                        EvidenceVerifyCallback evidenceVerifyCallback = new EvidenceVerifyCallback(peerCertificateChainEvidence);
+                        handleCallbacks(evidenceVerifyCallback);
+                        if (! evidenceVerifyCallback.isVerified()) {
                             throw log.mechServerAuthenticityCannotBeVerified(getMechanismName()).toSaslException();
                         }
 

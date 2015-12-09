@@ -37,7 +37,7 @@ import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.auth.server.CredentialDecoder;
 import org.wildfly.security.auth.server.SupportLevel;
 import org.wildfly.security.credential.X509CertificateChainPublicCredential;
-import org.wildfly.security.evidence.X509PeerCertificateEvidence;
+import org.wildfly.security.evidence.X509PeerCertificateChainEvidence;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -82,15 +82,15 @@ class SecurityDomainTrustManager extends X509ExtendedTrustManager {
             throw ElytronMessages.log.emptyChainNotTrusted();
         }
         final X509Certificate subjectCertificate = chain[0];
-        final X509CertificateChainPublicCredential credential = new X509CertificateChainPublicCredential(chain);
-        Principal principal = credentialDecoder.getPrincipalFromCredential(credential);
+        final X509PeerCertificateChainEvidence evidence = new X509PeerCertificateChainEvidence(subjectCertificate);
+        Principal principal = evidenceDecoder.getPrincipalFromEvidence(evidence);
         final ServerAuthenticationContext authenticationContext = securityDomain.createNewAuthenticationContext();
         boolean ok = false;
         try {
             authenticationContext.setAuthenticationPrincipal(principal);
 
-            final SupportLevel credentialSupport = authenticationContext.getEvidenceVerifySupport(X509PeerCertificateEvidence.class, credential.getAlgorithm());
-            if (credentialSupport.mayBeSupported() && authenticationContext.verifyEvidence(new X509PeerCertificateEvidence(subjectCertificate))) {
+            final SupportLevel evidenceSupport = authenticationContext.getEvidenceVerifySupport(X509PeerCertificateChainEvidence.class, evidence.getAlgorithm());
+            if (evidenceSupport.mayBeSupported() && authenticationContext.verifyEvidence(evidence)) {
                 authenticationContext.succeed();
                 if (handshakeSession != null) {
                     handshakeSession.putValue(SSLUtils.SSL_SESSION_IDENTITY_KEY, authenticationContext.getAuthorizedIdentity());
