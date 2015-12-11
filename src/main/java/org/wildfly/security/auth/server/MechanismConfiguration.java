@@ -44,15 +44,22 @@ public final class MechanismConfiguration {
     private final NameRewriter preRealmRewriter;
     private final NameRewriter postRealmRewriter;
     private final NameRewriter finalRewriter;
+    private final RealmMapper realmMapper;
+    private final String defaultRealmName;
     private final Map<String, MechanismRealmConfiguration> mechanismRealms;
     private final List<SecurityFactory<Credential>> serverCredentialFactories;
 
-    MechanismConfiguration(final NameRewriter preRealmRewriter, final NameRewriter postRealmRewriter, final NameRewriter finalRewriter, final Collection<MechanismRealmConfiguration> mechanismRealms, final List<SecurityFactory<Credential>> serverCredentialFactories) {
+    MechanismConfiguration(final NameRewriter preRealmRewriter, final NameRewriter postRealmRewriter, final NameRewriter finalRewriter, final RealmMapper realmMapper, final String defaultRealmName, final Collection<MechanismRealmConfiguration> mechanismRealms, final List<SecurityFactory<Credential>> serverCredentialFactories) {
         Assert.checkNotNullParam("mechanismRealms", mechanismRealms);
         Assert.checkNotNullParam("serverCredentials", serverCredentialFactories);
+        if (realmMapper != null) {
+            Assert.checkNotNullParam("defaultRealmName", defaultRealmName);
+        }
         this.preRealmRewriter = preRealmRewriter;
         this.postRealmRewriter = postRealmRewriter;
         this.finalRewriter = finalRewriter;
+        this.realmMapper = realmMapper;
+        this.defaultRealmName = defaultRealmName;
         final Iterator<MechanismRealmConfiguration> iterator = mechanismRealms.iterator();
         if (! iterator.hasNext()) {
             // zero
@@ -104,6 +111,24 @@ public final class MechanismConfiguration {
     }
 
     /**
+     * Get the realm mapper.
+     *
+     * @return the realm mapper, or {@code null} to use the default
+     */
+    public RealmMapper getRealmMapper() {
+        return realmMapper;
+    }
+
+    /**
+     * Get the default realm name.
+     *
+     * @return the default realm name
+     */
+    public String getDefaultRealmName() {
+        return defaultRealmName;
+    }
+
+    /**
      * Get the collection of mechanism realm names, in order.  If no realms are configured, the collection will be
      * empty.
      *
@@ -151,6 +176,8 @@ public final class MechanismConfiguration {
         private NameRewriter preRealmRewriter;
         private NameRewriter postRealmRewriter;
         private NameRewriter finalRewriter;
+        private RealmMapper realmMapper;
+        private String defaultRealmName;
         private List<MechanismRealmConfiguration> mechanismRealms;
         private List<SecurityFactory<Credential>> serverCredentials;
 
@@ -172,6 +199,16 @@ public final class MechanismConfiguration {
 
         public Builder setFinalRewriter(final NameRewriter finalRewriter) {
             this.finalRewriter = finalRewriter;
+            return this;
+        }
+
+        public Builder setRealmMapper(final RealmMapper realmMapper) {
+            this.realmMapper = realmMapper;
+            return this;
+        }
+
+        public Builder setDefaultRealmName(final String defaultRealmName) {
+            this.defaultRealmName = defaultRealmName;
             return this;
         }
 
@@ -235,12 +272,12 @@ public final class MechanismConfiguration {
             } else {
                 serverCredentials = unmodifiableList(asList(serverCredentials.toArray(NO_CREDENTIALS)));
             }
-            return new MechanismConfiguration(preRealmRewriter, postRealmRewriter, finalRewriter, mechanismRealms, serverCredentials);
+            return new MechanismConfiguration(preRealmRewriter, postRealmRewriter, finalRewriter, realmMapper, defaultRealmName, mechanismRealms, serverCredentials);
         }
     }
 
     /**
      * An empty mechanism configuration..
      */
-    public static final MechanismConfiguration EMPTY = new MechanismConfiguration(null, null, null, emptyList(), emptyList());
+    public static final MechanismConfiguration EMPTY = new MechanismConfiguration(null, null, null, null, null, emptyList(), emptyList());
 }
