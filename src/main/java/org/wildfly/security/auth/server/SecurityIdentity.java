@@ -58,6 +58,7 @@ import org.wildfly.security.authz.RoleMapper;
  */
 public final class SecurityIdentity {
     static final PeerIdentity[] NO_PEER_IDENTITIES = new PeerIdentity[0];
+    private static final RuntimePermission SET_RUN_AS_PERMISSION = new RuntimePermission("setRunAsPermission");
 
     private final SecurityDomain securityDomain;
     private final Principal principal;
@@ -381,13 +382,28 @@ public final class SecurityIdentity {
     }
 
     /**
-     * Attempt to create a new identity that can be used to run as a user with the given name.
+     * Attempt to create a new identity that can be used to run as a user with the given name. If the
+     * current identity is not authorized to run as a user with the given name, an exception is thrown.
      *
      * @param name the name to attempt to run as
      * @return the new security identity
      * @throws AuthorizationException if the operation authorization failed for any reason
      */
     public SecurityIdentity createRunAsIdentity(String name) throws AuthorizationException {
+        return createRunAsIdentity(name, true);
+    }
+
+    /**
+     * Attempt to create a new identity that can be used to run as a user with the given name.
+     *
+     * @param name the name to attempt to run as
+     * @param authorize {@code true} to check the current identity is authorized to run as a user
+     *        with the given name, {@code false} to just check if the caller has
+     *        {@code RuntimePermission("setRunAsPermission")}
+     * @return the new security identity
+     * @throws AuthorizationException if the operation authorization failed for any reason
+     */
+    public SecurityIdentity createRunAsIdentity(String name, boolean authorize) throws AuthorizationException {
         Assert.checkNotNullParam("name", name);
         // rewrite name
         final SecurityDomain domain = this.securityDomain;
@@ -410,24 +426,35 @@ public final class SecurityIdentity {
         if (name == null) {
             throw log.invalidName();
         }
-        final RunAsPrincipalPermission permission = new RunAsPrincipalPermission(name);
-        if (getPermissions().implies(permission)) {
-            try {
-                final SecurityRealm securityRealm = realmInfo.getSecurityRealm();
-                final RealmIdentity realmIdentity = securityRealm.getRealmIdentity(name, null, null);
-                final AuthorizationIdentity newAuthorizationIdentity = realmIdentity.getAuthorizationIdentity();
-                SecurityRealm.safeHandleRealmEvent(securityRealm, new RealmIdentitySuccessfulAuthorizationEvent(this.authorizationIdentity, this.principal, principal));
-                try {
-                    return new SecurityIdentity(domain, principal, realmInfo, newAuthorizationIdentity, roleMappers);
-                } finally {
-                    realmIdentity.dispose();
-                }
-            } catch (RealmUnavailableException ex) {
-                throw log.runAsAuthorizationFailed(this.principal, principal, ex);
+        if (authorize) {
+            final RunAsPrincipalPermission permission = new RunAsPrincipalPermission(name);
+            if (! getPermissions().implies(permission)) {
+                SecurityRealm.safeHandleRealmEvent(realmInfo.getSecurityRealm(), new RealmIdentityFailedAuthorizationEvent(authorizationIdentity, this.principal, principal));
+                throw log.unauthorizedRunAs(this.principal, principal, permission);
             }
         } else {
-            SecurityRealm.safeHandleRealmEvent(realmInfo.getSecurityRealm(), new RealmIdentityFailedAuthorizationEvent(authorizationIdentity, this.principal, principal));
-            throw log.unauthorizedRunAs(this.principal, principal, permission);
+            final SecurityManager sm = System.getSecurityManager();
+            if (sm != null) {
+                try {
+                    sm.checkPermission(SET_RUN_AS_PERMISSION);
+                } catch (SecurityException ex) {
+                    SecurityRealm.safeHandleRealmEvent(realmInfo.getSecurityRealm(), new RealmIdentityFailedAuthorizationEvent(authorizationIdentity, this.principal, principal));
+                    throw log.unauthorizedRunAs(this.principal, principal, SET_RUN_AS_PERMISSION);
+                }
+            }
+        }
+        try {
+            final SecurityRealm securityRealm = realmInfo.getSecurityRealm();
+            final RealmIdentity realmIdentity = securityRealm.getRealmIdentity(name, null, null);
+            final AuthorizationIdentity newAuthorizationIdentity = realmIdentity.getAuthorizationIdentity();
+            SecurityRealm.safeHandleRealmEvent(securityRealm, new RealmIdentitySuccessfulAuthorizationEvent(this.authorizationIdentity, this.principal, principal));
+            try {
+                return new SecurityIdentity(domain, principal, realmInfo, newAuthorizationIdentity, roleMappers);
+            } finally {
+                realmIdentity.dispose();
+            }
+        } catch (RealmUnavailableException ex) {
+            throw log.runAsAuthorizationFailed(this.principal, principal, ex);
         }
     }
 
