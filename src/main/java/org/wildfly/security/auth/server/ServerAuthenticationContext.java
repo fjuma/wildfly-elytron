@@ -63,6 +63,7 @@ import org.wildfly.security.authz.AuthorizationIdentity;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.evidence.Evidence;
+import org.wildfly.security.evidence.SecurityIdentityEvidence;
 import org.wildfly.security.password.PasswordFactory;
 import org.wildfly.security.password.TwoWayPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
@@ -471,6 +472,7 @@ public final class ServerAuthenticationContext {
             }
         }
         SecurityRealm.safeHandleRealmEvent(realmInfo.getSecurityRealm(), new RealmSuccessfulAuthenticationEvent(realmIdentity, authorizationIdentity, null, null));
+        SecurityDomainAssociation.setSecurityDomain(domain);
         realmIdentity.dispose();
     }
 
@@ -538,6 +540,9 @@ public final class ServerAuthenticationContext {
      */
     public SupportLevel getEvidenceVerifySupport(Class<? extends Evidence> evidenceType, String algorithmName) throws RealmUnavailableException {
         Assert.checkNotNullParam("evidenceType", evidenceType);
+        if (SecurityIdentityEvidence.class.isAssignableFrom(evidenceType)) {
+            return SupportLevel.SUPPORTED;
+        }
         return stateRef.get().getEvidenceVerifySupport(evidenceType, algorithmName);
     }
 
@@ -552,8 +557,7 @@ public final class ServerAuthenticationContext {
      * @throws IllegalStateException if no authentication has been initiated or authentication is already completed
      */
     public SupportLevel getEvidenceVerifySupport(Class<? extends Evidence> evidenceType) throws RealmUnavailableException {
-        Assert.checkNotNullParam("evidenceType", evidenceType);
-        return stateRef.get().getEvidenceVerifySupport(evidenceType, null);
+        return getEvidenceVerifySupport(evidenceType, null);
     }
 
     /**
@@ -601,6 +605,9 @@ public final class ServerAuthenticationContext {
      * @throws IllegalStateException if no authentication has been initiated or authentication is already completed
      */
     public boolean verifyEvidence(Evidence evidence) throws RealmUnavailableException {
+        if (evidence instanceof SecurityIdentityEvidence) {
+            return isIdentityTrusted(((SecurityIdentityEvidence) evidence).getSecurityIdentity());
+        }
         final AtomicReference<State> stateRef = this.stateRef;
         State oldState = stateRef.get();
         // early detection
@@ -661,6 +668,36 @@ public final class ServerAuthenticationContext {
             if (! ok) realmIdentity.dispose();
         }
         return newState.verifyEvidence(evidence);
+    }
+
+    /**
+     * Determine if the authentication name from the given security identity can be trusted without
+     * authenticating it.
+     *
+     * @param securityIdentity the security identity
+     * @return {@code true} if the authentication name from the given security identity can be trusted, {@code false} otherwise
+     *
+     * @throws RealmUnavailableException if the realm is not available
+     * @throws IllegalStateException if the authentication name could not be set or authentication was already complete
+     */
+    public boolean isIdentityTrusted(SecurityIdentity securityIdentity) throws RealmUnavailableException, IllegalStateException {
+        setAuthenticationPrincipal(securityIdentity.getPrincipal());
+
+        State oldState = stateRef.get();
+        if (oldState.isDone()) {
+            throw ElytronMessages.log.alreadyComplete();
+        }
+        if (oldState.getId() == AUTHORIZED_ID) {
+            return true;
+        }
+        if (oldState.getId() < ASSIGNED_ID) {
+            throw ElytronMessages.log.noAuthenticationInProgress();
+        }
+        final SecurityDomain evidenceDomain = securityIdentity.getSecurityDomain();
+        if (true) { // FJ ********* if (domain.trustsDomain(evidenceDomain)) {
+            return authorize();
+        }
+        return false;
     }
 
     /**
