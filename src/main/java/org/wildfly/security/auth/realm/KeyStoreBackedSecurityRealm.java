@@ -33,6 +33,7 @@ import org.wildfly.security.auth.server.SupportLevel;
 import org.wildfly.security.credential.AlgorithmCredential;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.evidence.Evidence;
+import org.wildfly.security.evidence.SecurityIdentityEvidence;
 
 /**
  * A {@link KeyStore} backed {@link SecurityRealm} implementation.
@@ -137,6 +138,9 @@ public class KeyStoreBackedSecurityRealm implements SecurityRealm {
             if (entry == null) {
                 return SupportLevel.UNSUPPORTED;
             }
+            if (SecurityIdentityEvidence.class.isAssignableFrom(evidenceType)) {
+                return SupportLevel.SUPPORTED;
+            }
             final Credential credential = Credential.fromKeyStoreEntry(entry);
             if (credential != null && credential.canVerify(evidenceType, algorithmName)) {
                 return SupportLevel.SUPPORTED;
@@ -150,12 +154,19 @@ public class KeyStoreBackedSecurityRealm implements SecurityRealm {
             if (entry == null) {
                 return false;
             }
+            if (RealmIdentity.super.checkEvidenceTrusted(evidence)) {
+                return true;
+            }
             final Credential credential = Credential.fromKeyStoreEntry(entry);
             return credential != null && credential.canVerify(evidence) && credential.verify(evidence);
         }
 
         public boolean exists() throws RealmUnavailableException {
             return getEntry(name) != null;
+        }
+
+        public SecurityRealm getSecurityRealm() {
+            return KeyStoreBackedSecurityRealm.this;
         }
     }
 }

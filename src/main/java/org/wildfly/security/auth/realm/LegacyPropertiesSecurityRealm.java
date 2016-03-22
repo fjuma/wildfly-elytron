@@ -53,6 +53,7 @@ import org.wildfly.security.credential.Credential;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.evidence.Evidence;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
+import org.wildfly.security.evidence.SecurityIdentityEvidence;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactory;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
@@ -157,7 +158,13 @@ public class LegacyPropertiesSecurityRealm implements SecurityRealm {
 
             @Override
             public boolean verifyEvidence(final Evidence evidence) throws RealmUnavailableException {
-                if (accountEntry == null || evidence instanceof PasswordGuessEvidence == false) {
+                if (accountEntry == null) {
+                    return false;
+                }
+                if (RealmIdentity.super.checkEvidenceTrusted(evidence)) {
+                    return true;
+                }
+                if (evidence instanceof PasswordGuessEvidence == false) {
                     return false;
                 }
                 final char[] guess = ((PasswordGuessEvidence) evidence).getGuess();
@@ -196,6 +203,9 @@ public class LegacyPropertiesSecurityRealm implements SecurityRealm {
                 return AuthorizationIdentity.basicIdentity(new MapAttributes(Collections.singletonMap(groupsAttribute, accountEntry.getGroups())));
             }
 
+            public SecurityRealm getSecurityRealm() {
+                return LegacyPropertiesSecurityRealm.this;
+            }
         };
     }
 
@@ -215,7 +225,8 @@ public class LegacyPropertiesSecurityRealm implements SecurityRealm {
 
     @Override
     public SupportLevel getEvidenceVerifySupport(final Class<? extends Evidence> evidenceType, final String algorithmName) throws RealmUnavailableException {
-        return PasswordGuessEvidence.class.isAssignableFrom(evidenceType) ? SupportLevel.SUPPORTED : SupportLevel.UNSUPPORTED;
+        return (SecurityIdentityEvidence.class.isAssignableFrom(evidenceType)
+                || PasswordGuessEvidence.class.isAssignableFrom(evidenceType)) ? SupportLevel.SUPPORTED : SupportLevel.UNSUPPORTED;
     }
 
     public void load(InputStream passwordsStream, InputStream groupsStream) throws IOException {

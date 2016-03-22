@@ -63,6 +63,7 @@ import org.wildfly.security.auth.server.ModifiableSecurityRealm;
 import org.wildfly.security.auth.server.NameRewriter;
 import org.wildfly.security.auth.server.RealmIdentity;
 import org.wildfly.security.auth.server.RealmUnavailableException;
+import org.wildfly.security.auth.server.SecurityRealm;
 import org.wildfly.security.auth.server.SupportLevel;
 import org.wildfly.security.authz.Attributes;
 import org.wildfly.security.authz.AuthorizationIdentity;
@@ -321,6 +322,9 @@ public final class FileSystemSecurityRealm implements ModifiableSecurityRealm {
 
         public boolean verifyEvidence(final Evidence evidence) throws RealmUnavailableException {
             Assert.checkNotNullParam("evidence", evidence);
+            if (ModifiableRealmIdentity.super.checkEvidenceTrusted(evidence)) {
+                return true;
+            }
             List<Credential> credentials = loadCredentials();
             for (Credential credential : credentials) {
                 if (credential.canVerify(evidence)) {
@@ -564,6 +568,10 @@ public final class FileSystemSecurityRealm implements ModifiableSecurityRealm {
         public AuthorizationIdentity getAuthorizationIdentity() throws RealmUnavailableException {
             final LoadedIdentity loadedIdentity = loadIdentity(true, false);
             return loadedIdentity == null ? AuthorizationIdentity.EMPTY : AuthorizationIdentity.basicIdentity(loadedIdentity.getAttributes());
+        }
+
+        public SecurityRealm getSecurityRealm() {
+            return FileSystemSecurityRealm.this;
         }
 
         private LoadedIdentity loadIdentity(final boolean skipCredentials, final boolean skipAttributes) throws RealmUnavailableException {
