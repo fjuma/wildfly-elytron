@@ -49,6 +49,7 @@ import org.wildfly.security.auth.server.SupportLevel;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.evidence.Evidence;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
+import org.wildfly.security.evidence.SecurityIdentityEvidence;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -99,7 +100,8 @@ public class JaasSecurityRealm implements SecurityRealm {
     @Override
     public SupportLevel getEvidenceVerifySupport(final Class<? extends Evidence> evidenceType, final String algorithmName) throws RealmUnavailableException {
         Assert.checkNotNullParam("evidenceType", evidenceType);
-        return PasswordGuessEvidence.class.isAssignableFrom(evidenceType) ? SupportLevel.SUPPORTED : SupportLevel.UNSUPPORTED;
+        return (SecurityIdentityEvidence.class.isAssignableFrom(evidenceType)
+                || PasswordGuessEvidence.class.isAssignableFrom(evidenceType)) ? SupportLevel.SUPPORTED : SupportLevel.UNSUPPORTED;
     }
 
     private LoginContext createLoginContext(final String loginConfig, final Subject subject, final CallbackHandler handler) throws RealmUnavailableException {
@@ -170,6 +172,9 @@ public class JaasSecurityRealm implements SecurityRealm {
         @Override
         public boolean verifyEvidence(final Evidence evidence) throws RealmUnavailableException {
             Assert.checkNotNullParam("evidence", evidence);
+            if (RealmIdentity.super.checkEvidenceTrusted(evidence)) {
+                return true;
+            }
             if (evidence instanceof PasswordGuessEvidence) {
                 this.subject = null;
                 boolean successfulLogin;
@@ -201,6 +206,10 @@ public class JaasSecurityRealm implements SecurityRealm {
         @Override
         public AuthorizationIdentity getAuthorizationIdentity() throws RealmUnavailableException {
             return new JaasAuthorizationIdentity(this.principal, this.subject);
+        }
+
+        public boolean createdBySecurityRealm(final SecurityRealm securityRealm) {
+            return JaasSecurityRealm.this == securityRealm;
         }
     }
 

@@ -35,6 +35,7 @@ import org.wildfly.security.credential.AlgorithmCredential;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.evidence.Evidence;
+import org.wildfly.security.evidence.SecurityIdentityEvidence;
 import org.wildfly.security.password.Password;
 
 /**
@@ -125,7 +126,7 @@ public class SimpleMapBackedSecurityRealm implements SecurityRealm {
     @Override
     public SupportLevel getEvidenceVerifySupport(final Class<? extends Evidence> evidenceType, final String algorithmName) throws RealmUnavailableException {
         Assert.checkNotNullParam("evidenceType", evidenceType);
-        return SupportLevel.POSSIBLY_SUPPORTED;
+        return SecurityIdentityEvidence.class.isAssignableFrom(evidenceType) ? SupportLevel.SUPPORTED : SupportLevel.POSSIBLY_SUPPORTED;
     }
 
     private class SimpleMapRealmIdentity implements RealmIdentity {
@@ -184,6 +185,9 @@ public class SimpleMapBackedSecurityRealm implements SecurityRealm {
             if (entry == null) {
                 return SupportLevel.UNSUPPORTED;
             }
+            if (SecurityIdentityEvidence.class.isAssignableFrom(evidenceType)) {
+                return SupportLevel.SUPPORTED;
+            }
             for (Credential credential : entry.getCredentials()) {
                 if (credential.canVerify(evidenceType, algorithmName)) {
                     return SupportLevel.SUPPORTED;
@@ -199,6 +203,9 @@ public class SimpleMapBackedSecurityRealm implements SecurityRealm {
             if (entry == null) {
                 return false;
             }
+            if (RealmIdentity.super.checkEvidenceTrusted(evidence)) {
+                return true;
+            }
             for (Credential credential : entry.getCredentials()) {
                 if (credential.canVerify(evidence)) {
                     return credential.verify(evidence);
@@ -210,6 +217,10 @@ public class SimpleMapBackedSecurityRealm implements SecurityRealm {
         @Override
         public boolean exists() throws RealmUnavailableException {
             return map.containsKey(name);
+        }
+
+        public boolean createdBySecurityRealm(final SecurityRealm securityRealm) {
+            return SimpleMapBackedSecurityRealm.this == securityRealm;
         }
     }
 }

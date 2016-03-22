@@ -30,6 +30,7 @@ import org.wildfly.security.authz.AuthorizationIdentity;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.evidence.BearerTokenEvidence;
 import org.wildfly.security.evidence.Evidence;
+import org.wildfly.security.evidence.SecurityIdentityEvidence;
 
 import javax.json.JsonObject;
 import javax.net.ssl.HostnameVerifier;
@@ -98,6 +99,9 @@ public class OAuth2SecurityRealm implements SecurityRealm {
 
     @Override
     public SupportLevel getEvidenceVerifySupport(Class<? extends Evidence> evidenceType, String algorithmName) throws RealmUnavailableException {
+        if (SecurityIdentityEvidence.class.isAssignableFrom(evidenceType)) {
+            return SupportLevel.SUPPORTED;
+        }
         if (isBearerTokenEvidence(evidenceType)) {
             return SupportLevel.POSSIBLY_SUPPORTED;
         }
@@ -135,6 +139,9 @@ public class OAuth2SecurityRealm implements SecurityRealm {
 
         @Override
         public boolean verifyEvidence(Evidence evidence) throws RealmUnavailableException {
+            if (RealmIdentity.super.checkEvidenceTrusted(evidence)) {
+                return true;
+            }
             return isValidToken(introspectToken());
         }
 
@@ -163,6 +170,10 @@ public class OAuth2SecurityRealm implements SecurityRealm {
             return null;
         }
 
+        public boolean createdBySecurityRealm(final SecurityRealm securityRealm) {
+            return OAuth2SecurityRealm.this == securityRealm;
+        }
+
         @Override
         public SupportLevel getCredentialAcquireSupport(Class<? extends Credential> credentialType, String algorithmName) throws RealmUnavailableException {
             return SupportLevel.UNSUPPORTED;
@@ -175,6 +186,9 @@ public class OAuth2SecurityRealm implements SecurityRealm {
 
         @Override
         public SupportLevel getEvidenceVerifySupport(Class<? extends Evidence> evidenceType, String algorithmName) throws RealmUnavailableException {
+            if (SecurityIdentityEvidence.class.isAssignableFrom(evidenceType)) {
+                return SupportLevel.SUPPORTED;
+            }
             if (isBearerTokenEvidence(evidenceType)) {
                 return SupportLevel.SUPPORTED;
             }

@@ -28,6 +28,7 @@ import org.wildfly.security.authz.AuthorizationIdentity;
 import org.wildfly.security.authz.MapAttributes;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.evidence.Evidence;
+import org.wildfly.security.evidence.SecurityIdentityEvidence;
 
 import javax.sql.DataSource;
 
@@ -84,6 +85,9 @@ public class JdbcSecurityRealm implements SecurityRealm {
     @Override
     public SupportLevel getEvidenceVerifySupport(final Class<? extends Evidence> evidenceType, final String algorithmName) throws RealmUnavailableException {
         Assert.checkNotNullParam("evidenceType", evidenceType);
+        if (SecurityIdentityEvidence.class.isAssignableFrom(evidenceType)) {
+            return SupportLevel.SUPPORTED;
+        }
         SupportLevel support = SupportLevel.UNSUPPORTED;
         for (QueryConfiguration configuration : queryConfiguration) {
             for (KeyMapper keyMapper : configuration.getColumnMappers(KeyMapper.class)) {
@@ -150,6 +154,9 @@ public class JdbcSecurityRealm implements SecurityRealm {
         @Override
         public SupportLevel getEvidenceVerifySupport(final Class<? extends Evidence> evidenceType, final String algorithmName) throws RealmUnavailableException {
             Assert.checkNotNullParam("evidenceType", evidenceType);
+            if (SecurityIdentityEvidence.class.isAssignableFrom(evidenceType)) {
+                return SupportLevel.SUPPORTED;
+            }
             SupportLevel support = SupportLevel.UNSUPPORTED;
             for (QueryConfiguration configuration : JdbcSecurityRealm.this.queryConfiguration) {
                 for (KeyMapper keyMapper : configuration.getColumnMappers(KeyMapper.class)) {
@@ -170,6 +177,9 @@ public class JdbcSecurityRealm implements SecurityRealm {
         @Override
         public boolean verifyEvidence(final Evidence evidence) throws RealmUnavailableException {
             Assert.checkNotNullParam("evidence", evidence);
+            if (RealmIdentity.super.checkEvidenceTrusted(evidence)) {
+                return true;
+            }
             for (QueryConfiguration configuration : JdbcSecurityRealm.this.queryConfiguration) {
                 for (KeyMapper keyMapper : configuration.getColumnMappers(KeyMapper.class)) {
                     Credential credential = executePrincipalQuery(configuration, keyMapper::map);
@@ -195,6 +205,10 @@ public class JdbcSecurityRealm implements SecurityRealm {
             }
 
             return AuthorizationIdentity.basicIdentity(this.identity.attributes);
+        }
+
+        public boolean createdBySecurityRealm(final SecurityRealm securityRealm) {
+            return JdbcSecurityRealm.this == securityRealm;
         }
 
         private JdbcIdentity getIdentity() {
