@@ -28,6 +28,7 @@ import org.wildfly.security.authz.AuthorizationIdentity;
 import org.wildfly.security.credential.AlgorithmCredential;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.evidence.Evidence;
+import org.wildfly.security.evidence.SecurityIdentityEvidence;
 
 /**
  * A representation of a pre-authentication identity.
@@ -118,6 +119,29 @@ public interface RealmIdentity {
     boolean verifyEvidence(Evidence evidence) throws RealmUnavailableException;
 
     /**
+     * Determine if the given evidence can be trusted in lieu of verifying or acquiring a credential. This method is
+     * intended to be used for identity propagation purposes.
+     *
+     * @param evidence the evidence to check
+     * @return {@code true} if the given evidence can be trusted, {@code false} otherwise
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
+     */
+    default boolean checkEvidenceTrusted(Evidence evidence) throws RealmUnavailableException {
+        Assert.checkNotNullParam("evidence", evidence);
+        if (! exists()) {
+            return false;
+        }
+        if (evidence instanceof SecurityIdentityEvidence) {
+            // Trust the given security identity evidence if it corresponds to the same realm that created this realm identity
+            final SecurityIdentity evidenceIdentity = ((SecurityIdentityEvidence) evidence).getSecurityIdentity();
+            final RealmInfo evidenceRealmInfo = evidenceIdentity.getRealmInfo();
+            final SecurityRealm evidenceSecurityRealm = evidenceRealmInfo.getSecurityRealm();
+            return getSecurityRealm() == evidenceSecurityRealm;
+        }
+        return false;
+    }
+
+    /**
      * Determine if the identity exists in lieu of verifying or acquiring a credential.  This method is intended to be
      * used to verify an identity for non-authentication purposes only.
      *
@@ -146,6 +170,15 @@ public interface RealmIdentity {
             throw log.userDoesNotExist();
         }
     }
+
+    /**
+     * Get the underlying {@link SecurityRealm} that created this realm identity.
+     *
+     * @return the underlying {@link SecurityRealm} that created this realm identity, or
+     * {@link SecurityRealm#EMPTY_REALM} if this is an anonymous realm identity, or {@code null} if
+     * this is a non-existent realm identity
+     */
+    SecurityRealm getSecurityRealm();
 
     /**
      * The anonymous realm identity.
@@ -178,6 +211,10 @@ public interface RealmIdentity {
         public boolean exists() throws RealmUnavailableException {
             return true;
         }
+
+        public SecurityRealm getSecurityRealm() {
+            return SecurityRealm.EMPTY_REALM;
+        }
     };
 
     /**
@@ -206,6 +243,10 @@ public interface RealmIdentity {
 
         public boolean exists() throws RealmUnavailableException {
             return false;
+        }
+
+        public SecurityRealm getSecurityRealm() {
+            return null;
         }
     };
 }

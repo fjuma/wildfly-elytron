@@ -62,6 +62,7 @@ import org.wildfly.security.auth.server.ModifiableSecurityRealm;
 import org.wildfly.security.auth.server.NameRewriter;
 import org.wildfly.security.auth.server.RealmIdentity;
 import org.wildfly.security.auth.server.RealmUnavailableException;
+import org.wildfly.security.auth.server.SecurityRealm;
 import org.wildfly.security.auth.server.SupportLevel;
 import org.wildfly.security.authz.AuthorizationIdentity;
 import org.wildfly.security.authz.MapAttributes;
@@ -69,6 +70,7 @@ import org.wildfly.security.credential.AlgorithmCredential;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.evidence.AlgorithmEvidence;
 import org.wildfly.security.evidence.Evidence;
+import org.wildfly.security.evidence.SecurityIdentityEvidence;
 
 /**
  * Security realm implementation backed by LDAP.
@@ -252,6 +254,9 @@ class LdapSecurityRealm implements ModifiableSecurityRealm {
     @Override
     public SupportLevel getEvidenceVerifySupport(final Class<? extends Evidence> evidenceType, final String algorithmName) throws RealmUnavailableException {
         Assert.checkNotNullParam("evidenceType", evidenceType);
+        if (SecurityIdentityEvidence.class.isAssignableFrom(evidenceType)) {
+            return SupportLevel.SUPPORTED;
+        }
         SupportLevel response = SupportLevel.UNSUPPORTED;
 
         for (EvidenceVerifier verifier : evidenceVerifiers) {
@@ -410,6 +415,9 @@ class LdapSecurityRealm implements ModifiableSecurityRealm {
             if (!exists()) {
                 return SupportLevel.UNSUPPORTED;
             }
+            if (SecurityIdentityEvidence.class.isAssignableFrom(evidenceType)) {
+                return SupportLevel.SUPPORTED;
+            }
 
             SupportLevel response = SupportLevel.UNSUPPORTED;
 
@@ -436,6 +444,9 @@ class LdapSecurityRealm implements ModifiableSecurityRealm {
             Assert.checkNotNullParam("evidence", evidence);
             if (!exists()) {
                 return false;
+            }
+            if (ModifiableRealmIdentity.super.checkEvidenceTrusted(evidence)) {
+                return true;
             }
 
             final Class<? extends Evidence> evidenceType = evidence.getClass();
@@ -472,6 +483,10 @@ class LdapSecurityRealm implements ModifiableSecurityRealm {
             }
 
             return exists;
+        }
+
+        public SecurityRealm getSecurityRealm() {
+            return LdapSecurityRealm.this;
         }
 
         private LdapIdentity getIdentity() throws RealmUnavailableException {

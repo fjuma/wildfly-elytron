@@ -63,6 +63,7 @@ import org.wildfly.security.auth.server.ModifiableSecurityRealm;
 import org.wildfly.security.auth.server.NameRewriter;
 import org.wildfly.security.auth.server.RealmIdentity;
 import org.wildfly.security.auth.server.RealmUnavailableException;
+import org.wildfly.security.auth.server.SecurityRealm;
 import org.wildfly.security.auth.server.SupportLevel;
 import org.wildfly.security.authz.Attributes;
 import org.wildfly.security.authz.AuthorizationIdentity;
@@ -73,6 +74,7 @@ import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.PublicKeyCredential;
 import org.wildfly.security.credential.X509CertificateChainPublicCredential;
 import org.wildfly.security.evidence.Evidence;
+import org.wildfly.security.evidence.SecurityIdentityEvidence;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactory;
 import org.wildfly.security.password.spec.BasicPasswordSpecEncoding;
@@ -257,7 +259,7 @@ public final class FileSystemSecurityRealm implements ModifiableSecurityRealm {
     }
 
     public SupportLevel getEvidenceVerifySupport(final Class<? extends Evidence> evidenceType, final String algorithmName) throws RealmUnavailableException {
-        return SupportLevel.POSSIBLY_SUPPORTED;
+        return SecurityIdentityEvidence.class.isAssignableFrom(evidenceType) ? SupportLevel.SUPPORTED : SupportLevel.POSSIBLY_SUPPORTED;
     }
 
     @FunctionalInterface
@@ -310,6 +312,9 @@ public final class FileSystemSecurityRealm implements ModifiableSecurityRealm {
 
         public SupportLevel getEvidenceVerifySupport(final Class<? extends Evidence> evidenceType, final String algorithmName) throws RealmUnavailableException {
             Assert.checkNotNullParam("evidenceType", evidenceType);
+            if (SecurityIdentityEvidence.class.isAssignableFrom(evidenceType)) {
+                return SupportLevel.SUPPORTED;
+            }
             List<Credential> credentials = loadCredentials();
             for (Credential credential : credentials) {
                 if (credential.canVerify(evidenceType, algorithmName)) {
@@ -321,6 +326,9 @@ public final class FileSystemSecurityRealm implements ModifiableSecurityRealm {
 
         public boolean verifyEvidence(final Evidence evidence) throws RealmUnavailableException {
             Assert.checkNotNullParam("evidence", evidence);
+            if (ModifiableRealmIdentity.super.checkEvidenceTrusted(evidence)) {
+                return true;
+            }
             List<Credential> credentials = loadCredentials();
             for (Credential credential : credentials) {
                 if (credential.canVerify(evidence)) {
@@ -564,6 +572,10 @@ public final class FileSystemSecurityRealm implements ModifiableSecurityRealm {
         public AuthorizationIdentity getAuthorizationIdentity() throws RealmUnavailableException {
             final LoadedIdentity loadedIdentity = loadIdentity(true, false);
             return loadedIdentity == null ? AuthorizationIdentity.EMPTY : AuthorizationIdentity.basicIdentity(loadedIdentity.getAttributes());
+        }
+
+        public SecurityRealm getSecurityRealm() {
+            return FileSystemSecurityRealm.this;
         }
 
         private LoadedIdentity loadIdentity(final boolean skipCredentials, final boolean skipAttributes) throws RealmUnavailableException {

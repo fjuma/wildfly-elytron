@@ -94,6 +94,10 @@ public interface ModifiableRealmIdentity extends RealmIdentity {
             return false;
         }
 
+        public SecurityRealm getSecurityRealm() {
+            return null;
+        }
+
         public void delete() throws RealmUnavailableException {
             // no operation
         }
