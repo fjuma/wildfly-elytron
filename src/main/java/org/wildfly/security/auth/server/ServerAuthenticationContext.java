@@ -41,6 +41,7 @@ import javax.security.sasl.RealmCallback;
 import org.wildfly.common.Assert;
 import org.wildfly.security.SecurityFactory;
 import org.wildfly.security._private.ElytronMessages;
+import org.wildfly.security.auth.AuthenticationException;
 import org.wildfly.security.auth.callback.AnonymousAuthorizationCallback;
 import org.wildfly.security.auth.callback.AuthenticationCompleteCallback;
 import org.wildfly.security.auth.callback.AvailableRealmsCallback;
@@ -48,6 +49,7 @@ import org.wildfly.security.auth.callback.CallbackUtil;
 import org.wildfly.security.auth.callback.CredentialCallback;
 import org.wildfly.security.auth.callback.EvidenceVerifyCallback;
 import org.wildfly.security.auth.callback.FastUnsupportedCallbackException;
+import org.wildfly.security.auth.callback.SecurityIdentityInflowCallback;
 import org.wildfly.security.auth.callback.PeerPrincipalCallback;
 import org.wildfly.security.auth.callback.SecurityIdentityCallback;
 import org.wildfly.security.auth.callback.ServerCredentialCallback;
@@ -59,6 +61,7 @@ import org.wildfly.security.auth.server.event.RealmFailedAuthenticationEvent;
 import org.wildfly.security.auth.server.event.RealmIdentityFailedAuthorizationEvent;
 import org.wildfly.security.auth.server.event.RealmIdentitySuccessfulAuthorizationEvent;
 import org.wildfly.security.auth.server.event.RealmSuccessfulAuthenticationEvent;
+import org.wildfly.security.authz.AuthorizationException;
 import org.wildfly.security.authz.AuthorizationIdentity;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.credential.PasswordCredential;
@@ -709,6 +712,42 @@ public final class ServerAuthenticationContext {
     }
 
     /**
+     * Attempt to inflow an established security identity. If the established security identity can be inflowed
+     * successfully, {@code true} is returned and the context is placed in the "complete" state with the inflowed
+     * authorization identity. Otherwise, {@code false} is returned and the state of the context is unchanged.
+     *
+     * @param securityIdentity the established security identity to inflow
+     * @return {@code true} if the established security identity could be inflowed successfully, {@code false} otherwise
+     * @throws IllegalStateException if authentication is already in progress
+     */
+    public boolean inflowSecurityIdentity(final SecurityIdentity securityIdentity) throws IllegalStateException {
+        State oldState = stateRef.get();
+        if (oldState.isDone()) {
+            throw ElytronMessages.log.alreadyComplete();
+        }
+        if (oldState.isStarted()) {
+            throw ElytronMessages.log.authenticationAlreadyInProgress();
+        }
+        try {
+            final SecurityIdentity inflowedSecurityIdentity = domain.inflowFromSecurityIdentity(securityIdentity, mechanismConfiguration);
+            final CompleteState completeState = new CompleteState(inflowedSecurityIdentity);
+            while (! stateRef.compareAndSet(oldState, completeState)) {
+                oldState = stateRef.get();
+                if (oldState.isDone()) {
+                    throw ElytronMessages.log.alreadyComplete();
+                }
+                if (oldState.isStarted()) {
+                    throw ElytronMessages.log.authenticationAlreadyInProgress();
+                }
+            }
+            return true;
+        } catch (AuthenticationException | AuthorizationException e) {
+            return false;
+        }
+    }
+
+
+    /**
      * Set the mechanism realm name to be equal to the given name.  If no mechanism realms are configured, the realm
      * name is ignored.
      *
@@ -865,6 +904,10 @@ public final class ServerAuthenticationContext {
 
                     evidenceVerifyCallback.setVerified(verifyEvidence(evidenceVerifyCallback.getEvidence()));
 
+                } else if (callback instanceof SecurityIdentityInflowCallback) {
+                    final SecurityIdentityInflowCallback securityIdentityInflowCallback = (SecurityIdentityInflowCallback) callback;
+                    securityIdentityInflowCallback.setInflowed(inflowSecurityIdentity(securityIdentityInflowCallback.getSecurityIdentity()));
+                    handleOne(callbacks, idx + 1);
                 } else if (callback instanceof AuthenticationCompleteCallback) {
                     if (! isDone()) {
                         if (((AuthenticationCompleteCallback) callback).succeeded()) {
