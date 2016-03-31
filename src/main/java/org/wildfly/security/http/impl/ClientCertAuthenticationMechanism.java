@@ -34,6 +34,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import org.wildfly.security._private.ElytronMessages;
 import org.wildfly.security.auth.callback.AuthenticationCompleteCallback;
 import org.wildfly.security.auth.callback.EvidenceVerifyCallback;
+import org.wildfly.security.auth.callback.SecurityIdentityInflowCallback;
 import org.wildfly.security.auth.callback.SecurityIdentityCallback;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.evidence.X509PeerCertificateChainEvidence;
@@ -69,9 +70,22 @@ public class ClientCertAuthenticationMechanism implements HttpServerAuthenticati
 
         SecurityIdentity securityIdentity = (SecurityIdentity) sslSession.getValue(SSL_SESSION_IDENTITY_KEY);
         if (securityIdentity != null) {
-            // TODO We need to check this is applicable for our domain and use a 'converted' value.
-            request.authenticationComplete(securityIdentity);
-            return;
+            final SecurityIdentityInflowCallback securityIdentityInflowCallback = new SecurityIdentityInflowCallback(securityIdentity);
+            try {
+                callbackHandler.handle(new Callback[] { securityIdentityInflowCallback });
+                if (securityIdentityInflowCallback.isInflowed()) {
+                    final SecurityIdentityCallback securityIdentityCallback = new SecurityIdentityCallback();
+                    callbackHandler.handle(new Callback[] { securityIdentityCallback });
+                    request.authenticationComplete(securityIdentityCallback.getSecurityIdentity());
+                    return;
+                } else {
+                    ElytronMessages.log.tracef("Unable to inflow established security identity for principal %s, falling back to regular authentication",
+                            securityIdentity.getPrincipal());
+                }
+            } catch (IOException e) {
+                throw new HttpAuthenticationException(e);
+            } catch (UnsupportedCallbackException e) {
+            }
         }
 
         final X509Certificate[] peerX509Certificates;
