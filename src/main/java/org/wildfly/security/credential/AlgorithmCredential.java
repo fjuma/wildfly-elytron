@@ -29,4 +29,8 @@ public interface AlgorithmCredential extends Credential {
      * @return the algorithm name
      */
     String getAlgorithm();
+
+    default <C> C castAs(Class<C> credentialType, String algorithmName) {
+        return credentialType.isInstance(this) && getAlgorithm().equals(algorithmName) ? credentialType.cast(this) : null;
+    }
 }

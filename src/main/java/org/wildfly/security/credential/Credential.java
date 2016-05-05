@@ -87,6 +87,29 @@ public interface Credential {
     }
 
     /**
+     * Cast this credential type if the type and algorithm matches.
+     *
+     * @param credentialType the credential type class to check
+     * @param algorithmName the name of the algorithm or {@code null} if any algorithm is acceptable
+     * @param <C> the credential type
+     * @return the credential cast as the target type, or {@code null} if the credential does not match the criteria
+     */
+    default <C> C castAs(Class<C> credentialType, String algorithmName) {
+        return credentialType.isInstance(this) && algorithmName == null ? credentialType.cast(this) : null;
+    }
+
+    /**
+     * Cast this credential type if the type and algorithm matches.
+     *
+     * @param credentialType the credential type class to check
+     * @param <C> the credential type
+     * @return the credential cast as the target type, or {@code null} if the credential does not match the criteria
+     */
+    default <C> C castAs(Class<C> credentialType) {
+        return credentialType.isInstance(this) ? credentialType.cast(this) : null;
+    }
+
+    /**
      * Convert a key store entry into a credential object.
      *
      * @param keyStoreEntry the key store entry to convert (must not be {@code null})
