@@ -53,6 +53,7 @@ import org.wildfly.security.auth.callback.CallbackUtil;
 import org.wildfly.security.auth.callback.CredentialCallback;
 import org.wildfly.security.auth.callback.EvidenceVerifyCallback;
 import org.wildfly.security.auth.callback.FastUnsupportedCallbackException;
+import org.wildfly.security.auth.callback.IdentityCredentialCallback;
 import org.wildfly.security.auth.callback.PeerPrincipalCallback;
 import org.wildfly.security.auth.callback.SSLSessionAuthorizationCallback;
 import org.wildfly.security.auth.callback.SecurityIdentityCallback;
@@ -291,7 +292,7 @@ public final class ServerAuthenticationContext {
     }
 
     ServerAuthenticationContext(final SecurityIdentity capturedIdentity, final MechanismConfiguration mechanismConfiguration) {
-        stateRef = new AtomicReference<>(new InitialState(capturedIdentity, mechanismConfiguration));
+        stateRef = new AtomicReference<>(new InitialState(capturedIdentity, mechanismConfiguration, IdentityCredentials.NONE, IdentityCredentials.NONE));
     }
 
     /**
@@ -580,6 +581,27 @@ public final class ServerAuthenticationContext {
     }
 
     /**
+     * Add a public credential to the identity being authenticated.
+     *
+     * @param credential the credential to add (must not be {@code null})
+     */
+    public void addPublicCredential(Credential credential) {
+        Assert.checkNotNullParam("credential", credential);
+        stateRef.get().addPublicCredential(credential);
+    }
+
+    /**
+     * Add a private credential to the identity being authenticated.  This credential may be forwarded to outbound
+     * authentication mechanisms.
+     *
+     * @param credential the credential to add (must not be {@code null})
+     */
+    public void addPrivateCredential(Credential credential) {
+        Assert.checkNotNullParam("credential", credential);
+        stateRef.get().addPrivateCredential(credential);
+    }
+
+    /**
      * Attempt to import the given security identity as a trusted identity.  If this method returns {@code true},
      * the context will be in an authorized state, and the new identity can be retrieved.
      *
@@ -775,6 +797,15 @@ public final class ServerAuthenticationContext {
                     }
                     setMechanismRealmName(mechanismRealm);
                     handleOne(callbacks, idx + 1);
+                } else if (callback instanceof IdentityCredentialCallback) {
+                    IdentityCredentialCallback icc = (IdentityCredentialCallback) callback;
+                    Credential credential = icc.getCredential();
+                    if (icc.isPrivate()) {
+                        addPrivateCredential(credential);
+                    } else {
+                        addPublicCredential(credential);
+                    }
+                    handleOne(callbacks, idx + 1);
                 } else {
                     CallbackUtil.unsupported(callback);
                 }
@@ -822,7 +853,7 @@ public final class ServerAuthenticationContext {
         return realmName != null ? realmName : defaultRealmName;
     }
 
-    NameAssignedState assignName(final SecurityIdentity capturedIdentity, final MechanismConfiguration mechanismConfiguration, final MechanismRealmConfiguration mechanismRealmConfiguration, String name, Principal originalPrincipal, final Evidence evidence) throws RealmUnavailableException {
+    NameAssignedState assignName(final SecurityIdentity capturedIdentity, final MechanismConfiguration mechanismConfiguration, final MechanismRealmConfiguration mechanismRealmConfiguration, String name, Principal originalPrincipal, final Evidence evidence, final IdentityCredentials privateCredentials, final IdentityCredentials publicCredentials) throws RealmUnavailableException {
         final SecurityDomain domain = capturedIdentity.getSecurityDomain();
         name = rewriteAll(name, mechanismRealmConfiguration.getPreRealmRewriter(), mechanismConfiguration.getPreRealmRewriter(), domain.getPreRealmRewriter());
         // principal *must* be captured at this point
@@ -834,10 +865,10 @@ public final class ServerAuthenticationContext {
         final SecurityRealm securityRealm = realmInfo.getSecurityRealm();
         final IdentityLocator.Builder locatorBuilder = IdentityLocator.builder();
         locatorBuilder.setName(name);
-        locatorBuilder.setPrincipal(principal);
+        locatorBuilder.setPrincipal(originalPrincipal);
         locatorBuilder.setEvidence(evidence);
         final RealmIdentity realmIdentity = securityRealm.getRealmIdentity(locatorBuilder.build());
-        return new NameAssignedState(capturedIdentity, realmInfo, realmIdentity, principal, mechanismConfiguration, mechanismRealmConfiguration);
+        return new NameAssignedState(capturedIdentity, realmInfo, realmIdentity, principal, mechanismConfiguration, mechanismRealmConfiguration, privateCredentials, publicCredentials);
     }
 
     abstract static class State {
@@ -928,6 +959,14 @@ public final class ServerAuthenticationContext {
         boolean isDone() {
             return false;
         }
+
+        void addPublicCredential(final Credential credential) {
+            throw log.noAuthenticationInProgress();
+        }
+
+        void addPrivateCredential(final Credential credential) {
+            throw log.noAuthenticationInProgress();
+        }
     }
 
     abstract class ActiveState extends State {
@@ -941,7 +980,7 @@ public final class ServerAuthenticationContext {
             // get the identity we are authorizing from
             final SecurityIdentity sourceIdentity = getSourceIdentity();
 
-            final NameAssignedState nameAssignedState = assignName(sourceIdentity, getMechanismConfiguration(), getMechanismRealmConfiguration(), authorizationId, null, null);
+            final NameAssignedState nameAssignedState = assignName(sourceIdentity, getMechanismConfiguration(), getMechanismRealmConfiguration(), authorizationId, null, null, IdentityCredentials.NONE, IdentityCredentials.NONE);
             final RealmIdentity realmIdentity = nameAssignedState.getRealmIdentity();
             boolean ok = false;
             try {
@@ -993,10 +1032,14 @@ public final class ServerAuthenticationContext {
     abstract class UnassignedState extends ActiveState {
         final SecurityIdentity capturedIdentity;
         final MechanismConfiguration mechanismConfiguration;
+        final IdentityCredentials privateCredentials;
+        final IdentityCredentials publicCredentials;
 
-        UnassignedState(final SecurityIdentity capturedIdentity, final MechanismConfiguration mechanismConfiguration) {
+        UnassignedState(final SecurityIdentity capturedIdentity, final MechanismConfiguration mechanismConfiguration, final IdentityCredentials privateCredentials, final IdentityCredentials publicCredentials) {
             this.capturedIdentity = capturedIdentity;
             this.mechanismConfiguration = mechanismConfiguration;
+            this.privateCredentials = privateCredentials;
+            this.publicCredentials = publicCredentials;
         }
 
         SecurityIdentity getSourceIdentity() {
@@ -1067,7 +1110,7 @@ public final class ServerAuthenticationContext {
             if (name == null) {
                 throw log.unrecognizedPrincipalType(importedPrincipal);
             }
-            final NameAssignedState nameState = assignName(sourceIdentity, mechanismConfiguration, getMechanismRealmConfiguration(), name, null, null);
+            final NameAssignedState nameState = assignName(sourceIdentity, mechanismConfiguration, getMechanismRealmConfiguration(), name, null, null, privateCredentials, publicCredentials);
             final RealmIdentity realmIdentity = nameState.getRealmIdentity();
             boolean ok = false;
             try {
@@ -1098,7 +1141,7 @@ public final class ServerAuthenticationContext {
         @Override
         void setName(final String name) throws RealmUnavailableException {
             final AtomicReference<State> stateRef = getStateRef();
-            final NameAssignedState newState = assignName(capturedIdentity, mechanismConfiguration, getMechanismRealmConfiguration(), name, null, null);
+            final NameAssignedState newState = assignName(capturedIdentity, mechanismConfiguration, getMechanismRealmConfiguration(), name, null, null, privateCredentials, publicCredentials);
             if (! stateRef.compareAndSet(this, newState)) {
                 newState.realmIdentity.dispose();
                 stateRef.get().setName(name);
@@ -1119,7 +1162,7 @@ public final class ServerAuthenticationContext {
             if (evidencePrincipal != null) {
                 String name = getSecurityDomain().getPrincipalDecoder().getName(evidencePrincipal);
                 if (name != null) {
-                    final NameAssignedState newState = assignName(getSourceIdentity(), mechanismConfiguration, mechanismRealmConfiguration, name, evidencePrincipal, evidence);
+                    final NameAssignedState newState = assignName(getSourceIdentity(), mechanismConfiguration, mechanismRealmConfiguration, name, evidencePrincipal, evidence, privateCredentials, publicCredentials);
                     if (! newState.verifyEvidence(evidence)) {
                         newState.realmIdentity.dispose();
                         return false;
@@ -1162,7 +1205,7 @@ public final class ServerAuthenticationContext {
                 realmIdentity.dispose();
                 return false;
             }
-            final NameAssignedState newState = new NameAssignedState(getSourceIdentity(), realmInfo, realmIdentity, resolvedPrincipal, mechanismConfiguration, mechanismRealmConfiguration);
+            final NameAssignedState newState = new NameAssignedState(getSourceIdentity(), realmInfo, realmIdentity, resolvedPrincipal, mechanismConfiguration, mechanismRealmConfiguration, privateCredentials, publicCredentials);
             if (! stateRef.compareAndSet(this, newState)) {
                 realmIdentity.dispose();
                 return stateRef.get().verifyEvidence(evidence);
@@ -1178,7 +1221,7 @@ public final class ServerAuthenticationContext {
                 throw log.unrecognizedPrincipalType(principal);
             }
             final AtomicReference<State> stateRef = getStateRef();
-            final NameAssignedState newState = assignName(capturedIdentity, mechanismConfiguration, getMechanismRealmConfiguration(), name, principal, null);
+            final NameAssignedState newState = assignName(capturedIdentity, mechanismConfiguration, getMechanismRealmConfiguration(), name, principal, null, privateCredentials, publicCredentials);
             if (! stateRef.compareAndSet(this, newState)) {
                 newState.realmIdentity.dispose();
                 stateRef.get().setName(name);
@@ -1189,12 +1232,20 @@ public final class ServerAuthenticationContext {
         MechanismConfiguration getMechanismConfiguration() {
             return mechanismConfiguration;
         }
+
+        IdentityCredentials getPrivateCredentials() {
+            return privateCredentials;
+        }
+
+        IdentityCredentials getPublicCredentials() {
+            return publicCredentials;
+        }
     }
 
     final class InitialState extends UnassignedState {
 
-        InitialState(final SecurityIdentity capturedIdentity, final MechanismConfiguration mechanismConfiguration) {
-            super(capturedIdentity, mechanismConfiguration);
+        InitialState(final SecurityIdentity capturedIdentity, final MechanismConfiguration mechanismConfiguration, final IdentityCredentials privateCredentials, final IdentityCredentials publicCredentials) {
+            super(capturedIdentity, mechanismConfiguration, privateCredentials, publicCredentials);
         }
 
         @Override
@@ -1209,7 +1260,7 @@ public final class ServerAuthenticationContext {
                 throw log.invalidMechRealmSelection(realmName);
             }
             final AtomicReference<State> stateRef = getStateRef();
-            if (! stateRef.compareAndSet(this, new RealmAssignedState(capturedIdentity, mechanismConfiguration, configuration))) {
+            if (! stateRef.compareAndSet(this, new RealmAssignedState(capturedIdentity, mechanismConfiguration, configuration, privateCredentials, publicCredentials))) {
                 stateRef.get().setMechanismRealmName(realmName);
             }
         }
@@ -1225,19 +1276,51 @@ public final class ServerAuthenticationContext {
                 return MechanismRealmConfiguration.NO_REALM;
             }
         }
+
+        @Override
+        void addPublicCredential(final Credential credential) {
+            final InitialState newState = new InitialState(getSourceIdentity(), getMechanismConfiguration(), getPrivateCredentials(), getPublicCredentials().withCredential(credential));
+            if (! stateRef.compareAndSet(this, newState)) {
+                stateRef.get().addPublicCredential(credential);
+            }
+        }
+
+        @Override
+        void addPrivateCredential(final Credential credential) {
+            final InitialState newState = new InitialState(getSourceIdentity(), getMechanismConfiguration(), getPrivateCredentials().withCredential(credential), getPublicCredentials());
+            if (! stateRef.compareAndSet(this, newState)) {
+                stateRef.get().addPublicCredential(credential);
+            }
+        }
     }
 
     final class RealmAssignedState extends UnassignedState {
         final MechanismRealmConfiguration mechanismRealmConfiguration;
 
-        RealmAssignedState(final SecurityIdentity capturedIdentity, final MechanismConfiguration mechanismConfiguration, final MechanismRealmConfiguration mechanismRealmConfiguration) {
-            super(capturedIdentity, mechanismConfiguration);
+        RealmAssignedState(final SecurityIdentity capturedIdentity, final MechanismConfiguration mechanismConfiguration, final MechanismRealmConfiguration mechanismRealmConfiguration, final IdentityCredentials privateCredentials, final IdentityCredentials publicCredentials) {
+            super(capturedIdentity, mechanismConfiguration, privateCredentials, publicCredentials);
             this.mechanismRealmConfiguration = mechanismRealmConfiguration;
         }
 
         @Override
         MechanismRealmConfiguration getMechanismRealmConfiguration() {
             return mechanismRealmConfiguration;
+        }
+
+        @Override
+        void addPublicCredential(final Credential credential) {
+            final RealmAssignedState newState = new RealmAssignedState(getSourceIdentity(), getMechanismConfiguration(), getMechanismRealmConfiguration(), getPrivateCredentials(), getPublicCredentials().withCredential(credential));
+            if (! stateRef.compareAndSet(this, newState)) {
+                stateRef.get().addPublicCredential(credential);
+            }
+        }
+
+        @Override
+        void addPrivateCredential(final Credential credential) {
+            final RealmAssignedState newState = new RealmAssignedState(getSourceIdentity(), getMechanismConfiguration(), getMechanismRealmConfiguration(), getPrivateCredentials().withCredential(credential), getPublicCredentials());
+            if (! stateRef.compareAndSet(this, newState)) {
+                stateRef.get().addPublicCredential(credential);
+            }
         }
     }
 
@@ -1248,14 +1331,18 @@ public final class ServerAuthenticationContext {
         private final Principal authenticationPrincipal;
         private final MechanismConfiguration mechanismConfiguration;
         private final MechanismRealmConfiguration mechanismRealmConfiguration;
+        private final IdentityCredentials privateCredentials;
+        private final IdentityCredentials publicCredentials;
 
-        NameAssignedState(final SecurityIdentity capturedIdentity, final RealmInfo realmInfo, final RealmIdentity realmIdentity, final Principal authenticationPrincipal, final MechanismConfiguration mechanismConfiguration, final MechanismRealmConfiguration mechanismRealmConfiguration) {
+        NameAssignedState(final SecurityIdentity capturedIdentity, final RealmInfo realmInfo, final RealmIdentity realmIdentity, final Principal authenticationPrincipal, final MechanismConfiguration mechanismConfiguration, final MechanismRealmConfiguration mechanismRealmConfiguration, final IdentityCredentials privateCredentials, final IdentityCredentials publicCredentials) {
             this.capturedIdentity = capturedIdentity;
             this.realmInfo = realmInfo;
             this.realmIdentity = realmIdentity;
             this.authenticationPrincipal = authenticationPrincipal;
             this.mechanismConfiguration = mechanismConfiguration;
             this.mechanismRealmConfiguration = mechanismRealmConfiguration;
+            this.privateCredentials = privateCredentials;
+            this.publicCredentials = publicCredentials;
         }
 
         @Override
@@ -1323,7 +1410,8 @@ public final class ServerAuthenticationContext {
 
             final PeerIdentity[] peerIdentities = capturedIdentity.getPeerIdentities();
 
-            final SecurityIdentity authorizedIdentity = Assert.assertNotNull(domain.transform(new SecurityIdentity(domain, authenticationPrincipal, realmInfo, authorizationIdentity, domain.getCategoryRoleMappers(), peerIdentities, capturedIdentity.getPublicCredentials(), capturedIdentity.getPrivateCredentialsPrivate())));
+            SecurityIdentity authorizedIdentity = Assert.assertNotNull(domain.transform(new SecurityIdentity(domain, authenticationPrincipal, realmInfo, authorizationIdentity, domain.getCategoryRoleMappers(), peerIdentities, capturedIdentity.getPublicCredentials(), capturedIdentity.getPrivateCredentialsPrivate())));
+            authorizedIdentity = authorizedIdentity.withPublicCredentials(publicCredentials).withPrivateCredentials(privateCredentials);
             if (requireLoginPermission) {
                 if (! authorizedIdentity.implies(LoginPermission.getInstance())) {
                     SecurityRealm.safeHandleRealmEvent(realmInfo.getSecurityRealm(), new RealmIdentityFailedAuthorizationEvent(authorizedIdentity.getAuthorizationIdentity(), authorizedIdentity.getPrincipal(), authenticationPrincipal));
@@ -1347,7 +1435,7 @@ public final class ServerAuthenticationContext {
             }
             final AtomicReference<State> stateRef = getStateRef();
             if (stateRef.compareAndSet(this, newState)) {
-                getRealmIdentity().dispose();
+                if (newState != authzState) getRealmIdentity().dispose();
                 return true;
             } else {
                 return stateRef.get().authorize(authorizationId, authorizeRunAs);
@@ -1408,6 +1496,22 @@ public final class ServerAuthenticationContext {
         boolean isSamePrincipal(final Principal principal) {
             String name = capturedIdentity.getSecurityDomain().getPrincipalDecoder().getName(principal);
             return isSameName(name);
+        }
+
+        @Override
+        void addPublicCredential(final Credential credential) {
+            final NameAssignedState newState = new NameAssignedState(getSourceIdentity(), getRealmInfo(), getRealmIdentity(), getAuthenticationPrincipal(), getMechanismConfiguration(), getMechanismRealmConfiguration(), privateCredentials, publicCredentials.withCredential(credential));
+            if (! stateRef.compareAndSet(this, newState)) {
+                stateRef.get().addPublicCredential(credential);
+            }
+        }
+
+        @Override
+        void addPrivateCredential(final Credential credential) {
+            final NameAssignedState newState = new NameAssignedState(getSourceIdentity(), getRealmInfo(), getRealmIdentity(), getAuthenticationPrincipal(), getMechanismConfiguration(), getMechanismRealmConfiguration(), privateCredentials.withCredential(credential), publicCredentials);
+            if (! stateRef.compareAndSet(this, newState)) {
+                stateRef.get().addPublicCredential(credential);
+            }
         }
 
         RealmInfo getRealmInfo() {
@@ -1576,12 +1680,13 @@ public final class ServerAuthenticationContext {
             return realmInfo;
         }
 
+        @Override
         boolean authorize(final boolean requireLoginPermission) throws RealmUnavailableException {
             return ! requireLoginPermission || authorizedIdentity.implies(LoginPermission.getInstance());
         }
 
         AuthorizedState authorizeRunAs(final String authorizationId, final boolean authorizeRunAs) throws RealmUnavailableException {
-            final NameAssignedState nameAssignedState = assignName(authorizedIdentity, getMechanismConfiguration(), getMechanismRealmConfiguration(), authorizationId, null, null);
+            final NameAssignedState nameAssignedState = assignName(authorizedIdentity, getMechanismConfiguration(), getMechanismRealmConfiguration(), authorizationId, null, null, IdentityCredentials.NONE, IdentityCredentials.NONE);
             final RealmIdentity realmIdentity = nameAssignedState.getRealmIdentity();
             boolean ok = false;
             try {
@@ -1602,6 +1707,24 @@ public final class ServerAuthenticationContext {
                 return newState;
             } finally {
                 if (! ok) realmIdentity.dispose();
+            }
+        }
+
+        @Override
+        void addPublicCredential(final Credential credential) {
+            final SecurityIdentity sourceIdentity = getSourceIdentity();
+            final AuthorizedState newState = new AuthorizedState(sourceIdentity.withPublicCredential(credential), getAuthenticationPrincipal(), getRealmInfo(), getMechanismConfiguration(), getMechanismRealmConfiguration());
+            if (! stateRef.compareAndSet(this, newState)) {
+                stateRef.get().addPublicCredential(credential);
+            }
+        }
+
+        @Override
+        void addPrivateCredential(final Credential credential) {
+            final SecurityIdentity sourceIdentity = getSourceIdentity();
+            final AuthorizedState newState = new AuthorizedState(sourceIdentity.withPrivateCredential(credential), getAuthenticationPrincipal(), getRealmInfo(), getMechanismConfiguration(), getMechanismRealmConfiguration());
+            if (! stateRef.compareAndSet(this, newState)) {
+                stateRef.get().addPrivateCredential(credential);
             }
         }
     }
@@ -1660,6 +1783,24 @@ public final class ServerAuthenticationContext {
                 return;
             }
             stateRef.get().fail();
+        }
+
+        @Override
+        void addPublicCredential(final Credential credential) {
+            final SecurityIdentity sourceIdentity = getSourceIdentity();
+            final AuthorizedAuthenticationState newState = new AuthorizedAuthenticationState(sourceIdentity.withPublicCredential(credential), getAuthenticationPrincipal(), getRealmInfo(), getRealmIdentity(), getMechanismRealmConfiguration(), getMechanismConfiguration());
+            if (! stateRef.compareAndSet(this, newState)) {
+                stateRef.get().addPublicCredential(credential);
+            }
+        }
+
+        @Override
+        void addPrivateCredential(final Credential credential) {
+            final SecurityIdentity sourceIdentity = getSourceIdentity();
+            final AuthorizedAuthenticationState newState = new AuthorizedAuthenticationState(sourceIdentity.withPrivateCredential(credential), getAuthenticationPrincipal(), getRealmInfo(), getRealmIdentity(), getMechanismRealmConfiguration(), getMechanismConfiguration());
+            if (! stateRef.compareAndSet(this, newState)) {
+                stateRef.get().addPrivateCredential(credential);
+            }
         }
     }
 
