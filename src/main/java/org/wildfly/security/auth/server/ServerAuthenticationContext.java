@@ -754,7 +754,7 @@ public final class ServerAuthenticationContext {
                         final X509Certificate[] x509Certificates;
                         try {
                             try {
-                                x509Certificates = X500.asX509CertificateArray((Object[]) sslSession.getPeerCertificates());
+                                x509Certificates = X500.asX509CertificateArray(sslSession.getPeerCertificates());
                                 final X509PeerCertificateChainEvidence evidence = new X509PeerCertificateChainEvidence(x509Certificates);
                                 final X500Principal principal = evidence.getPrincipal();
                                 if (principal != null) {
