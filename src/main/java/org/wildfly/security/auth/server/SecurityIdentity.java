@@ -43,6 +43,7 @@ import org.wildfly.security.ParametricPrivilegedAction;
 import org.wildfly.security.ParametricPrivilegedExceptionAction;
 import org.wildfly.security.auth.client.PeerIdentity;
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
+import org.wildfly.security.auth.principal.AnonymousPrincipal;
 import org.wildfly.security.auth.principal.NamePrincipal;
 import org.wildfly.security.authz.Attributes;
 import org.wildfly.security.authz.AuthorizationIdentity;
@@ -579,6 +580,15 @@ public final class SecurityIdentity implements PermissionVerifier, PermissionMap
      */
     public IdentityCredentials getPublicCredentials() {
         return publicCredentials;
+    }
+
+    /**
+     * Convenience method to determine if this identity is anonymous.
+     *
+     * @return {@code true} if the identity is anonymous, {@code false} otherwise
+     */
+    public boolean isAnonymous() {
+        return principal instanceof AnonymousPrincipal;
     }
 
     /**
