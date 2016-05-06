@@ -45,7 +45,7 @@ class SetPasswordAuthenticationConfiguration extends AuthenticationConfiguration
     private final Password password;
 
     SetPasswordAuthenticationConfiguration(final AuthenticationConfiguration parent, final Password password) {
-        super(parent.without(SetCallbackHandlerAuthenticationConfiguration.class).without(SetKeyStoreCredentialAuthenticationConfiguration.class).without(SetAnonymousAuthenticationConfiguration.class).without(SetGSSCredentialAuthenticationConfiguration.class).without(SetKeyManagerCredentialAuthenticationConfiguration.class).without(SetCertificateCredentialAuthenticationConfiguration.class));
+        super(parent.without(SetCallbackHandlerAuthenticationConfiguration.class).without(SetKeyStoreCredentialAuthenticationConfiguration.class).without(SetAnonymousAuthenticationConfiguration.class).without(SetGSSCredentialAuthenticationConfiguration.class).without(SetKeyManagerCredentialAuthenticationConfiguration.class).without(SetCertificateCredentialAuthenticationConfiguration.class).without(SetForwardAuthenticationConfiguration.class));
         this.password = password;
     }
 

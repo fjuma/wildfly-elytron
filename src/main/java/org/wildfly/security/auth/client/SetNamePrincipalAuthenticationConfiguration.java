@@ -35,14 +35,14 @@ class SetNamePrincipalAuthenticationConfiguration extends AuthenticationConfigur
     private final NamePrincipal principal;
 
     SetNamePrincipalAuthenticationConfiguration(final AuthenticationConfiguration parent, final NamePrincipal principal) {
-        super(parent.without(SetCallbackHandlerAuthenticationConfiguration.class).without(SetAnonymousAuthenticationConfiguration.class));
+        super(parent.without(SetCallbackHandlerAuthenticationConfiguration.class).without(SetAnonymousAuthenticationConfiguration.class).without(SetForwardAuthenticationConfiguration.class));
         this.principal = principal;
     }
 
     void handleCallback(final Callback[] callbacks, final int index) throws UnsupportedCallbackException, IOException {
         Callback callback = callbacks[index];
         if (callback instanceof NameCallback) {
-            ((NameCallback) callback).setName(principal.getName());
+            ((NameCallback) callback).setName(doRewriteUser(principal.getName()));
         } else {
             super.handleCallback(callbacks, index);
         }
