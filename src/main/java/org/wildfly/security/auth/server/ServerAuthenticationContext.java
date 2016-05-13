@@ -1466,6 +1466,7 @@ public final class ServerAuthenticationContext {
                 stateRef.get().fail();
                 return;
             }
+            SecurityRealm.safeHandleRealmEvent(getRealmInfo().getSecurityRealm(), new RealmFailedAuthenticationEvent(realmIdentity, null, null));
             realmIdentity.dispose();
         }
 
@@ -1767,7 +1768,7 @@ public final class ServerAuthenticationContext {
             final SecurityIdentity authorizedIdentity = getSourceIdentity();
             final AtomicReference<State> stateRef = getStateRef();
             if (stateRef.compareAndSet(this, new CompleteState(authorizedIdentity))) {
-                SecurityRealm.safeHandleRealmEvent(getRealmInfo().getSecurityRealm(), new RealmSuccessfulAuthenticationEvent(realmIdentity, authorizedIdentity.getAuthorizationIdentity(), null, null));
+                SecurityRealm.safeHandleRealmEvent(getRealmInfo().getSecurityRealm(), new RealmSuccessfulAuthenticationEvent(realmIdentity, authorizedIdentity.getAuthorizationIdentity(), authorizedIdentity.getPublicCredentials(), null));
                 realmIdentity.dispose();
                 return;
             }

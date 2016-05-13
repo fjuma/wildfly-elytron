@@ -18,6 +18,8 @@
 
 package org.wildfly.security.auth.server.event;
 
+import org.wildfly.security.auth.server.RealmUnavailableException;
+
 /**
  * An event which is potentially relevant to a realm.
  *
@@ -39,8 +41,9 @@ public abstract class RealmEvent {
      * @param <P> the visitor parameter type
      * @param <R> the visitor return type
      * @return the value returned from the visitor {@code handleXxx} method
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
      */
-    public <P, R> R accept(RealmEventVisitor<P, R> visitor, P param) {
+    public <P, R> R accept(RealmEventVisitor<P, R> visitor, P param) throws RealmUnavailableException {
         return visitor.handleUnknownEvent(this, param);
     }
 }
