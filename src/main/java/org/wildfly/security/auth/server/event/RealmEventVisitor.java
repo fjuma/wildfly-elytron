@@ -18,6 +18,8 @@
 
 package org.wildfly.security.auth.server.event;
 
+import org.wildfly.security.auth.server.RealmUnavailableException;
+
 /**
  * A class which provides an easy way to handle realm events based on the type of the event.  The visitor can accept
  * a parameter and return a value.  To invoke the appropriate visitor method based on the event type, use the
@@ -51,8 +53,9 @@ public abstract class RealmEventVisitor<P, R> {
      * @param event the realm event
      * @param param the visitor parameter
      * @return the visitor return value
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
      */
-    public R handleAuthenticationEvent(final RealmAuthenticationEvent event, final P param) {
+    public R handleAuthenticationEvent(final RealmAuthenticationEvent event, final P param) throws RealmUnavailableException {
         return handleUnknownEvent(event, param);
     }
 
@@ -62,8 +65,9 @@ public abstract class RealmEventVisitor<P, R> {
      * @param event the realm event
      * @param param the visitor parameter
      * @return the visitor return value
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
      */
-    public R handleAbandonedAuthenticationEvent(final RealmAbandonedAuthenticationEvent event, final P param) {
+    public R handleAbandonedAuthenticationEvent(final RealmAbandonedAuthenticationEvent event, final P param) throws RealmUnavailableException {
         return handleAuthenticationEvent(event, param);
     }
 
@@ -73,8 +77,9 @@ public abstract class RealmEventVisitor<P, R> {
      * @param event the realm event
      * @param param the visitor parameter
      * @return the visitor return value
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
      */
-    public R handleDefiniteOutcomeAuthenticationEvent(final RealmDefiniteOutcomeAuthenticationEvent event, final P param) {
+    public R handleDefiniteOutcomeAuthenticationEvent(final RealmDefiniteOutcomeAuthenticationEvent event, final P param) throws RealmUnavailableException {
         return handleAuthenticationEvent(event, param);
     }
 
@@ -84,8 +89,9 @@ public abstract class RealmEventVisitor<P, R> {
      * @param event the realm event
      * @param param the visitor parameter
      * @return the visitor return value
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
      */
-    public R handleSuccessfulAuthenticationEvent(final RealmSuccessfulAuthenticationEvent event, final P param) {
+    public R handleSuccessfulAuthenticationEvent(final RealmSuccessfulAuthenticationEvent event, final P param) throws RealmUnavailableException {
         return handleDefiniteOutcomeAuthenticationEvent(event, param);
     }
 
@@ -95,8 +101,9 @@ public abstract class RealmEventVisitor<P, R> {
      * @param event the realm event
      * @param param the visitor parameter
      * @return the visitor return value
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
      */
-    public R handleFailedAuthenticationEvent(final RealmFailedAuthenticationEvent event, final P param) {
+    public R handleFailedAuthenticationEvent(final RealmFailedAuthenticationEvent event, final P param) throws RealmUnavailableException {
         return handleDefiniteOutcomeAuthenticationEvent(event, param);
     }
 

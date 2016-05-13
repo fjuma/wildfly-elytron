@@ -62,7 +62,7 @@ public final class AuthenticationCompleteCallbackSaslClientFactory extends Abstr
                     }
                     return response;
                 } catch (SaslException | RuntimeException | Error e) {
-                    if (isComplete() && complete.compareAndSet(false, true)) try {
+                    if (complete.compareAndSet(false, true)) try {
                         cbh.handle(new Callback[] { AuthenticationCompleteCallback.FAILED });
                     } catch (Throwable ignored) {
                     }

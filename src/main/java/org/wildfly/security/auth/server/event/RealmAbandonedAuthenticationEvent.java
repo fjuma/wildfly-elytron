@@ -19,6 +19,7 @@
 package org.wildfly.security.auth.server.event;
 
 import org.wildfly.security.auth.server.RealmIdentity;
+import org.wildfly.security.auth.server.RealmUnavailableException;
 
 /**
  * An event indicating that authentication was abandoned before it could complete.
@@ -32,10 +33,10 @@ public final class RealmAbandonedAuthenticationEvent extends RealmAuthentication
      * @param realmIdentity the realm identity of the authentication event
      */
     public RealmAbandonedAuthenticationEvent(final RealmIdentity realmIdentity) {
-        super(realmIdentity);
+        super(realmIdentity, null, null);
     }
 
-    public <P, R> R accept(final RealmEventVisitor<P, R> visitor, final P param) {
+    public <P, R> R accept(final RealmEventVisitor<P, R> visitor, final P param) throws RealmUnavailableException {
         return visitor.handleAbandonedAuthenticationEvent(this, param);
     }
 

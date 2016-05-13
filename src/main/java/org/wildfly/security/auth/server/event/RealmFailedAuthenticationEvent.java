@@ -19,6 +19,7 @@
 package org.wildfly.security.auth.server.event;
 
 import org.wildfly.security.auth.server.RealmIdentity;
+import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.evidence.Evidence;
 
@@ -40,7 +41,7 @@ public final class RealmFailedAuthenticationEvent extends RealmDefiniteOutcomeAu
         super(realmIdentity, credential, evidence);
     }
 
-    public <P, R> R accept(final RealmEventVisitor<P, R> visitor, final P param) {
+    public <P, R> R accept(final RealmEventVisitor<P, R> visitor, final P param) throws RealmUnavailableException {
         return visitor.handleFailedAuthenticationEvent(this, param);
     }
 

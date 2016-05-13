@@ -19,6 +19,9 @@
 package org.wildfly.security.auth.server.event;
 
 import org.wildfly.security.auth.server.RealmIdentity;
+import org.wildfly.security.auth.server.RealmUnavailableException;
+import org.wildfly.security.credential.Credential;
+import org.wildfly.security.evidence.Evidence;
 
 /**
  * A realm authentication event.  The realm identity may be destroyed at some point after the event is handled.
@@ -28,14 +31,20 @@ import org.wildfly.security.auth.server.RealmIdentity;
 public abstract class RealmAuthenticationEvent extends RealmEvent {
 
     private final RealmIdentity realmIdentity;
+    private final Credential credential;
+    private final Evidence evidence;
 
     /**
      * Construct a new instance.
      *
      * @param realmIdentity the realm identity of the authentication event
+     * @param credential the actual credential value from the authentication (may be {@code null} if not known)
+     * @param evidence the evidence used to authenticate (may be {@code null} if not known or not applicable)
      */
-    protected RealmAuthenticationEvent(final RealmIdentity realmIdentity) {
+    protected RealmAuthenticationEvent(final RealmIdentity realmIdentity, final Credential credential, final Evidence evidence) {
         this.realmIdentity = realmIdentity;
+        this.credential = credential;
+        this.evidence = evidence;
     }
 
     /**
@@ -47,7 +56,25 @@ public abstract class RealmAuthenticationEvent extends RealmEvent {
         return realmIdentity;
     }
 
-    public <P, R> R accept(final RealmEventVisitor<P, R> visitor, final P param) {
+    /**
+     * Get the actual credential used.
+     *
+     * @return the actual credential used, or {@code null} if it is not known or none was used
+     */
+    public Credential getCredential() {
+        return credential;
+    }
+
+    /**
+     * Get the actual credential guess used.
+     *
+     * @return the actual credential guess used, or {@code null} if there was no guess, it is not known, or no credential was used
+     */
+    public Evidence getEvidence() {
+        return evidence;
+    }
+
+    public <P, R> R accept(final RealmEventVisitor<P, R> visitor, final P param) throws RealmUnavailableException {
         return visitor.handleAuthenticationEvent(this, param);
     }
 

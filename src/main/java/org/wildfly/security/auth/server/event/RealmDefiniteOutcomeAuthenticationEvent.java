@@ -19,6 +19,7 @@
 package org.wildfly.security.auth.server.event;
 
 import org.wildfly.security.auth.server.RealmIdentity;
+import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.evidence.Evidence;
 
@@ -28,8 +29,6 @@ import org.wildfly.security.evidence.Evidence;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 abstract class RealmDefiniteOutcomeAuthenticationEvent extends RealmAuthenticationEvent {
-    private final Credential credential;
-    private final Evidence evidence;
 
     /**
      * Construct a new instance.
@@ -39,30 +38,10 @@ abstract class RealmDefiniteOutcomeAuthenticationEvent extends RealmAuthenticati
      * @param evidence the evidence used to authenticate (may be {@code null} if not known or not applicable)
      */
     protected RealmDefiniteOutcomeAuthenticationEvent(final RealmIdentity realmIdentity, final Credential credential, final Evidence evidence) {
-        super(realmIdentity);
-        this.credential = credential;
-        this.evidence = evidence;
+        super(realmIdentity, credential, evidence);
     }
 
-    /**
-     * Get the actual credential used.
-     *
-     * @return the actual credential used, or {@code null} if it is not known or none was used
-     */
-    public Credential getCredential() {
-        return credential;
-    }
-
-    /**
-     * Get the actual credential guess used.
-     *
-     * @return the actual credential guess used, or {@code null} if there was no guess, it is not known, or no credential was used
-     */
-    public Evidence getEvidence() {
-        return evidence;
-    }
-
-    public <P, R> R accept(final RealmEventVisitor<P, R> visitor, final P param) {
+    public <P, R> R accept(final RealmEventVisitor<P, R> visitor, final P param) throws RealmUnavailableException {
         return visitor.handleDefiniteOutcomeAuthenticationEvent(this, param);
     }
 

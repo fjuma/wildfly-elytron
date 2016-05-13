@@ -18,6 +18,8 @@
 
 package org.wildfly.security.auth.server;
 
+import org.wildfly.security.auth.server.event.RealmEvent;
+
 /**
  * A realm which can be modified.
  *
@@ -47,4 +49,8 @@ public interface ModifiableSecurityRealm extends SecurityRealm {
      * @throws RealmUnavailableException if the realm fails for some reason
      */
     CloseableIterator<ModifiableRealmIdentity> getRealmIdentityIterator() throws RealmUnavailableException;
+
+    default void handleRealmEvent(RealmEvent event) throws RealmUnavailableException {
+        event.accept(new ModifiableRealmEventVisitor(), null);
+    }
 }

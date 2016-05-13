@@ -473,6 +473,9 @@ public interface ElytronMessages extends BasicLogger {
     @Message(id = 1112, value = "Authentication cannot succeed; not authorized")
     IllegalStateException cannotSucceedNotAuthorized();
 
+    @Message(id = 1113, value = "Unable to update password, the security realm is not modifiable")
+    RealmUnavailableException realmIsNotModifiable();
+
     /* keystore package */
 
     @Message(id = 2001, value = "Invalid key store entry password for alias \"%s\"")

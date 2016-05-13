@@ -50,7 +50,7 @@ import javax.security.sasl.SaslException;
 
 import org.wildfly.common.Assert;
 import org.wildfly.security.auth.callback.CredentialCallback;
-import org.wildfly.security.auth.callback.CredentialUpdateCallback;
+import org.wildfly.security.auth.callback.IdentityCredentialCallback;
 import org.wildfly.security.auth.callback.TimeoutCallback;
 import org.wildfly.security.auth.callback.TimeoutUpdateCallback;
 import org.wildfly.security.credential.PasswordCredential;
@@ -256,7 +256,7 @@ final class OTPSaslServer extends AbstractSaslServer {
 
     /**
      * Verify that the result of passing the user's password through the hash function once matches
-     * the stored password and then update the stored password.
+     * the stored password.
      *
      * @param currentHash the current OTP hash
      * @param newAlgorithm the new OTP algorithm
@@ -268,21 +268,33 @@ final class OTPSaslServer extends AbstractSaslServer {
         if (! Arrays.equals(previousHash, hashAndFold(previousAlgorithm, currentHash))) {
             throw log.mechPasswordNotVerified(getMechanismName()).toSaslException();
         }
-        updateCredential(newAlgorithm, newPasswordSpec);
+
+        // Verification succeeded, inform the callback handler of the new credential value so the stored value can be updated
+        try {
+            final PasswordFactory passwordFactory = PasswordFactory.getInstance(newAlgorithm);
+            final OneTimePassword newPassword = (OneTimePassword) passwordFactory.generatePassword(newPasswordSpec);
+            handleCallbacks(new IdentityCredentialCallback(new PasswordCredential(newPassword), false));
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw log.mechUnableToUpdatePassword(getMechanismName(), userName).toSaslException();
+        }
         updateTimeout(0);
         locked = false;
     }
 
-    private void updateCredential(final String newAlgorithm, final OneTimePasswordSpec newPasswordSpec) throws SaslException {
+    // FJ REMOVE
+    /*private void updateCredential(final String newAlgorithm, final OneTimePasswordSpec newPasswordSpec) throws SaslException {
         try {
+            // Verification succeeded, inform the callback handler of the actual credential value so
+            // the stored value can be updated
             final PasswordFactory passwordFactory = PasswordFactory.getInstance(newAlgorithm);
             final OneTimePassword newPassword = (OneTimePassword) passwordFactory.generatePassword(newPasswordSpec);
-            final CredentialUpdateCallback credentialUpdateCallback = new CredentialUpdateCallback(new PasswordCredential(newPassword));
-            handleCallbacks(nameCallback, credentialUpdateCallback);
+            // FJ final CredentialUpdateCallback credentialUpdateCallback = new CredentialUpdateCallback(new PasswordCredential(newPassword));
+            // FJ handleCallbacks(nameCallback, credentialUpdateCallback);
+            handleCallbacks(new IdentityCredentialCallback(new PasswordCredential(newPassword), true));
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw log.mechUnableToUpdatePassword(getMechanismName(), userName).toSaslException();
         }
-    }
+    }*/
 
     private void updateTimeout(final long newTimeout) throws SaslException {
         final TimeoutUpdateCallback timeoutUpdateCallback = new TimeoutUpdateCallback(newTimeout);
