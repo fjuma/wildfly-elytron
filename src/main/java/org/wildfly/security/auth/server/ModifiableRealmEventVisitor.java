@@ -23,6 +23,8 @@ import java.util.Collections;
 import org.wildfly.security._private.ElytronMessages;
 import org.wildfly.security.auth.server.event.RealmAuthenticationEvent;
 import org.wildfly.security.auth.server.event.RealmEventVisitor;
+import org.wildfly.security.authz.Attributes;
+import org.wildfly.security.authz.MapAttributes;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.password.Password;
@@ -54,6 +56,13 @@ public class ModifiableRealmEventVisitor extends RealmEventVisitor<Void, Void> {
                 final ModifiableRealmIdentity modifiableRealmIdentity = (ModifiableRealmIdentity) realmIdentity;
                 // TODO: Is there a way to just replace a single credential instead?
                 modifiableRealmIdentity.setCredentials(Collections.singletonList(credential));
+
+                // Need to reset the stored timeout
+                Attributes attributes = modifiableRealmIdentity.getAttributes();
+                MapAttributes newAttributes = new MapAttributes(attributes);
+                newAttributes.removeFirst(RealmIdentity.TIMEOUT_ATTRIBUTE);
+                newAttributes.addFirst(RealmIdentity.TIMEOUT_ATTRIBUTE, String.valueOf(0));
+                modifiableRealmIdentity.setAttributes(newAttributes);
             }
         }
         return null;

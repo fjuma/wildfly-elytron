@@ -59,6 +59,7 @@ import org.wildfly.security.auth.callback.SSLSessionAuthorizationCallback;
 import org.wildfly.security.auth.callback.SecurityIdentityCallback;
 import org.wildfly.security.auth.callback.ServerCredentialCallback;
 import org.wildfly.security.auth.callback.SocketAddressCallback;
+import org.wildfly.security.auth.callback.TimeoutCallback;
 import org.wildfly.security.auth.client.PeerIdentity;
 import org.wildfly.security.auth.permission.LoginPermission;
 import org.wildfly.security.auth.permission.RunAsPrincipalPermission;
@@ -566,6 +567,18 @@ public final class ServerAuthenticationContext {
     }
 
     /**
+     * Get the value of the given attribute at the given position.
+     *
+     * @param key the attribute name
+     * @param idx the index
+     * @return the attribute value
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
+     */
+    String getAttribute(String key, int idx) throws RealmUnavailableException {
+        return stateRef.get().getAttribute(key, idx);
+    }
+
+    /**
      * Verify the given evidence.
      *
      * @param evidence the evidence to verify
@@ -806,6 +819,12 @@ public final class ServerAuthenticationContext {
                         addPublicCredential(credential);
                     }
                     handleOne(callbacks, idx + 1);
+                } else if (callback instanceof TimeoutCallback) {
+                    final TimeoutCallback timeoutCallback = (TimeoutCallback) callback;
+                    final String timeoutStr = getAttribute(RealmIdentity.TIMEOUT_ATTRIBUTE, 0);
+                    long timeout = (timeoutStr == null) ? 0 : Long.valueOf(timeoutStr);
+                    timeoutCallback.setTimeout(timeout);
+                    handleOne(callbacks, idx + 1);
                 } else {
                     CallbackUtil.unsupported(callback);
                 }
@@ -909,6 +928,10 @@ public final class ServerAuthenticationContext {
         }
 
         <C extends Credential> C getCredential(Class<C> credentialType, String algorithmName) throws RealmUnavailableException {
+            throw log.noAuthenticationInProgress();
+        }
+
+        String getAttribute(String key, int idx) throws RealmUnavailableException {
             throw log.noAuthenticationInProgress();
         }
 
@@ -1399,6 +1422,11 @@ public final class ServerAuthenticationContext {
         }
 
         @Override
+        String getAttribute(String key, int idx) throws RealmUnavailableException {
+            return realmIdentity.getAttributes().get(key, idx);
+        }
+
+        @Override
         boolean authorize(final boolean requireLoginPermission) throws RealmUnavailableException {
             AuthorizedAuthenticationState newState = doAuthorization(requireLoginPermission);
             if (newState == null) {
@@ -1582,6 +1610,11 @@ public final class ServerAuthenticationContext {
 
         @Override
         <C extends Credential> C getCredential(final Class<C> credentialType, final String algorithmName) throws RealmUnavailableException {
+            return null;
+        }
+
+        @Override
+        String getAttribute(String key, int idx) throws RealmUnavailableException {
             return null;
         }
 
@@ -1771,6 +1804,11 @@ public final class ServerAuthenticationContext {
         @Override
         <C extends Credential> C getCredential(final Class<C> credentialType, String algorithmName) throws RealmUnavailableException {
             return realmIdentity.getCredential(credentialType, algorithmName);
+        }
+
+        @Override
+        String getAttribute(String key, int idx) throws RealmUnavailableException {
+            return realmIdentity.getAttributes().get(key, idx);
         }
 
         @Override

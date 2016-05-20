@@ -41,6 +41,8 @@ import org.wildfly.security.evidence.Evidence;
  */
 public interface RealmIdentity {
 
+    static final String TIMEOUT_ATTRIBUTE = "timeout";
+
     /**
      * Get the decoded principal for this realm identity, if any.  This method <em>may</em> return the principal object
      * which was passed in as a parameter to {@link SecurityRealm#getRealmIdentity(IdentityLocator)}, but
