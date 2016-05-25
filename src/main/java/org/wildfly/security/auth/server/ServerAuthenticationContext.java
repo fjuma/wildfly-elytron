@@ -51,6 +51,7 @@ import org.wildfly.security.auth.callback.AuthenticationCompleteCallback;
 import org.wildfly.security.auth.callback.AvailableRealmsCallback;
 import org.wildfly.security.auth.callback.CallbackUtil;
 import org.wildfly.security.auth.callback.CredentialCallback;
+import org.wildfly.security.auth.callback.CredentialUpdateCallback;
 import org.wildfly.security.auth.callback.EvidenceVerifyCallback;
 import org.wildfly.security.auth.callback.FastUnsupportedCallbackException;
 import org.wildfly.security.auth.callback.PeerPrincipalCallback;
@@ -605,6 +606,17 @@ public final class ServerAuthenticationContext {
         stateRef.get().setMechanismRealmName(realmName);
     }
 
+    /**
+     * Update the credential for the current authentication identity.
+     *
+     * @param credential the new credential (must not be {@code null})
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
+     */
+    public void updateCredential(Credential credential) throws RealmUnavailableException {
+        Assert.checkNotNullParam("credential", credential);
+        stateRef.get().updateCredential(credential);
+    }
+
     AtomicReference<State> getStateRef() {
         return stateRef;
     }
@@ -775,6 +787,10 @@ public final class ServerAuthenticationContext {
                     }
                     setMechanismRealmName(mechanismRealm);
                     handleOne(callbacks, idx + 1);
+                } else if (callback instanceof CredentialUpdateCallback) {
+                    final CredentialUpdateCallback credentialUpdateCallback = (CredentialUpdateCallback) callback;
+                    updateCredential(credentialUpdateCallback.getCredential());
+                    handleOne(callbacks, idx + 1);
                 } else {
                     CallbackUtil.unsupported(callback);
                 }
@@ -914,6 +930,10 @@ public final class ServerAuthenticationContext {
         }
 
         void setMechanismRealmName(String name) {
+            throw log.noAuthenticationInProgress();
+        }
+
+        void updateCredential(Credential credential) throws RealmUnavailableException {
             throw log.noAuthenticationInProgress();
         }
 
@@ -1367,6 +1387,11 @@ public final class ServerAuthenticationContext {
         }
 
         @Override
+        void updateCredential(Credential credential) throws RealmUnavailableException {
+            realmIdentity.updateCredential(credential);
+        }
+
+        @Override
         void succeed() {
             throw log.cannotSucceedNotAuthorized();
         }
@@ -1506,6 +1531,11 @@ public final class ServerAuthenticationContext {
         }
 
         @Override
+        void updateCredential(Credential credential) throws RealmUnavailableException {
+            // no-op
+        }
+
+        @Override
         void succeed() {
             final AtomicReference<State> stateRef = getStateRef();
             if (! stateRef.compareAndSet(this, new CompleteState(anonymousIdentity))) {
@@ -1637,6 +1667,11 @@ public final class ServerAuthenticationContext {
         @Override
         RealmIdentity getRealmIdentity() {
             return realmIdentity;
+        }
+
+        @Override
+        void updateCredential(Credential credential) throws RealmUnavailableException {
+            realmIdentity.updateCredential(credential);
         }
 
         @Override
