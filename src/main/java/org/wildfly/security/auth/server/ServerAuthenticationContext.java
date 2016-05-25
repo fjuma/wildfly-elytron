@@ -59,6 +59,8 @@ import org.wildfly.security.auth.callback.SSLSessionAuthorizationCallback;
 import org.wildfly.security.auth.callback.SecurityIdentityCallback;
 import org.wildfly.security.auth.callback.ServerCredentialCallback;
 import org.wildfly.security.auth.callback.SocketAddressCallback;
+import org.wildfly.security.auth.callback.TimeoutCallback;
+import org.wildfly.security.auth.callback.TimeoutUpdateCallback;
 import org.wildfly.security.auth.client.PeerIdentity;
 import org.wildfly.security.auth.permission.LoginPermission;
 import org.wildfly.security.auth.permission.RunAsPrincipalPermission;
@@ -68,7 +70,9 @@ import org.wildfly.security.auth.server.event.RealmFailedAuthenticationEvent;
 import org.wildfly.security.auth.server.event.RealmIdentityCredentialUpdateEvent;
 import org.wildfly.security.auth.server.event.RealmIdentityFailedAuthorizationEvent;
 import org.wildfly.security.auth.server.event.RealmIdentitySuccessfulAuthorizationEvent;
+import org.wildfly.security.auth.server.event.RealmIdentityTimeoutUpdateEvent;
 import org.wildfly.security.auth.server.event.RealmSuccessfulAuthenticationEvent;
+import org.wildfly.security.authz.Attributes;
 import org.wildfly.security.authz.AuthorizationIdentity;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.credential.PasswordCredential;
@@ -567,6 +571,16 @@ public final class ServerAuthenticationContext {
     }
 
     /**
+     * Get the attributes for the current authentication identity.
+     *
+     * @return the attributes
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
+     */
+    Attributes getAttributes() throws RealmUnavailableException {
+        return stateRef.get().getAttributes();
+    }
+
+    /**
      * Verify the given evidence.
      *
      * @param evidence the evidence to verify
@@ -615,6 +629,15 @@ public final class ServerAuthenticationContext {
     public void updateCredential(Credential credential) {
         Assert.checkNotNullParam("credential", credential);
         stateRef.get().updateCredential(credential);
+    }
+
+    /**
+     * Update the timeout attribute for the current authentication identity.
+     *
+     * @param timeout the new timeout
+     */
+    public void updateTimeout(long timeout) {
+        stateRef.get().updateTimeout(timeout);
     }
 
     AtomicReference<State> getStateRef() {
@@ -791,6 +814,16 @@ public final class ServerAuthenticationContext {
                     final CredentialUpdateCallback credentialUpdateCallback = (CredentialUpdateCallback) callback;
                     updateCredential(credentialUpdateCallback.getCredential());
                     handleOne(callbacks, idx + 1);
+                } else if (callback instanceof TimeoutCallback) {
+                    final TimeoutCallback timeoutCallback = (TimeoutCallback) callback;
+                    final String timeoutStr = getAttributes().getFirst(RealmIdentity.TIMEOUT_ATTRIBUTE);
+                    final long timeout = (timeoutStr == null) ? 0 : Long.valueOf(timeoutStr);
+                    timeoutCallback.setTimeout(timeout);
+                    handleOne(callbacks, idx + 1);
+                } else if (callback instanceof TimeoutUpdateCallback) {
+                    final TimeoutUpdateCallback timeoutUpdateCallback = (TimeoutUpdateCallback) callback;
+                    updateTimeout(timeoutUpdateCallback.getTimeout());
+                    handleOne(callbacks, idx + 1);
                 } else {
                     CallbackUtil.unsupported(callback);
                 }
@@ -893,6 +926,10 @@ public final class ServerAuthenticationContext {
             throw log.noAuthenticationInProgress();
         }
 
+        Attributes getAttributes() throws RealmUnavailableException {
+            throw log.noAuthenticationInProgress();
+        }
+
         boolean verifyEvidence(final Evidence evidence) throws RealmUnavailableException {
             throw log.noAuthenticationInProgress();
         }
@@ -934,6 +971,10 @@ public final class ServerAuthenticationContext {
         }
 
         void updateCredential(Credential credential) {
+            throw log.noAuthenticationInProgress();
+        }
+
+        void updateTimeout(long timeout) {
             throw log.noAuthenticationInProgress();
         }
 
@@ -1319,6 +1360,11 @@ public final class ServerAuthenticationContext {
         }
 
         @Override
+        Attributes getAttributes() throws RealmUnavailableException {
+            return realmIdentity.getAttributes();
+        }
+
+        @Override
         boolean authorize(final boolean requireLoginPermission) throws RealmUnavailableException {
             AuthorizedAuthenticationState newState = doAuthorization(requireLoginPermission);
             if (newState == null) {
@@ -1389,6 +1435,11 @@ public final class ServerAuthenticationContext {
         @Override
         void updateCredential(Credential credential) {
             SecurityRealm.safeHandleRealmEvent(realmInfo.getSecurityRealm(), new RealmIdentityCredentialUpdateEvent(realmIdentity, credential));
+        }
+
+        @Override
+        void updateTimeout(long timeout) {
+            SecurityRealm.safeHandleRealmEvent(realmInfo.getSecurityRealm(), new RealmIdentityTimeoutUpdateEvent(realmIdentity, timeout));
         }
 
         @Override
@@ -1493,6 +1544,11 @@ public final class ServerAuthenticationContext {
         }
 
         @Override
+        Attributes getAttributes() throws RealmUnavailableException {
+            return null;
+        }
+
+        @Override
         boolean verifyEvidence(final Evidence evidence) throws RealmUnavailableException {
             return false;
         }
@@ -1532,6 +1588,11 @@ public final class ServerAuthenticationContext {
 
         @Override
         void updateCredential(Credential credential) {
+            // no-op
+        }
+
+        @Override
+        void updateTimeout(long timeout) {
             // no-op
         }
 
@@ -1660,6 +1721,11 @@ public final class ServerAuthenticationContext {
         }
 
         @Override
+        Attributes getAttributes() throws RealmUnavailableException {
+            return realmIdentity.getAttributes();
+        }
+
+        @Override
         boolean verifyEvidence(final Evidence evidence) throws RealmUnavailableException {
             return realmIdentity.verifyEvidence(evidence);
         }
@@ -1672,6 +1738,11 @@ public final class ServerAuthenticationContext {
         @Override
         void updateCredential(Credential credential) {
             SecurityRealm.safeHandleRealmEvent(getRealmInfo().getSecurityRealm(), new RealmIdentityCredentialUpdateEvent(realmIdentity, credential));
+        }
+
+        @Override
+        void updateTimeout(long timeout) {
+            SecurityRealm.safeHandleRealmEvent(getRealmInfo().getSecurityRealm(), new RealmIdentityTimeoutUpdateEvent(realmIdentity, timeout));
         }
 
         @Override
