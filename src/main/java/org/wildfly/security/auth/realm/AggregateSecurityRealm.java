@@ -79,7 +79,7 @@ public final class AggregateSecurityRealm implements SecurityRealm {
         return authenticationRealm.getEvidenceVerifySupport(evidenceType, algorithmName);
     }
 
-    public void handleRealmEvent(final RealmEvent event) {
+    public void handleRealmEvent(final RealmEvent event) throws RealmUnavailableException {
         if (event instanceof RealmAuthenticationEvent) {
             authenticationRealm.handleRealmEvent(event);
         } else if (event instanceof RealmAuthorizationEvent) {

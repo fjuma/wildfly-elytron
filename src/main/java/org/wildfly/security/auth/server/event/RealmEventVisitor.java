@@ -18,6 +18,8 @@
 
 package org.wildfly.security.auth.server.event;
 
+import org.wildfly.security.auth.server.RealmUnavailableException;
+
 /**
  * A class which provides an easy way to handle realm events based on the type of the event.  The visitor can accept
  * a parameter and return a value.  To invoke the appropriate visitor method based on the event type, use the
@@ -142,5 +144,17 @@ public abstract class RealmEventVisitor<P, R> {
      */
     public R handleIdentityFailedAuthorizationEvent(final RealmIdentityFailedAuthorizationEvent event, final P param) {
         return handleIdentityAuthorizationEvent(event, param);
+    }
+
+    /**
+     * Handle an identity credential update realm event.
+     *
+     * @param event the realm event
+     * @param param the visitor parameter
+     * @return the visitor return value
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
+     */
+    public R handleIdentityCredentialUpdateEvent(final RealmIdentityCredentialUpdateEvent event, final P param) throws RealmUnavailableException {
+        return handleUnknownEvent(event, param);
     }
 }

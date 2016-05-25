@@ -74,8 +74,9 @@ public interface SecurityRealm {
      * The default implementation does nothing.
      *
      * @param event the realm event
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
      */
-    default void handleRealmEvent(RealmEvent event) {}
+    default void handleRealmEvent(RealmEvent event) throws RealmUnavailableException {}
 
     /**
      * Safely pass an event to a security realm, absorbing and logging any exception that occurs.
