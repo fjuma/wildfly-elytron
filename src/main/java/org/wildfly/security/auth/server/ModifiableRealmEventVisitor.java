@@ -23,6 +23,9 @@ import java.util.Collections;
 import org.wildfly.security._private.ElytronMessages;
 import org.wildfly.security.auth.server.event.RealmEventVisitor;
 import org.wildfly.security.auth.server.event.RealmIdentityCredentialUpdateEvent;
+import org.wildfly.security.auth.server.event.RealmIdentityTimeoutUpdateEvent;
+import org.wildfly.security.authz.Attributes;
+import org.wildfly.security.authz.MapAttributes;
 import org.wildfly.security.credential.Credential;
 
 /**
@@ -52,4 +55,19 @@ public class ModifiableRealmEventVisitor extends RealmEventVisitor<Void, Void> {
         return null;
     }
 
+    @Override
+    public Void handleIdentityTimeoutUpdateEvent(final RealmIdentityTimeoutUpdateEvent event, final Void param) throws RealmUnavailableException {
+        // Make sure the realm is modifiable and then update the stored timeout
+        final RealmIdentity realmIdentity = event.getRealmIdentity();
+        if (! (realmIdentity instanceof ModifiableRealmIdentity)) {
+            throw ElytronMessages.log.realmIsNotModifiable();
+        }
+        final ModifiableRealmIdentity modifiableRealmIdentity = (ModifiableRealmIdentity) realmIdentity;
+        Attributes attributes = modifiableRealmIdentity.getAttributes();
+        MapAttributes newAttributes = new MapAttributes(attributes);
+        newAttributes.removeFirst(RealmIdentity.TIMEOUT_ATTRIBUTE);
+        newAttributes.addFirst(RealmIdentity.TIMEOUT_ATTRIBUTE, String.valueOf(event.getTimeout()));
+        modifiableRealmIdentity.setAttributes(newAttributes);
+        return null;
+    }
 }

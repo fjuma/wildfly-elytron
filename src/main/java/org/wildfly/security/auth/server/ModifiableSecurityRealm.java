@@ -53,7 +53,7 @@ public interface ModifiableSecurityRealm extends SecurityRealm {
     /**
      * Handle a realm event.
      * <p>
-     * The default implementation allows a realm to act upon a credential change for a realm identity.
+     * The default implementation allows a realm to act upon a credential change or timeout attribute change for a realm identity.
      *
      * @param event the realm event
      * @throws RealmUnavailableException if the realm is not able to handle requests for any reason

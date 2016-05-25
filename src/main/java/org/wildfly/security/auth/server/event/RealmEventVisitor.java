@@ -157,4 +157,16 @@ public abstract class RealmEventVisitor<P, R> {
     public R handleIdentityCredentialUpdateEvent(final RealmIdentityCredentialUpdateEvent event, final P param) throws RealmUnavailableException {
         return handleUnknownEvent(event, param);
     }
+
+    /**
+     * Handle an identity timeout update realm event.
+     *
+     * @param event the realm event
+     * @param param the visitor parameter
+     * @return the visitor return value
+     * @throws RealmUnavailableException if the realm is not able to handle requests for any reason
+     */
+    public R handleIdentityTimeoutUpdateEvent(final RealmIdentityTimeoutUpdateEvent event, final P param) throws RealmUnavailableException {
+        return handleUnknownEvent(event, param);
+    }
 }
