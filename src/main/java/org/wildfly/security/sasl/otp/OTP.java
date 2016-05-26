@@ -58,6 +58,10 @@ public final class OTP {
     public static final int DICTIONARY_SIZE = 2048;
     public static final int LOCK_TIMEOUT = 300;
 
+    // New OTP prompts
+    public static final String NEW_PASSWORD_FORMAT_PROMPT = "New one-time password format";
+    public static final String NEW_PASSWORD_PROMPT = "New pass phrase or one-time password";
+
     /**
      * The format of a given password.
      */

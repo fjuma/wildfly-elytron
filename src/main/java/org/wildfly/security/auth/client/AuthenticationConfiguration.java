@@ -19,6 +19,7 @@
 package org.wildfly.security.auth.client;
 
 import static org.wildfly.security._private.ElytronMessages.log;
+import static org.wildfly.security.sasl.otp.OTP.PasswordFormat;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -471,6 +472,54 @@ public abstract class AuthenticationConfiguration {
      */
     public AuthenticationConfiguration useChoice(String choice) {
         return new SetChoiceAuthenticationConfiguration(this, choice);
+    }
+
+    /**
+     * Create a new configuration which is the same as this configuration, but which uses the given one-time password
+     * to authenticate.
+     *
+     * @param password the one-time password to use in either hex or multi-word format
+     * @return the new configuration
+     */
+    public AuthenticationConfiguration useOneTimePassword(String password) {
+        return password == null ? this : new SetOneTimePasswordAuthenticationConfiguration(this, password.toCharArray(), PasswordFormat.DIRECT_OTP);
+    }
+
+    /**
+     * Create a new configuration which is the same as this configuration, but which uses the given pass phrase to
+     * generate the one-time password required for authentication.
+     *
+     * @param passPhrase the pass phrase to use to generate the one-time password
+     * @return the new configuration
+     */
+    public AuthenticationConfiguration usePassPhrase(String passPhrase) {
+        return passPhrase == null ? this : new SetOneTimePasswordAuthenticationConfiguration(this, passPhrase.toCharArray(), PasswordFormat.PASS_PHRASE);
+    }
+
+    /**
+     * Create a new configuration which is the same as this configuration, but which uses the given one-time password
+     * and parameters to re-initialize an OTP sequence.
+     *
+     * @param newAlgorithm the new algorithm
+     * @param newSequenceNumber the new sequence number
+     * @param newSeed the new seed
+     * @param newPassword the new one-time password to use to re-initialize an OTP sequence, in either hex or multi-word format
+     * @return the new configuration
+     */
+    public AuthenticationConfiguration useNewOneTimePassword(String newAlgorithm, int newSequenceNumber, String newSeed, String newPassword) {
+        return newAlgorithm == null || newSequenceNumber < 1 || newSeed == null ||  newPassword == null ? this
+                : new SetNewOneTimePasswordAuthenticationConfiguration(this, newAlgorithm, newSequenceNumber, newSeed, newPassword.toCharArray());
+    }
+
+    /**
+     * Create a new configuration which is the same as this configuration, but which uses the given pass phrase to
+     * re-initialize an OTP sequence.
+     *
+     * @param newPassPhrase the new pass phrase to use to re-initialize an OTP sequence
+     * @return the new configuration
+     */
+    public AuthenticationConfiguration useNewPassPhrase(String newPassPhrase) {
+        return newPassPhrase == null ? this : new SetNewOneTimePasswordAuthenticationConfiguration(this, newPassPhrase.toCharArray());
     }
 
     /**

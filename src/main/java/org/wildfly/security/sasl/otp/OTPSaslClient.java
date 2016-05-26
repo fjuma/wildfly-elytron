@@ -215,14 +215,14 @@ final class OTPSaslClient extends AbstractSaslClient {
                     newSeed = generateRandomAlphanumericString(DEFAULT_SEED_LENGTH, random);
                 } while (newSeed.equals(seed));
 
-                final ExtendedChoiceCallback passwordFormatTypeChoiceCallback = new ExtendedChoiceCallback("New one-time password format",
+                final ExtendedChoiceCallback passwordFormatTypeChoiceCallback = new ExtendedChoiceCallback(NEW_PASSWORD_FORMAT_PROMPT,
                         PASSWORD_FORMAT_TYPES, getPasswordFormatTypesChoiceIndex(PASS_PHRASE), false, true);
                 handleCallbacks(nameCallback, passwordFormatTypeChoiceCallback);
                 String newPasswordFormatType = passwordFormatTypeChoiceCallback.getSelectedIndexes() != null ? PASSWORD_FORMAT_TYPES[passwordFormatTypeChoiceCallback.getSelectedIndexes()[0]]
                         : PASSWORD_FORMAT_TYPES[passwordFormatTypeChoiceCallback.getDefaultChoice()];
                 PasswordFormat newPasswordFormat = PasswordFormat.forName(newPasswordFormatType);
 
-                PasswordCallback passwordCallback = new PasswordCallback("New pass phrase or one-time password", false);
+                PasswordCallback passwordCallback = new PasswordCallback(NEW_PASSWORD_PROMPT, false);
                 switch (newPasswordFormat) {
                     case PASS_PHRASE:
                         // Try to obtain a new pass phrase
