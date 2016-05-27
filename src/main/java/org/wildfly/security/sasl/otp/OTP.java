@@ -58,6 +58,28 @@ public final class OTP {
     public static final int DICTIONARY_SIZE = 2048;
     public static final int LOCK_TIMEOUT = 300;
 
+    /**
+     * The format of a given password.
+     */
+    public enum PasswordFormat {
+        /**
+         * Pass phrase format.
+         */
+        PASS_PHRASE,
+        /**
+         * Direct OTP format (either hexadecimal or multi-word OTP).
+         */
+        DIRECT_OTP;
+
+        static PasswordFormat forName(final String passwordFormatType) {
+            switch (passwordFormatType) {
+                case "PASS_PHRASE": return PASS_PHRASE;
+                case "DIRECT_OTP": return DIRECT_OTP;
+                default: return null;
+            }
+        }
+    }
+
     static boolean isMatched(final Map<String, ?> props) {
         if ("true".equals(props.get(WildFlySasl.MECHANISM_QUERY_ALL))) {
             return true;

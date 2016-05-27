@@ -21,6 +21,7 @@ package org.wildfly.security.sasl.otp;
 import static org.wildfly.security._private.ElytronMessages.log;
 import static org.wildfly.security.password.interfaces.OneTimePassword.*;
 import static org.wildfly.security.sasl.otp.OTP.*;
+import static org.wildfly.security.sasl.otp.OTP.PasswordFormat.*;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -43,6 +44,7 @@ class OTPUtil {
 
     public static final int[] DELIMS = new int[] {'\n', '\r', '\t', ' '};
     public static final String[] RESPONSE_TYPES = new String[] { WORD_RESPONSE, INIT_WORD_RESPONSE, HEX_RESPONSE, INIT_HEX_RESPONSE };
+    public static final String[] PASSWORD_FORMAT_TYPES = new String[] { PASS_PHRASE.name(), DIRECT_OTP.name()};
 
     private static final int FOUR_LETTER_WORDS_OFFSET = 571;
     private static final byte[] randomCharDictionary;
@@ -346,6 +348,10 @@ class OTPUtil {
             default:
                 throw log.mechInvalidOTPResponseType().toSaslException();
         }
+    }
+
+    public static int getPasswordFormatTypesChoiceIndex(PasswordFormat passwordFormat) throws SaslException {
+        return passwordFormat.ordinal();
     }
 
     public static MessageDigest getMessageDigest(String algorithm) throws NoSuchAlgorithmException {
