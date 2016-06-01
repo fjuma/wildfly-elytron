@@ -57,6 +57,7 @@ import javax.security.sasl.SaslServer;
 import javax.security.sasl.SaslServerFactory;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
@@ -550,6 +551,7 @@ public class OTPTest extends BaseTestCase {
     }
 
     @Test
+    @Ignore("ELY-558")
     public void testMultipleSimultaneousAuthenticationSessions() throws Exception {
         final String algorithm = ALGORITHM_OTP_MD5;
         final SaslClientFactory clientFactory = obtainSaslClientFactory(OTPSaslClientFactory.class);

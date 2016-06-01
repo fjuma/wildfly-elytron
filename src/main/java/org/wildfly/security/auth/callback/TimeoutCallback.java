@@ -60,7 +60,7 @@ public final class TimeoutCallback implements ExtendedCallback, Serializable {
     }
 
     public boolean isOptional() {
-        return false;
+        return true;
     }
 
     public boolean needsInformation() {

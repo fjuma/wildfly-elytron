@@ -54,6 +54,6 @@ public final class TimeoutUpdateCallback implements ExtendedCallback, Serializab
 
     @Override
     public boolean isOptional() {
-        return false;
+        return true;
     }
 }
