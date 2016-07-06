@@ -54,6 +54,7 @@ import org.wildfly.security.auth.callback.CallbackUtil;
 import org.wildfly.security.auth.callback.CredentialCallback;
 import org.wildfly.security.auth.callback.CredentialUpdateCallback;
 import org.wildfly.security.auth.callback.EvidenceVerifyCallback;
+import org.wildfly.security.auth.callback.ExclusiveNameCallback;
 import org.wildfly.security.auth.callback.FastUnsupportedCallbackException;
 import org.wildfly.security.auth.callback.MechanismInformationCallback;
 import org.wildfly.security.auth.callback.PeerPrincipalCallback;
@@ -346,8 +347,23 @@ public final class ServerAuthenticationContext {
      * @throws IllegalStateException if the authentication name was already set and there is a mismatch
      */
     public void setAuthenticationName(String name) throws IllegalArgumentException, RealmUnavailableException, IllegalStateException {
+        setAuthenticationName(name, false);
+    }
+
+    /**
+     * Set the authentication name for this authentication.  If the name is already set, then the new name must be
+     * equal to the old name, or else an exception is thrown.
+     *
+     * @param name the authentication name
+     * @param exclusive {@code true} if exclusive access to the backing identity is required
+     * @throws IllegalArgumentException if the name is syntactically invalid
+     * @throws RealmUnavailableException if the realm is not available or if exclusive access to the backing identity
+     * is required but could not be granted
+     * @throws IllegalStateException if the authentication name was already set and there is a mismatch
+     */
+    public void setAuthenticationName(String name, boolean exclusive) throws IllegalArgumentException, RealmUnavailableException, IllegalStateException {
         Assert.checkNotNullParam("name", name);
-        stateRef.get().setName(name);
+        stateRef.get().setName(name, exclusive);
     }
 
     /**
@@ -708,6 +724,21 @@ public final class ServerAuthenticationContext {
                         authorizeCallback.setAuthorized(authorize());
                     }
                     handleOne(callbacks, idx + 1);
+                } else if (callback instanceof  ExclusiveNameCallback) {
+                    final ExclusiveNameCallback exclusiveNameCallback = ((ExclusiveNameCallback) callback);
+                    // login name
+                    final String name = exclusiveNameCallback.getDefaultName();
+                    try {
+                        if (exclusiveNameCallback.needsExclusiveAccess()) {
+                            setAuthenticationName(name, true);
+                            exclusiveNameCallback.setExclusiveAccess(true);
+                        } else {
+                            setAuthenticationName(name);
+                        }
+                    } catch (Exception e) {
+                        throw new IOException(e);
+                    }
+                    handleOne(callbacks, idx + 1);
                 } else if (callback instanceof NameCallback) {
                     // login name
                     final String name = ((NameCallback) callback).getDefaultName();
@@ -906,6 +937,10 @@ public final class ServerAuthenticationContext {
     }
 
     NameAssignedState assignName(final SecurityIdentity capturedIdentity, final MechanismConfiguration mechanismConfiguration, final MechanismRealmConfiguration mechanismRealmConfiguration, String name, Principal originalPrincipal, final Evidence evidence) throws RealmUnavailableException {
+        return assignName(capturedIdentity, mechanismConfiguration, mechanismRealmConfiguration, name, originalPrincipal, evidence, false);
+    }
+
+    NameAssignedState assignName(final SecurityIdentity capturedIdentity, final MechanismConfiguration mechanismConfiguration, final MechanismRealmConfiguration mechanismRealmConfiguration, String name, Principal originalPrincipal, final Evidence evidence, final boolean exclusive) throws RealmUnavailableException {
         final SecurityDomain domain = capturedIdentity.getSecurityDomain();
         name = rewriteAll(name, mechanismRealmConfiguration.getPreRealmRewriter(), mechanismConfiguration.getPreRealmRewriter(), domain.getPreRealmRewriter());
         // principal *must* be captured at this point
@@ -919,7 +954,16 @@ public final class ServerAuthenticationContext {
         locatorBuilder.setName(name);
         locatorBuilder.setPrincipal(principal);
         locatorBuilder.setEvidence(evidence);
-        final RealmIdentity realmIdentity = securityRealm.getRealmIdentity(locatorBuilder.build());
+        final RealmIdentity realmIdentity;
+        if (exclusive) {
+            if (securityRealm instanceof ModifiableSecurityRealm) {
+                realmIdentity = ((ModifiableSecurityRealm) securityRealm).getRealmIdentityForUpdate(locatorBuilder.build());
+            } else {
+                throw log.unableToObtainExclusiveAccess();
+            }
+        } else {
+            realmIdentity = securityRealm.getRealmIdentity(locatorBuilder.build());
+        }
         return new NameAssignedState(capturedIdentity, realmInfo, realmIdentity, principal, mechanismConfiguration, mechanismRealmConfiguration);
     }
 
@@ -985,6 +1029,10 @@ public final class ServerAuthenticationContext {
         }
 
         void setName(String name) throws RealmUnavailableException {
+            setName(name, false);
+        }
+
+        void setName(String name, boolean exclusive) throws RealmUnavailableException {
             throw log.noAuthenticationInProgress();
         }
 
@@ -1097,8 +1145,13 @@ public final class ServerAuthenticationContext {
 
         @Override
         void setName(String name) throws RealmUnavailableException {
+            setName(name, false);
+        }
+
+        @Override
+        void setName(String name, boolean exclusive) throws RealmUnavailableException {
             transition();
-            stateRef.get().setName(name);
+            stateRef.get().setName(name, exclusive);
         }
 
         @Override
@@ -1313,11 +1366,16 @@ public final class ServerAuthenticationContext {
 
         @Override
         void setName(final String name) throws RealmUnavailableException {
+            setName(name, false);
+        }
+
+        @Override
+        void setName(final String name, final boolean exclusive) throws RealmUnavailableException {
             final AtomicReference<State> stateRef = getStateRef();
-            final NameAssignedState newState = assignName(capturedIdentity, mechanismConfiguration, getMechanismRealmConfiguration(), name, null, null);
+            final NameAssignedState newState = assignName(capturedIdentity, mechanismConfiguration, getMechanismRealmConfiguration(), name, null, null, exclusive);
             if (! stateRef.compareAndSet(this, newState)) {
                 newState.realmIdentity.dispose();
-                stateRef.get().setName(name);
+                stateRef.get().setName(name, exclusive);
             }
         }
 
@@ -1604,6 +1662,11 @@ public final class ServerAuthenticationContext {
 
         @Override
         void setName(final String name) {
+            setName(name, false);
+        }
+
+        @Override
+        void setName(final String name, final boolean exclusive) {
             if (isSameName(name)) {
                 return;
             }
@@ -1710,6 +1773,11 @@ public final class ServerAuthenticationContext {
 
         @Override
         void setName(final String name) throws RealmUnavailableException {
+            setName(name, false);
+        }
+
+        @Override
+        void setName(final String name, final boolean exclusive) throws RealmUnavailableException {
             // reject all names
             super.setName(name);
         }
