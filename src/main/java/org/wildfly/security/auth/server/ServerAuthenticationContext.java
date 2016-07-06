@@ -739,6 +739,21 @@ public final class ServerAuthenticationContext {
                         throw new IOException(e);
                     }
                     handleOne(callbacks, idx + 1);
+                } else if (callback instanceof  ExclusiveNameCallback) {
+                    final ExclusiveNameCallback exclusiveNameCallback = ((ExclusiveNameCallback) callback);
+                    // login name
+                    final String name = exclusiveNameCallback.getDefaultName();
+                    try {
+                        if (exclusiveNameCallback.needsExclusiveAccess()) {
+                            setAuthenticationName(name, true);
+                            exclusiveNameCallback.setExclusiveAccess(true);
+                        } else {
+                            setAuthenticationName(name);
+                        }
+                    } catch (Exception e) {
+                        throw new IOException(e);
+                    }
+                    handleOne(callbacks, idx + 1);
                 } else if (callback instanceof NameCallback) {
                     // login name
                     final String name = ((NameCallback) callback).getDefaultName();
