@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
@@ -372,6 +373,8 @@ public class SaslServerBuilder {
             final Permissions permissions = permissionsMap.get(permissionMappable.getPrincipal().toString());
             return permissions == null ? v : v.or(PermissionVerifier.from(permissions));
         });
+
+        domainBuilder.setScheduledExecutorService(new ScheduledThreadPoolExecutor(1));
 
         return domainBuilder.build();
     }

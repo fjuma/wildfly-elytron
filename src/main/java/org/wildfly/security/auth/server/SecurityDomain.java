@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -69,6 +70,7 @@ public final class SecurityDomain {
     private final Map<String, RoleMapper> categoryRoleMappers;
     private final UnaryOperator<SecurityIdentity> securityIdentityTransformer;
     private final Predicate<SecurityDomain> trustedSecurityDomain;
+    private final ScheduledExecutorService scheduledExecutorService;
 
     SecurityDomain(Builder builder, final LinkedHashMap<String, RealmInfo> realmMap) {
         this.realmMap = realmMap;
@@ -81,6 +83,7 @@ public final class SecurityDomain {
         this.principalDecoder = builder.principalDecoder;
         this.securityIdentityTransformer = builder.securityIdentityTransformer;
         this.trustedSecurityDomain = builder.trustedSecurityDomain;
+        this.scheduledExecutorService = builder.scheduledExecutorService;
         final Map<String, RoleMapper> originalRoleMappers = builder.categoryRoleMappers;
         final Map<String, RoleMapper> copiedRoleMappers;
         if (originalRoleMappers.isEmpty()) {
@@ -408,6 +411,10 @@ public final class SecurityDomain {
         return this == domain || trustedSecurityDomain.test(domain);
     }
 
+    ScheduledExecutorService getScheduledExecutorService() {
+        return scheduledExecutorService;
+    }
+
     /**
      * A builder for creating new security domains.
      */
@@ -425,6 +432,7 @@ public final class SecurityDomain {
         private Map<String, RoleMapper> categoryRoleMappers = emptyMap();
         private UnaryOperator<SecurityIdentity> securityIdentityTransformer = UnaryOperator.identity();
         private Predicate<SecurityDomain> trustedSecurityDomain = domain -> false;
+        private ScheduledExecutorService scheduledExecutorService;
 
         Builder() {
         }
@@ -597,6 +605,18 @@ public final class SecurityDomain {
         public Builder setTrustedSecurityDomainPredicate(final Predicate<SecurityDomain> trustedSecurityDomain) {
             Assert.checkNotNullParam("trustedSecurityDomain", trustedSecurityDomain);
             this.trustedSecurityDomain = trustedSecurityDomain;
+            return this;
+        }
+
+        /**
+         * Set the scheduled executor to use to handle authentication timeout tasks.
+         *
+         * @param scheduledExecutorService the scheduled executor to use to handle authentication timeout tasks (must not be {@code null})
+         * @return this builder
+         */
+        public Builder setScheduledExecutorService(ScheduledExecutorService scheduledExecutorService) {
+            Assert.checkNotNullParam("scheduledExecutorService", scheduledExecutorService);
+            this.scheduledExecutorService = scheduledExecutorService;
             return this;
         }
 
