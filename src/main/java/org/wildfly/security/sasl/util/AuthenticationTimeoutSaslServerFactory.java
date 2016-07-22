@@ -19,8 +19,8 @@
 package org.wildfly.security.sasl.util;
 
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,6 +29,7 @@ import javax.security.sasl.SaslServer;
 import javax.security.sasl.SaslServerFactory;
 import javax.security.sasl.SaslException;
 
+import org.wildfly.common.Assert;
 import org.wildfly.security.sasl.WildFlySasl;
 
 /**
@@ -46,13 +47,18 @@ public final class AuthenticationTimeoutSaslServerFactory extends AbstractDelega
      */
     public static final long DEFAULT_TIMEOUT = 150;
 
+    private final ScheduledExecutorService scheduledExecutorService;
+
     /**
      * Construct a new instance.
      *
      * @param delegate the delegate {@code SaslServerFactory}
+     * @param scheduledExecutorService the scheduled executor to use to handle authentication timeout tasks
      */
-    public AuthenticationTimeoutSaslServerFactory(final SaslServerFactory delegate) {
+    public AuthenticationTimeoutSaslServerFactory(final SaslServerFactory delegate, final ScheduledExecutorService scheduledExecutorService) {
         super(delegate);
+        Assert.checkNotNullParam("scheduledExecutorService", scheduledExecutorService);
+        this.scheduledExecutorService = scheduledExecutorService;
     }
 
     @Override
@@ -65,20 +71,18 @@ public final class AuthenticationTimeoutSaslServerFactory extends AbstractDelega
         }
 
         final SaslServer delegateSaslServer = delegate.createSaslServer(mechanism, protocol, serverName, props, cbh);
-        return (delegateSaslServer == null) ? null : new DelegatingTimeoutSaslServer(delegateSaslServer, timeout);
+        return (delegateSaslServer == null) ? null : new DelegatingTimeoutSaslServer(delegateSaslServer, scheduledExecutorService, timeout);
     }
 
     private static class DelegatingTimeoutSaslServer extends AbstractDelegatingSaslServer {
         private final AtomicBoolean complete = new AtomicBoolean();
-        private volatile ScheduledThreadPoolExecutor executor;
         private volatile ScheduledFuture<Void> timeoutTask;
 
-        DelegatingTimeoutSaslServer(final SaslServer delegate, final long timeout) {
+        DelegatingTimeoutSaslServer(final SaslServer delegate, final ScheduledExecutorService scheduledExecutorService, final long timeout) {
             super(delegate);
 
             // Schedule a task to terminate the authentication attempt if it takes too long
-            executor = createExecutor();
-            timeoutTask = executor.schedule(() -> {
+            timeoutTask = scheduledExecutorService.schedule(() -> {
                 if (! (isComplete() && complete.compareAndSet(false, true))) {
                     dispose();
                 }
@@ -108,19 +112,7 @@ public final class AuthenticationTimeoutSaslServerFactory extends AbstractDelega
                 super.dispose();
             } finally {
                 cancelTimeoutTask();
-                ScheduledThreadPoolExecutor stpe = executor;
-                executor = null;
-                if (stpe != null) {
-                    stpe.shutdownNow();
-                }
             }
-        }
-
-        private ScheduledThreadPoolExecutor createExecutor() {
-            ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-            executor.setRemoveOnCancelPolicy(true);
-            executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
-            return executor;
         }
 
         private void cancelTimeoutTask() {
