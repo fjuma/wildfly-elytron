@@ -854,6 +854,9 @@ public interface ElytronMessages extends BasicLogger {
     @Message(id = 3033, value = "PrivateKey parse error")
     IllegalArgumentException privateKeyParseError(@Cause Throwable cause);
 
+    @Message(id = 3034, value = "PKCS10CertificateSigningRequest parse error")
+    IllegalArgumentException pkcs10CertificateSigningRequestParseError(@Cause Throwable cause);
+
     /* ssl package */
 
     @Message(id = 4001, value = "No algorithm found matching TLS/SSL protocol selection criteria")
@@ -1588,8 +1591,8 @@ public interface ElytronMessages extends BasicLogger {
     @Message(id = 7023, value = "Unexpected character byte for printable string")
     ASN1Exception asnUnexpectedCharacterByteForPrintableString();
 
-    @Message(id = 7024, value = "Invalid length encountered for boolean type tag")
-    ASN1Exception asnInvalidLengthForBooleanTypeTag();
+    @Message(id = 7025, value = "Unexpected version for PKCS #10 certificate signing request")
+    ASN1Exception asnUnexpectedPKCS10CertificateSigningRequestVersion();
     
     /* password package */
 

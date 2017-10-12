@@ -21,6 +21,7 @@ package org.wildfly.security.x500.cert;
 import static org.wildfly.security._private.ElytronMessages.log;
 
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -29,6 +30,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -38,6 +40,7 @@ import javax.security.auth.x500.X500Principal;
 
 import org.wildfly.common.Assert;
 import org.wildfly.security.asn1.ASN1;
+import org.wildfly.security.asn1.ASN1Exception;
 import org.wildfly.security.asn1.DERDecoder;
 import org.wildfly.security.asn1.DEREncoder;
 import org.wildfly.security.pem.Pem;
@@ -85,6 +88,78 @@ public final class PKCS10CertificateSigningRequest {
     private final X500Principal subjectDn;
     private final List<X509CertificateExtension> extensions;
     private final byte[] encoded;
+
+    /**
+     * Construct a PKCS #10 certificate signing request from the given DER encoding.
+     *
+     * @param encoded the already encoded PKCS #10 certificate signing request in binary format (must not be {@code null})
+     * @throws IllegalArgumentException if {@code encoded} is not a valid PKCS #10 certificate signing request
+     */
+    public PKCS10CertificateSigningRequest(final byte[] encoded) throws IllegalArgumentException {
+        Assert.checkNotNullParam("encoded", encoded);
+        try {
+            final DERDecoder decoder = new DERDecoder(encoded);
+            decoder.startSequence();
+
+            decoder.startSequence();
+            if (decoder.decodeInteger().intValue() != VERSION) {
+                throw log.asnUnexpectedPKCS10CertificateSigningRequestVersion();
+            }
+            subjectDn = new X500Principal(decoder.drainElement());
+            final byte[] subjectPKInfo = decoder.drainElement();
+            final DERDecoder subjectPKInfoDecoder = new DERDecoder(subjectPKInfo);
+            switch (subjectPKInfoDecoder.peekType()) {
+                case ASN1.SEQUENCE_TYPE:
+                    subjectPKInfoDecoder.startSequence();
+                    String algorithm = subjectPKInfoDecoder.decodeObjectIdentifierAsKeyAlgorithm();
+                    if (algorithm != null) {
+                        publicKey = KeyFactory.getInstance(algorithm).generatePublic(new X509EncodedKeySpec(subjectPKInfo));
+                        break;
+                    }
+                    throw log.asnUnrecognisedAlgorithm(algorithm);
+                default:
+                    throw log.asnUnexpectedTag();
+            }
+
+            decoder.decodeImplicit(0);
+            decoder.startSetOf();
+            while (decoder.hasNextElement()) {
+                decoder.startSequence();
+                if (decoder.decodeObjectIdentifier().equals(ASN1.OID_EXTENSION_REQUEST)) {
+                    decoder.startSetOf();
+                    decoder.startSequence();
+                    while (decoder.hasNextElement()) {
+                        final String extensionId = decoder.decodeObjectIdentifier();
+                        final boolean critical;
+                        if (decoder.peekType() == ASN1.BOOLEAN_TYPE) {
+                            critical = decoder.decodeBoolean();
+                        }
+                        final byte[] extnValue = decoder.decodeOctetString();
+                    }
+                    decoder.endSequence();
+                    decoder.endSetOf();
+                } else {
+                    if (decoder.peekType() != ASN1.SET_TYPE) throw throw log.asnUnexpectedTag();
+                    decoder.skipElement();
+                }
+                decoder.endSequence();
+            }
+            decoder.endSetOf();
+
+            decoder.endSequence();
+
+            decoder.startSequence();
+            // alg id
+            decoder.endSequence();
+
+            decoder.decodeBitString();
+
+            decoder.endSequence();
+        } catch (Exception e) {
+            throw log.pkcs10CertificateSigningRequestParseError(e);
+        }
+        this.encoded = encoded;
+    }
 
     private PKCS10CertificateSigningRequest(Builder builder, final byte[] encoded) {
         this.publicKey = builder.publicKey;
