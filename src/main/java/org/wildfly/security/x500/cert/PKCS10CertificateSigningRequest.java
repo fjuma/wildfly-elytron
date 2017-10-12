@@ -29,7 +29,9 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
@@ -77,9 +79,17 @@ import org.wildfly.security.util.ByteStringBuilder;
  */
 public final class PKCS10CertificateSigningRequest {
 
+    private static final int VERSION = 0; // PKCS #10 version
+
+    private final PublicKey publicKey;
+    private final X500Principal subjectDn;
+    private final List<X509CertificateExtension> extensions;
     private final byte[] encoded;
 
-    private PKCS10CertificateSigningRequest(byte[] encoded) {
+    private PKCS10CertificateSigningRequest(Builder builder, final byte[] encoded) {
+        this.publicKey = builder.publicKey;
+        this.subjectDn = builder.subjectDn;
+        this.extensions = new ArrayList<>(builder.extensionsByOid.values());
         this.encoded = encoded;
     }
 
@@ -89,7 +99,7 @@ public final class PKCS10CertificateSigningRequest {
      * @return this PKCS #10 certificate signing request in binary format
      */
     public byte[] getEncoded() {
-        return encoded;
+        return encoded.clone();
     }
 
     /**
@@ -104,6 +114,33 @@ public final class PKCS10CertificateSigningRequest {
     }
 
     /**
+     * Get the public key associated with this PKCS #10 certificate signing request.
+     *
+     * @return the public key associated with this PKCS #10 certificate signing request
+     */
+    public PublicKey getPublicKey() {
+        return publicKey;
+    }
+
+    /**
+     * Get the subject DN associated with this PKCS #10 certificate signing request.
+     *
+     * @return the subject DN associated with this PKCS #10 certificate signing request
+     */
+    public X500Principal getSubjectDn() {
+        return subjectDn;
+    }
+
+    /**
+     * Get the X.509 certificate extensions included in this PKCS #10 certificate signing request.
+     *
+     * @return the X.509 certificate extensions included in this PKCS #10 certificate signing request
+     */
+    public List<X509CertificateExtension> getExtensions() {
+        return extensions;
+    }
+
+    /**
      * Construct a new builder instance.
      *
      * @return the new builder instance
@@ -113,10 +150,9 @@ public final class PKCS10CertificateSigningRequest {
     }
 
     /**
-     * A {@code Builder} to configure and create a {@code PKCS10CertificateSigningRequest}.
+     * A {@code Builder} to configure and generate a {@code PKCS10CertificateSigningRequest}.
      */
     public static class Builder {
-        private static final int VERSION = 0; // PKCS #10 version
         private Certificate certificate;
         private PublicKey publicKey;
         private PrivateKey signingKey;
@@ -236,7 +272,7 @@ public final class PKCS10CertificateSigningRequest {
             ByteStringBuilder certificateRequest = new ByteStringBuilder();
             DEREncoder encoder = new DEREncoder(certificateRequest);
             encodeCertificateRequest(encoder);
-            return new PKCS10CertificateSigningRequest(certificateRequest.toArray());
+            return new PKCS10CertificateSigningRequest(this, certificateRequest.toArray());
         }
 
         /**
