@@ -216,6 +216,42 @@ public abstract class Alphabet {
                 }
             }
         };
+
+        /**
+         * The <a href="http://tools.ietf.org/html/rfc4648">RFC 4648</a> base64url alphabet.
+         */
+        public static final Base64Alphabet URL = new Base64Alphabet(false) {
+            public int encode(final int val) {
+                if (val <= 25) {
+                    return 'A' + val;
+                } else if (val <= 51) {
+                    return 'a' + val - 26;
+                } else if (val <= 61) {
+                    return '0' + val - 52;
+                } else if (val == 62) {
+                    return '-';
+                } else {
+                    assert val == 63;
+                    return '_';
+                }
+            }
+
+            public int decode(final int codePoint) throws IllegalArgumentException {
+                if ('A' <= codePoint && codePoint <= 'Z') {
+                    return codePoint - 'A';
+                } else if ('a' <= codePoint && codePoint <= 'z') {
+                    return codePoint - 'a' + 26;
+                } else if ('0' <= codePoint && codePoint <= '9') {
+                    return codePoint - '0' + 52;
+                } else if (codePoint == '-') {
+                    return 62;
+                } else if (codePoint == '_') {
+                    return 63;
+                } else {
+                    return -1;
+                }
+            }
+        };
     }
 
     /**

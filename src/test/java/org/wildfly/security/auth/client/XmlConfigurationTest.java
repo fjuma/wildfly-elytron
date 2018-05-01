@@ -282,6 +282,7 @@ public class XmlConfigurationTest {
             "        </rule>\n" +
             "        <rule use-configuration=\"setup-sasl\">\n" +
             "            <match-port number=\"123\"/>\n" +
+            "    <match-path name=\"/my/path/\"/>\n" +
             "        </rule>\n" +
             "        <rule use-configuration=\"setup-sasl\">\n" +
             "            <match-user name=\"user1\"/>\n" +
@@ -294,7 +295,10 @@ public class XmlConfigurationTest {
 
         Assert.assertNull(ac.authRuleMatching(new URI("http://unknown/"), null, null)); // no match
         Assert.assertNotNull(ac.authRuleMatching(new URI("http://test1/"), null, null)); // match host
-        Assert.assertNotNull(ac.authRuleMatching(new URI("http://host:123/"), null, null)); // match port
+        //Assert.assertNotNull(ac.authRuleMatching(new URI("http://host:123/"), null, null)); // match port
+        Assert.assertNotNull(ac.authRuleMatching(new URI("http://host:123/my/path"), null, null));
+        Assert.assertNotNull(ac.authRuleMatching(new URI("http://host:123/my/path/subresource"), null, null));
+        Assert.assertNull(ac.authRuleMatching(new URI("http://host:123/some/path/subresource"), null, null));
         Assert.assertNotNull(ac.authRuleMatching(new URI("http://user1@host/"), null, null)); // match user
     }
 
