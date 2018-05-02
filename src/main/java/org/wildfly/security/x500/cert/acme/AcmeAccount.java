@@ -455,6 +455,21 @@ public final class AcmeAccount {
         }
 
         /**
+         * Set the account key pair.
+         *
+         * @param certificate the certificate (must not be {@code null})
+         * @param privateKey the key (must not be {@code null})
+         * @return this builder instance
+         */
+        public Builder setKey(final X509Certificate certificate, final PrivateKey privateKey) {
+            Assert.checkNotNullParam("certificate", certificate);
+            Assert.checkNotNullParam("privateKey", privateKey);
+            this.certificate = certificate;
+            this.privateKey = privateKey;
+            return this;
+        }
+
+        /**
          * Create an ACME account.
          *
          * @return the newly created ACME account
@@ -464,34 +479,51 @@ public final class AcmeAccount {
             if (serverUrl == null) {
                 throw log.noAcmeServerUrlGiven();
             }
-            if (keyAlgorithmName == null) {
-                keyAlgorithmName = DEFAULT_ACCOUNT_KEY_ALGORITHM_NAME;
-            }
-            if (dn == null) {
-                X500PrincipalBuilder principalBuilder = new X500PrincipalBuilder();
-                principalBuilder.addItem(X500AttributeTypeAndValue.create(X500.OID_AT_COMMON_NAME, ASN1Encodable.ofUtf8String(ACCOUNT_KEY_NAME)));
-                dn = principalBuilder.build();
-            }
-            if (keySize == -1) {
-                if (keyAlgorithmName.equals("EC")) {
-                    keySize = DEFAULT_ACCOUNT_EC_KEY_SIZE;
-                } else {
-                    keySize = DEFAULT_ACCOUNT_KEY_SIZE;
+            if (certificate != null && privateKey != null) {
+                keySize = KeyUtil.getKeySize(privateKey);
+                if (keySize == -1) {
+                    throw acme.unableToDetermineKeySize();
                 }
-            }
-            try {
-                // generate the account key pair
-                SelfSignedX509CertificateAndSigningKey certificateAndSigningKey = SelfSignedX509CertificateAndSigningKey.builder()
-                        .setKeySize(keySize)
-                        .setKeyAlgorithmName(keyAlgorithmName)
-                        .setDn(dn)
-                        .build();
-                privateKey = certificateAndSigningKey.getSigningKey();
-                certificate = certificateAndSigningKey.getSelfSignedCertificate();
+                keyAlgorithmName = privateKey.getAlgorithm();
                 signatureAlgorithm = getDefaultCompatibleSignatureAlgorithmName(privateKey);
+                if (signatureAlgorithm == null) {
+                    throw log.unableToDetermineDefaultCompatibleSignatureAlgorithmName(privateKey.getAlgorithm());
+                }
                 algHeader = getAlgHeaderFromSignatureAlgorithm(signatureAlgorithm);
-            } catch (Exception e) {
-                throw acme.acmeAccountKeyPairGenerationFailed(e);
+                dn = certificate.getSubjectX500Principal();
+            } else {
+                // generate the account key pair
+                if (keyAlgorithmName == null) {
+                    keyAlgorithmName = DEFAULT_ACCOUNT_KEY_ALGORITHM_NAME;
+                }
+                if (dn == null) {
+                    X500PrincipalBuilder principalBuilder = new X500PrincipalBuilder();
+                    principalBuilder.addItem(X500AttributeTypeAndValue.create(X500.OID_AT_COMMON_NAME, ASN1Encodable.ofUtf8String(ACCOUNT_KEY_NAME)));
+                    dn = principalBuilder.build();
+                }
+                if (keySize == -1) {
+                    if (keyAlgorithmName.equals("EC")) {
+                        keySize = DEFAULT_ACCOUNT_EC_KEY_SIZE;
+                    } else {
+                        keySize = DEFAULT_ACCOUNT_KEY_SIZE;
+                    }
+                }
+                try {
+                    SelfSignedX509CertificateAndSigningKey certificateAndSigningKey = SelfSignedX509CertificateAndSigningKey.builder()
+                            .setKeySize(keySize)
+                            .setKeyAlgorithmName(keyAlgorithmName)
+                            .setDn(dn)
+                            .build();
+                    privateKey = certificateAndSigningKey.getSigningKey();
+                    certificate = certificateAndSigningKey.getSelfSignedCertificate();
+                    signatureAlgorithm = getDefaultCompatibleSignatureAlgorithmName(privateKey);
+                    if (signatureAlgorithm == null) {
+                        throw log.unableToDetermineDefaultCompatibleSignatureAlgorithmName(privateKey.getAlgorithm());
+                    }
+                    algHeader = getAlgHeaderFromSignatureAlgorithm(signatureAlgorithm);
+                } catch (Exception e) {
+                    throw acme.acmeAccountKeyPairGenerationFailed(e);
+                }
             }
             return new AcmeAccount(this);
         }

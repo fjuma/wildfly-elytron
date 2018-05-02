@@ -2015,8 +2015,9 @@ public class AcmeClientSpiTest {
     }
 
     private AcmeAccount populateBasicAccount(String alias) throws Exception{
-        AcmeAccount account = populateBasicBuilder().build();
-        account.changeCertificateAndPrivateKey(aliasToCertificateMap.get(alias), aliasToPrivateKeyMap.get(alias));
+        AcmeAccount account = populateBasicBuilder()
+                .setKey(aliasToCertificateMap.get(alias), aliasToPrivateKeyMap.get(alias))
+                .build();
         return account;
     }
 
