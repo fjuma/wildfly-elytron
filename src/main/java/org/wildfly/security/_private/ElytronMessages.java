@@ -723,6 +723,9 @@ public interface ElytronMessages extends BasicLogger {
     @Message(id = 1180, value = "Fetched jwk does not contain \"%1$s\" claim, ignoring...")
     void tokenRealmJwkMissingClaim(String claim);
 
+    @Message(id = 1181, value = "At least one of the '%s' and '%s' cipher-suite attributes must be provided")
+    ConfigXMLParseException atLeastOneCipherSuiteAttributeMustBeProvided(String attribute1, String attribute2);
+
     /* keystore package */
 
     @Message(id = 2001, value = "Invalid key store entry password for alias \"%s\"")
@@ -1558,6 +1561,9 @@ public interface ElytronMessages extends BasicLogger {
 
     @Message(id = 5177, value = "One of \"%s\" and \"%s\" directives has to be defined")
     AuthenticationMechanismException mechOneOfDirectivesHasToBeDefined(String directive1, String directive2);
+
+    @Message(id = 5178, value = "Uknown cipher suite name '%s' in names string '%s'")
+    IllegalArgumentException unknownCipherSuiteName(String name, String string);
 
     /* http package */
 
