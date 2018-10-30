@@ -2,6 +2,7 @@ package org.wildfly.security.auth.client;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyPair;
@@ -11,6 +12,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
+import javax.net.ssl.SSLContext;
 import javax.security.auth.x500.X500Principal;
 
 import org.junit.Assert;
@@ -93,6 +95,22 @@ public class ElytronXmlParserTest {
         URL config = getClass().getResource("test-wildfly-config-v1_2.xml");
         SecurityFactory<AuthenticationContext> authContext = ElytronXmlParser.parseAuthenticationClientConfiguration(config.toURI());
         Assert.assertNotNull(authContext);
+    }
+
+    @Test
+    public void testCipherSuites() throws Exception {
+        URL config = getClass().getResource("test-wildfly-config-v1_3.xml");
+        SecurityFactory<AuthenticationContext> authContext = ElytronXmlParser.parseAuthenticationClientConfiguration(config.toURI());
+        Assert.assertNotNull(authContext);
+        checkSSLContext(authContext, "http://both.org");
+        checkSSLContext(authContext, "http://selector-only.org");
+        checkSSLContext(authContext, "http://names-only.org");
+    }
+
+    private void checkSSLContext(SecurityFactory<AuthenticationContext> authContext, String uri) throws Exception {
+        RuleNode<SecurityFactory<SSLContext>> node = authContext.create().sslRuleMatching(new URI(uri), null, null);
+        Assert.assertNotNull(node);
+        Assert.assertNotNull(node.getConfiguration().create());
     }
 
     @BeforeClass
