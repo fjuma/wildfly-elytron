@@ -42,7 +42,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.sasl.util.AbstractSaslServer;
 import org.wildfly.security.util._private.Arrays2;
 
-import static org.wildfly.security._private.ElytronMessages.saslLocal;
+import static org.wildfly.security.mechanism._private.ElytronMessages.saslLocal;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
