@@ -58,12 +58,12 @@ public class DigestPasswordTest {
 
     @BeforeClass
     public static void registerProvider() {
-        Security.addProvider(provider);
+        //Security.addProvider(provider);
     }
 
     @AfterClass
     public static void removeProvider() {
-        Security.removeProvider(provider.getName());
+        //Security.removeProvider(provider.getName());
     }
 
     @Test

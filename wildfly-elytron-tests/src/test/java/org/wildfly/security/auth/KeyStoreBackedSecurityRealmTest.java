@@ -53,12 +53,12 @@ public class KeyStoreBackedSecurityRealmTest {
 
     @BeforeClass
     public static void register() {
-        Security.addProvider(provider);
+        //Security.addProvider(provider);
     }
 
     @AfterClass
     public static void remove() {
-        Security.removeProvider(provider.getName());
+        //Security.removeProvider(provider.getName());
     }
 
     @Test
