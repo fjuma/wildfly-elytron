@@ -47,6 +47,7 @@ import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.ClientUtils;
 import org.wildfly.security.auth.client.MatchRule;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.wildfly.security.sasl.test.BaseTestCase;
 import org.wildfly.security.sasl.test.SaslServerBuilder;
@@ -63,16 +64,23 @@ public class PlainTest extends BaseTestCase {
 
     private static final String PLAIN = "PLAIN";
 
-    private static final Provider provider = WildFlyElytronSaslPlainProvider.getInstance();
+    private static final Provider[] providers = new Provider[] {
+            WildFlyElytronSaslPlainProvider.getInstance(),
+            WildFlyElytronPasswordProvider.getInstance()
+    };
 
     @BeforeClass
     public static void registerProvider() {
-        Security.insertProviderAt(provider, 1);
+        for (Provider provider : providers) {
+            Security.insertProviderAt(provider, 1);
+        }
     }
 
     @AfterClass
     public static void removeProvider() {
-        Security.removeProvider(provider.getName());
+        for (Provider provider : providers) {
+            Security.removeProvider(provider.getName());
+        }
     }
 
     /*

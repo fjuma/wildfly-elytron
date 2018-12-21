@@ -52,7 +52,9 @@ import org.wildfly.security.auth.server.IdentityCredentials;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreBuilder;
+import org.wildfly.security.credential.store.WildFlyElytronCredentialStoreProvider;
 import org.wildfly.security.credential.store.impl.KeyStoreCredentialStore;
+import org.wildfly.security.keystore.WildFlyElytronKeyStoreProvider;
 import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.sasl.SaslMechanismSelector;
@@ -81,19 +83,18 @@ public class CompatibilityClientTest extends BaseTestCase {
 
     private static final Provider[] providers = new Provider[] {
             WildFlyElytronSaslDigestProvider.getInstance(),
-            WildFlyElytronPasswordProvider.getInstance()
+            WildFlyElytronCredentialStoreProvider.getInstance()
     };
 
 
-    @BeforeClass
-    public static void registerPasswordProvider() {
+    private static void registerProviders() {
         for (Provider provider : providers) {
             Security.insertProviderAt(provider, 1);
         }
     }
 
     @AfterClass
-    public static void removePasswordProvider() {
+    public static void removeProviders() {
         for (Provider provider : providers) {
             Security.removeProvider(provider.getName());
         }
@@ -116,6 +117,7 @@ public class CompatibilityClientTest extends BaseTestCase {
      */
     @BeforeClass
     public static void setupCredentialStore() throws Exception {
+        registerProviders();
         // setup credential store that need to be complete before a test starts
         CredentialStoreBuilder.get().setKeyStoreFile(CS_FILE_NAME)
                 .setKeyStorePassword("secret_store_1")

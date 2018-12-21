@@ -65,12 +65,12 @@ public class BaseTestCase {
         });
     }*/
     private static final Provider[] providers = new Provider[] {
-            WildFlyElytronPasswordProvider.getInstance(),
-            WildFlyElytronSaslOTPProvider.getInstance()
+            //WildFlyElytronPasswordProvider.getInstance(),
+            //WildFlyElytronSaslOTPProvider.getInstance()
             //new WildFlyElytronProvider()
     };
 
-    @BeforeClass
+    /*@BeforeClass
     public static void registerPasswordProvider() {
         for (Provider provider : providers) {
             Security.addProvider(provider);
@@ -82,7 +82,7 @@ public class BaseTestCase {
         for (Provider provider : providers) {
             Security.removeProvider(provider.getName());
         }
-    }
+    }*/
 
     // Utility methods for use by the Test classes.
 

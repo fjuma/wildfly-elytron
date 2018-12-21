@@ -110,24 +110,16 @@ public class OTPTest extends BaseTestCase {
 
     private long timeout;
 
-    private static final Provider[] providers = new Provider[] {
-            WildFlyElytronPasswordProvider.getInstance(),
-            WildFlyElytronSaslOTPProvider.getInstance()
-            //new WildFlyElytronProvider()
-    };
+    private static final Provider provider = WildFlyElytronSaslOTPProvider.getInstance();
 
     @BeforeClass
     public static void registerPasswordProvider() {
-        for (Provider provider : providers) {
-            Security.insertProviderAt(provider, 1);
-        }
+        Security.insertProviderAt(provider, 1);
     }
 
     @AfterClass
     public static void removePasswordProvider() {
-        for (Provider provider : providers) {
-            Security.removeProvider(provider.getName());
-        }
+        Security.removeProvider(provider.getName());
     }
 
     @After

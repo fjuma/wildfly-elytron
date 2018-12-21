@@ -43,6 +43,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactory;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
 import org.wildfly.security.password.spec.IteratedSaltedHashPasswordSpec;
@@ -61,7 +62,9 @@ import static org.wildfly.security.password.interfaces.ScramDigestPassword.ALGOR
  */
 public class BasicScramSelfTest extends BaseTestCase {
 
-    private static final Provider provider = WildFlyElytronSaslScramProvider.getInstance();
+    private static final Provider[] providers = new Provider[] {
+            WildFlyElytronSaslScramProvider.getInstance(),
+    };
     private static final Map<String, Object> EMPTY = Collections.<String, Object>emptyMap();
 
 
@@ -69,7 +72,9 @@ public class BasicScramSelfTest extends BaseTestCase {
     public static void registerPasswordProvider() {
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
             public Void run() {
-                Security.insertProviderAt(provider, 2);
+                for (Provider provider : providers) {
+                    Security.insertProviderAt(provider, 2);
+                }
                 return null;
             }
         });
@@ -79,7 +84,9 @@ public class BasicScramSelfTest extends BaseTestCase {
     public static void removePasswordProvider() {
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
             public Void run() {
-                Security.removeProvider(provider.getName());
+                for (Provider provider : providers) {
+                    Security.removeProvider(provider.getName());
+                }
                 return null;
             }
         });
