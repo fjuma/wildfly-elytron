@@ -36,8 +36,9 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.wildfly.common.iteration.CodePointIterator;
-import org.wildfly.security.WildFlyElytronProvider;
+import org.wildfly.security.digest.WildFlyElytronDigestProvider;
 import org.wildfly.security.password.PasswordFactory;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.DigestPassword;
 import org.wildfly.security.password.spec.DigestPasswordAlgorithmSpec;
 import org.wildfly.security.password.spec.DigestPasswordSpec;
@@ -54,16 +55,23 @@ public class DigestPasswordTest {
     private static final String REALM = "realm";
     private static final String PASSWORD = "password";
 
-    private static final Provider provider = new WildFlyElytronProvider();
+    private static final Provider[] providers = new Provider[] {
+            WildFlyElytronPasswordProvider.getInstance(),
+            WildFlyElytronDigestProvider.getInstance()
+    };
 
     @BeforeClass
     public static void registerProvider() {
-        //Security.addProvider(provider);
+        for (Provider provider : providers) {
+            Security.addProvider(provider);
+        }
     }
 
     @AfterClass
     public static void removeProvider() {
-        //Security.removeProvider(provider.getName());
+        for (Provider provider : providers) {
+            Security.removeProvider(provider.getName());
+        }
     }
 
     @Test

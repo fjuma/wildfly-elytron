@@ -23,7 +23,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.wildfly.common.iteration.ByteIterator;
-import org.wildfly.security.WildFlyElytronProvider;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -35,7 +34,7 @@ import java.security.Security;
  */
 public class Sha512_256MessageDigestTest {
 
-    private static final Provider provider = new WildFlyElytronProvider();
+    private static final Provider provider = WildFlyElytronDigestProvider.getInstance();
 
     @BeforeClass
     public static void register() {

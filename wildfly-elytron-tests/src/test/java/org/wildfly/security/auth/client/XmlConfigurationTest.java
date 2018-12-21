@@ -55,10 +55,11 @@ import org.wildfly.client.config.ClientConfiguration;
 import org.wildfly.client.config.ConfigXMLParseException;
 import org.wildfly.client.config.ConfigurationXMLStreamReader;
 import org.wildfly.security.SecurityFactory;
-import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.credential.X509CertificateChainPrivateCredential;
 import org.wildfly.security.credential.store.CredentialStoreBuilder;
+import org.wildfly.security.credential.store.WildFlyElytronCredentialStoreProvider;
 import org.wildfly.security.credential.store.impl.KeyStoreCredentialStore;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.x500.cert.BasicConstraintsExtension;
 import org.wildfly.security.x500.cert.SelfSignedX509CertificateAndSigningKey;
 import org.wildfly.security.x500.cert.X509CertificateBuilder;
@@ -71,7 +72,10 @@ public class XmlConfigurationTest {
     static final String NS_ELYTRON_1_0 = "urn:elytron:1.0";
     static final String NS_ELYTRON_1_0_1 = "urn:elytron:1.0.1";
 
-    private static final Provider provider = new WildFlyElytronProvider();
+    private static final Provider[] providers = new Provider[] {
+            WildFlyElytronCredentialStoreProvider.getInstance(),
+            WildFlyElytronPasswordProvider.getInstance()
+    };
 
     private static final char[] PASSWORD = "Elytron".toCharArray();
     private static final String CA_JKS_LOCATION = "./target/test-classes/ca/jks";
@@ -148,7 +152,9 @@ public class XmlConfigurationTest {
         ladybirdFile = new File(workingDirCA, LADYBIRD_LOCATION);
         createLadybirdKeyStore(ladybirdFile);
 
-        Security.addProvider(provider);
+        for (Provider provider : providers) {
+            Security.addProvider(provider);
+        }
         cleanCredentialStores();
         // setup vaults that need to be complete before a test starts
         CredentialStoreBuilder.get().setKeyStoreFile(stores.get("ONE"))
@@ -161,7 +167,9 @@ public class XmlConfigurationTest {
 
     @AfterClass
     public static void tearDown() {
-        Security.removeProvider(provider.getName());
+        for (Provider provider : providers) {
+            Security.removeProvider(provider.getName());
+        }
         ladybirdFile.delete();
         ladybirdFile = null;
         workingDirCA.delete();

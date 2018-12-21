@@ -44,10 +44,12 @@ public final class OTPSaslServerFactory implements SaslServerFactory {
     private final Supplier<Provider[]> providers;
 
     public OTPSaslServerFactory() {
+        System.out.println("*** EMPTY CONSTRUCTOR");
         providers = INSTALLED_PROVIDERS;
     }
 
     public OTPSaslServerFactory(final Provider provider) {
+        System.out.println("*** NON EMPTY CONSTRUCTOR");
         providers = () -> new Provider[] { provider };
     }
 

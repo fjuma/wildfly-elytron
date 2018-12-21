@@ -27,6 +27,8 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.security.Provider;
+import java.security.Security;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +53,7 @@ import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreBuilder;
 import org.wildfly.security.credential.store.impl.KeyStoreCredentialStore;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.sasl.SaslMechanismSelector;
 import org.wildfly.security.sasl.test.BaseTestCase;
@@ -75,6 +78,26 @@ public class CompatibilityClientTest extends BaseTestCase {
     protected static final String QOP_PROPERTY = "javax.security.sasl.qop";
 
     private SaslClient client;
+
+    private static final Provider[] providers = new Provider[] {
+            WildFlyElytronSaslDigestProvider.getInstance(),
+            WildFlyElytronPasswordProvider.getInstance()
+    };
+
+
+    @BeforeClass
+    public static void registerPasswordProvider() {
+        for (Provider provider : providers) {
+            Security.insertProviderAt(provider, 1);
+        }
+    }
+
+    @AfterClass
+    public static void removePasswordProvider() {
+        for (Provider provider : providers) {
+            Security.removeProvider(provider.getName());
+        }
+    }
 
     private void mockNonce(final String nonce){
         new MockUp<DigestSaslClient>(){

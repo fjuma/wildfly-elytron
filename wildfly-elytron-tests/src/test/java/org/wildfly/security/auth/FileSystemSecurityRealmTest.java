@@ -22,7 +22,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.wildfly.common.iteration.CodePointIterator;
-import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.auth.principal.NamePrincipal;
 import org.wildfly.security.auth.realm.FileSystemSecurityRealm;
 import org.wildfly.security.auth.server.ModifiableRealmIdentityIterator;
@@ -35,6 +34,7 @@ import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactory;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.BCryptPassword;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.password.interfaces.DigestPassword;
@@ -78,7 +78,7 @@ import static org.wildfly.security.password.interfaces.BCryptPassword.BCRYPT_SAL
  */
 public class FileSystemSecurityRealmTest {
 
-    private static final Provider provider = new WildFlyElytronProvider();
+    private static final Provider provider = WildFlyElytronPasswordProvider.getInstance();
 
     @BeforeClass
     public static void onBefore() throws Exception {

@@ -33,7 +33,8 @@ import javax.security.sasl.SaslServerFactory;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.wildfly.security.WildFlyElytronProvider;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
+import org.wildfly.security.sasl.otp.WildFlyElytronSaslOTPProvider;
 
 /**
  * A base for the test cases to ensure the provider is registered before the test
@@ -43,13 +44,13 @@ import org.wildfly.security.WildFlyElytronProvider;
  */
 public class BaseTestCase {
 
-    private static final Provider wildFlyElytronProvider = new WildFlyElytronProvider();
+    private static final Provider wildFlyElytronProvider = WildFlyElytronPasswordProvider.getInstance();
 
-    @BeforeClass
+    /*@BeforeClass
     public static void registerProvider() {
         AccessController.doPrivileged(new PrivilegedAction<Integer>() {
             public Integer run() {
-                return Security.insertProviderAt(wildFlyElytronProvider, 1);
+                //return Security.insertProviderAt(wildFlyElytronProvider, 1);
             }
         });
     }
@@ -58,11 +59,29 @@ public class BaseTestCase {
     public static void removeProvider() {
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
             public Void run() {
-                Security.removeProvider(wildFlyElytronProvider.getName());
-
+                //Security.removeProvider(wildFlyElytronProvider.getName());
                 return null;
             }
         });
+    }*/
+    private static final Provider[] providers = new Provider[] {
+            WildFlyElytronPasswordProvider.getInstance(),
+            WildFlyElytronSaslOTPProvider.getInstance()
+            //new WildFlyElytronProvider()
+    };
+
+    @BeforeClass
+    public static void registerPasswordProvider() {
+        for (Provider provider : providers) {
+            Security.addProvider(provider);
+        }
+    }
+
+    @AfterClass
+    public static void removePasswordProvider() {
+        for (Provider provider : providers) {
+            Security.removeProvider(provider.getName());
+        }
     }
 
     // Utility methods for use by the Test classes.

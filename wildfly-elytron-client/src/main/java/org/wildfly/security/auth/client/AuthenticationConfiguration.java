@@ -102,6 +102,8 @@ import org.wildfly.security.credential.source.FactoryCredentialSource;
 import org.wildfly.security.credential.source.KeyStoreCredentialSource;
 import org.wildfly.security.credential.source.LocalKerberosCredentialSource;
 import org.wildfly.security.credential.store.CredentialStore;
+import org.wildfly.security.credential.store.WildFlyElytronCredentialStoreProvider;
+import org.wildfly.security.digest.WildFlyElytronDigestProvider;
 import org.wildfly.security.evidence.X509PeerCertificateChainEvidence;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.password.Password;
@@ -166,11 +168,12 @@ public final class AuthenticationConfiguration {
     private static final String JBOSS_LOCAL_USER_QUIET_AUTH = "wildfly.sasl.local-user.quiet-auth";
     private static final String JBOSS_LOCAL_USER_LEGACY_QUIET_AUTH = "jboss.sasl.local-user.quiet-auth";
 
+
     private static final Supplier<Provider[]> DEFAULT_PROVIDER_SUPPLIER = ProviderUtil.aggregate(
             () -> new Provider[] {
-                    WildFlySecurityManager.isChecking() ?
-                            AccessController.doPrivileged((PrivilegedAction<WildFlyElytronProvider>) () -> new WildFlyElytronProvider()) :
-                            new WildFlyElytronProvider()
+                    //WildFlySecurityManager.isChecking() ?
+                            //AccessController.doPrivileged((PrivilegedAction<WildFlyElytronProvider>) () -> new WildFlyElytronProvider()) :
+                            //new WildFlyElytronProvider()
             },
             WildFlySecurityManager.isChecking() ?
                     AccessController.doPrivileged((PrivilegedAction<ProviderServiceLoaderSupplier>) () -> new ProviderServiceLoaderSupplier(AuthenticationConfiguration.class.getClassLoader(), true)) :
@@ -1818,4 +1821,12 @@ public final class AuthenticationConfiguration {
             }
         }
     }
+
+    /*private Provider[] getWildFlyElytronProviders() {
+        return new Provider[] {
+                WildFlyElytronCredentialStoreProvider.getInstance(),
+                WildFlyElytronDigestProvider.getInstance(),
+                WildFlyElytronHttpBasicProvider.getInstance()
+        }
+    }*/
 }

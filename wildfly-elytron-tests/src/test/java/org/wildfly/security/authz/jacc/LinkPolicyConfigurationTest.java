@@ -22,7 +22,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.auth.principal.NamePrincipal;
 import org.wildfly.security.auth.realm.SimpleMapBackedSecurityRealm;
 import org.wildfly.security.auth.realm.SimpleRealmEntry;
@@ -35,6 +34,7 @@ import org.wildfly.security.authz.RoleMapper;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactory;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
 
@@ -61,7 +61,7 @@ import static org.junit.Assert.fail;
 @Ignore
 public class LinkPolicyConfigurationTest {
 
-    private static final Provider provider = new WildFlyElytronProvider();
+    private static final Provider provider = WildFlyElytronPasswordProvider.getInstance();
 
     @BeforeClass
     public static void onBeforeClass() {

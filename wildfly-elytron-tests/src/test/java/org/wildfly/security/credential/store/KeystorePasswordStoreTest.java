@@ -40,11 +40,11 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.auth.server.IdentityCredentials;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.impl.KeyStoreCredentialStore;
 import org.wildfly.security.password.PasswordFactory;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
 
@@ -57,7 +57,10 @@ import org.wildfly.security.password.spec.ClearPasswordSpec;
  */
 public class KeystorePasswordStoreTest {
 
-    private static final Provider provider = new WildFlyElytronProvider();
+    private static final Provider[] providers = new Provider[] {
+            WildFlyElytronPasswordProvider.getInstance(),
+            WildFlyElytronCredentialStoreProvider.getInstance()
+    };
 
     private static Map<String, String> stores = new HashMap<>();
     private static String BASE_STORE_DIRECTORY = "target/ks-cred-stores";
@@ -115,7 +118,9 @@ public class KeystorePasswordStoreTest {
      */
     @BeforeClass
     public static void setup() throws Exception {
-        Security.addProvider(provider);
+        for (Provider provider : providers) {
+            Security.addProvider(provider);
+        }
         cleanCredentialStores();
         // setup vaults that need to be complete before a test starts
         CredentialStoreBuilder.get().setKeyStoreFile(stores.get("TWO"))
@@ -146,7 +151,9 @@ public class KeystorePasswordStoreTest {
      */
     @AfterClass
     public static void remove() {
-        Security.removeProvider(provider.getName());
+        for (Provider provider : providers) {
+            Security.removeProvider(provider.getName());
+        }
     }
 
     /**

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.security.Provider;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,7 +38,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.auth.server.IdentityCredentials;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.credential.PasswordCredential;
@@ -46,6 +46,7 @@ import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStore.CredentialSourceProtectionParameter;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactory;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
 
@@ -84,7 +85,7 @@ public class KeyStoreCredentialStoreTest {
 
     @Before
     public void installWildFlyElytronProvider() throws Exception {
-        final WildFlyElytronProvider provider = new WildFlyElytronProvider();
+        final Provider provider = WildFlyElytronPasswordProvider.getInstance();
 
         providerName = provider.getName();
 

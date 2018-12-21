@@ -29,8 +29,8 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.password.PasswordFactory;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.BCryptPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
 import org.wildfly.security.password.spec.EncryptablePasswordSpec;
@@ -48,7 +48,7 @@ import org.wildfly.security.password.util.ModularCrypt;
  */
 public class BCryptPasswordTest {
 
-    private static final Provider provider = new WildFlyElytronProvider();
+    private static final Provider provider = WildFlyElytronPasswordProvider.getInstance();
 
     @BeforeClass
     public static void setup() {

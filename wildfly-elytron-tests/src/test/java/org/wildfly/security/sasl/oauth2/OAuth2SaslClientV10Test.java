@@ -29,6 +29,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.security.AccessController;
+import java.security.Provider;
+import java.security.Security;
 import java.util.Arrays;
 
 import javax.json.Json;
@@ -71,6 +73,18 @@ import org.wildfly.security.sasl.util.SaslMechanismInformation;
 public class OAuth2SaslClientV10Test extends BaseTestCase {
 
     private static final MockWebServer server = new MockWebServer();
+
+    private static final Provider provider = WildFlyElytronSaslOAuth2Provider.getInstance();
+
+    @BeforeClass
+    public static void registerProvider() {
+        Security.insertProviderAt(provider, 1);
+    }
+
+    @AfterClass
+    public static void removeProvider() {
+        Security.removeProvider(provider.getName());
+    }
 
     @BeforeClass
     public static void onBefore() throws Exception {

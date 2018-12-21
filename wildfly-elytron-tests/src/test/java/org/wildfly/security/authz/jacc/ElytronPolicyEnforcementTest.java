@@ -20,7 +20,6 @@ package org.wildfly.security.authz.jacc;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.auth.permission.RunAsPrincipalPermission;
 import org.wildfly.security.auth.realm.SimpleMapBackedSecurityRealm;
 import org.wildfly.security.auth.realm.SimpleRealmEntry;
@@ -30,6 +29,7 @@ import org.wildfly.security.authz.RoleDecoder;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.password.PasswordFactory;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
 import org.wildfly.security.permission.PermissionUtil;
@@ -61,7 +61,7 @@ import static org.junit.Assert.fail;
  */
 public class ElytronPolicyEnforcementTest extends AbstractAuthorizationTestCase {
 
-    private static final Provider provider = new WildFlyElytronProvider();
+    private static final Provider provider = WildFlyElytronPasswordProvider.getInstance();
 
     @BeforeClass
     public static void onBeforeClass() {

@@ -37,7 +37,6 @@ import javax.security.auth.message.callback.PasswordValidationCallback;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.auth.jaspi.impl.JaspiAuthenticationContext;
 import org.wildfly.security.auth.permission.LoginPermission;
 import org.wildfly.security.auth.realm.SimpleMapBackedSecurityRealm;
@@ -51,6 +50,7 @@ import org.wildfly.security.authz.RoleMapper;
 import org.wildfly.security.authz.Roles;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.password.PasswordFactory;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
 import org.wildfly.security.permission.PermissionVerifier;
@@ -64,7 +64,7 @@ public class JaspiAuthenticationContextTest {
 
     private static final Attributes COMMON_ATTRIBUTES = new MapAttributes();
 
-    private static final Provider PROVIDER = new WildFlyElytronProvider();
+    private static final Provider PROVIDER = WildFlyElytronPasswordProvider.getInstance();
 
     private static PasswordFactory passwordFactory;
     private static SecurityDomain securityDomain;

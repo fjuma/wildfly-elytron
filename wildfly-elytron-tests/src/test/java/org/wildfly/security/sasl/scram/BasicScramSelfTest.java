@@ -41,7 +41,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactory;
 import org.wildfly.security.password.interfaces.ClearPassword;
@@ -62,7 +61,7 @@ import static org.wildfly.security.password.interfaces.ScramDigestPassword.ALGOR
  */
 public class BasicScramSelfTest extends BaseTestCase {
 
-    private static final Provider provider = new WildFlyElytronProvider();
+    private static final Provider provider = WildFlyElytronSaslScramProvider.getInstance();
     private static final Map<String, Object> EMPTY = Collections.<String, Object>emptyMap();
 
 

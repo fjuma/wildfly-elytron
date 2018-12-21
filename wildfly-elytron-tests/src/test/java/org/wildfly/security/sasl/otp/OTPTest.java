@@ -42,6 +42,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.security.Provider;
+import java.security.Security;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -61,10 +63,13 @@ import javax.security.sasl.SaslServer;
 import javax.security.sasl.SaslServerFactory;
 
 import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.common.iteration.CodePointIterator;
+import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.auth.callback.CallbackUtil;
 import org.wildfly.security.auth.callback.PasswordResetCallback;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
@@ -78,6 +83,7 @@ import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactory;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.OneTimePassword;
 import org.wildfly.security.password.spec.EncryptablePasswordSpec;
 import org.wildfly.security.password.spec.OneTimePasswordAlgorithmSpec;
@@ -103,6 +109,26 @@ import mockit.integration.junit4.JMockit;
 public class OTPTest extends BaseTestCase {
 
     private long timeout;
+
+    private static final Provider[] providers = new Provider[] {
+            WildFlyElytronPasswordProvider.getInstance(),
+            WildFlyElytronSaslOTPProvider.getInstance()
+            //new WildFlyElytronProvider()
+    };
+
+    @BeforeClass
+    public static void registerPasswordProvider() {
+        for (Provider provider : providers) {
+            Security.insertProviderAt(provider, 1);
+        }
+    }
+
+    @AfterClass
+    public static void removePasswordProvider() {
+        for (Provider provider : providers) {
+            Security.removeProvider(provider.getName());
+        }
+    }
 
     @After
     public void dispose() throws Exception {

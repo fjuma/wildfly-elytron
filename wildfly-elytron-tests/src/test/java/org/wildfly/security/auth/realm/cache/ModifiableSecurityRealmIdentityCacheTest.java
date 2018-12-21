@@ -41,7 +41,6 @@ import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.auth.SupportLevel;
 import org.wildfly.security.auth.permission.LoginPermission;
 import org.wildfly.security.auth.principal.NamePrincipal;
@@ -66,6 +65,7 @@ import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.evidence.Evidence;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
 import org.wildfly.security.password.PasswordFactory;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
 
@@ -78,7 +78,7 @@ public class ModifiableSecurityRealmIdentityCacheTest {
 
     @Before
     public void onBefore() {
-        Security.addProvider(new WildFlyElytronProvider());
+        Security.addProvider(WildFlyElytronPasswordProvider.getInstance());
     }
 
     @Test
