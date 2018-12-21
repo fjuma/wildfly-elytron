@@ -103,19 +103,14 @@ import org.wildfly.security.credential.source.FactoryCredentialSource;
 import org.wildfly.security.credential.source.KeyStoreCredentialSource;
 import org.wildfly.security.credential.source.LocalKerberosCredentialSource;
 import org.wildfly.security.credential.store.CredentialStore;
-import org.wildfly.security.credential.store.WildFlyElytronCredentialStoreProvider;
-import org.wildfly.security.digest.WildFlyElytronDigestProvider;
 import org.wildfly.security.evidence.X509PeerCertificateChainEvidence;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.PasswordFactory;
 import org.wildfly.security.password.TwoWayPassword;
-import org.wildfly.security.password.WildFlyElytronPasswordProvider;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.security.password.spec.ClearPasswordSpec;
 import org.wildfly.security.sasl.SaslMechanismSelector;
-import org.wildfly.security.sasl.digest.WildFlyElytronSaslDigestProvider;
-import org.wildfly.security.sasl.otp.WildFlyElytronSaslOTPProvider;
 import org.wildfly.security.sasl.util.FilterMechanismSaslClientFactory;
 import org.wildfly.security.sasl.util.LocalPrincipalSaslClientFactory;
 import org.wildfly.security.sasl.util.PrivilegedSaslClientFactory;
@@ -174,9 +169,11 @@ public final class AuthenticationConfiguration {
 
 
     private static final Supplier<Provider[]> DEFAULT_PROVIDER_SUPPLIER = ProviderUtil.aggregate(
-            () -> getSecurityManager() != null ?
-                    AccessController.doPrivileged((PrivilegedAction<Provider[]>) () -> getWildFlyElytronProviders()) :
-                    getWildFlyElytronProviders(),
+            () -> new Provider[] {
+                    WildFlySecurityManager.isChecking() ?
+                            AccessController.doPrivileged((PrivilegedAction<WildFlyElytronProvider>) () -> new WildFlyElytronProvider()) :
+                            new WildFlyElytronProvider()
+            },
             WildFlySecurityManager.isChecking() ?
                     AccessController.doPrivileged((PrivilegedAction<ProviderServiceLoaderSupplier>) () -> new ProviderServiceLoaderSupplier(AuthenticationConfiguration.class.getClassLoader(), true)) :
                     new ProviderServiceLoaderSupplier(AuthenticationConfiguration.class.getClassLoader(), true),
@@ -1824,14 +1821,4 @@ public final class AuthenticationConfiguration {
         }
     }
 
-    private static Provider[] getWildFlyElytronProviders() {
-        return new Provider[] {
-                /*WildFlyElytronCredentialStoreProvider.getInstance(),
-                WildFlyElytronDigestProvider.getInstance(),
-                WildFlyElytronHttpBasicProvider.getInstance()*/
-                /*WildFlyElytronSaslDigestProvider.getInstance(),
-                WildFlyElytronPasswordProvider.getInstance()*/
-                new WildFlyElytronProvider()
-        };
-    }
 }
