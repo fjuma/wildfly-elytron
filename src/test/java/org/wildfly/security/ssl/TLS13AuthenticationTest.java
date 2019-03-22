@@ -18,7 +18,10 @@
 package org.wildfly.security.ssl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.io.Closeable;
 import java.io.File;
@@ -45,6 +48,7 @@ import java.util.concurrent.Future;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSession;
@@ -82,6 +86,7 @@ public class TLS13AuthenticationTest {
     private static final boolean IS_IBM = System.getProperty("java.vendor").contains("IBM");
     private static final char[] PASSWORD = "Elytron".toCharArray();
     private static final String CA_JKS_LOCATION = "./target/test-classes/ca/jks";
+    private static final String INVALID_SESSION_CIPHER_SUITE = "SSL_NULL_WITH_NULL_NULL";
     private static File ladybirdFile = null;
     private static File scarabFile = null;
     private static File beetlesFile = null;
@@ -119,7 +124,35 @@ public class TLS13AuthenticationTest {
     }
 
     @Test
-    public void testTwoWayTLS13() throws Exception {
+    public void testOneWaySSL() throws Exception {
+        Assume.assumeTrue("Skipping testOneWayTLS13, test is not being run on JDK 11.",
+                System.getProperty("java.specification.version").equals("11"));
+
+        final String CIPHER_SUITE = "TLS_AES_128_GCM_SHA256";
+        SecurityRealm securityRealm = new KeyStoreBackedSecurityRealm(loadKeyStore("/ca/jks/beetles.keystore"));
+
+        SecurityDomain securityDomain = SecurityDomain.builder()
+                .addRealm("KeystoreRealm", securityRealm)
+                .build()
+                .setDefaultRealmName("KeystoreRealm")
+                .setPrincipalDecoder(new X500AttributePrincipalDecoder("2.5.4.3", 1))
+                .setPreRealmRewriter((String s) -> s.toLowerCase(Locale.ENGLISH))
+                .setPermissionMapper((permissionMappable, roles) -> PermissionVerifier.ALL)
+                .build();
+
+        SSLContext serverContext = new SSLContextBuilder()
+                .setSecurityDomain(securityDomain)
+                .setCipherSuiteSelector(CipherSuiteSelector.fromNamesString(CIPHER_SUITE))
+                .setKeyManager(getKeyManager("/ca/jks/scarab.keystore"))
+                .setNeedClientAuth(true)
+                .build().create();
+
+        SecurityIdentity identity = performConnectionTest(serverContext, "protocol://test-one-way-tls13.org", "wildfly-ssl-test-config-v1_4.xml", CIPHER_SUITE, true);
+        assertNull(identity);
+    }
+
+    @Test
+    public void testTwoWaySSL() throws Exception {
         Assume.assumeTrue("Skipping testTwoWayTLS13, test is not being run on JDK 11.",
                 System.getProperty("java.specification.version").equals("11"));
 
@@ -148,7 +181,69 @@ public class TLS13AuthenticationTest {
         assertEquals("Principal Name", "ladybird", identity.getPrincipal().getName());
     }
 
+    @Test
+    public void testProtocolMismatch() throws Exception {
+        Assume.assumeTrue("Skipping testProtocolMismatch, test is not being run on JDK 11.",
+                System.getProperty("java.specification.version").equals("11"));
+
+        SecurityRealm securityRealm = new KeyStoreBackedSecurityRealm(loadKeyStore("/ca/jks/beetles.keystore"));
+
+        SecurityDomain securityDomain = SecurityDomain.builder()
+                .addRealm("KeystoreRealm", securityRealm)
+                .build()
+                .setDefaultRealmName("KeystoreRealm")
+                .setPrincipalDecoder(new X500AttributePrincipalDecoder("2.5.4.3", 1))
+                .setPreRealmRewriter((String s) -> s.toLowerCase(Locale.ENGLISH))
+                .setPermissionMapper((permissionMappable, roles) -> PermissionVerifier.ALL)
+                .build();
+
+        SSLContext serverContext = new SSLContextBuilder()
+                .setSecurityDomain(securityDomain)
+                .setProtocolSelector(ProtocolSelector.empty().add("TLSv1.2"))
+                .setKeyManager(getKeyManager("/ca/jks/scarab.keystore"))
+                .setTrustManager(getCATrustManager())
+                .setNeedClientAuth(true)
+                .build().create();
+
+        SecurityIdentity identity = performConnectionTest(serverContext, "protocol://test-two-way-tls13.org", "wildfly-ssl-test-config-v1_4.xml", INVALID_SESSION_CIPHER_SUITE);
+        assertNull(identity);
+    }
+
+    @Test
+    public void testCipherSuiteMismatch() throws Exception {
+        Assume.assumeTrue("Skipping testCipherSuiteMismatch, test is not being run on JDK 11.",
+                System.getProperty("java.specification.version").equals("11"));
+
+        SecurityRealm securityRealm = new KeyStoreBackedSecurityRealm(loadKeyStore("/ca/jks/beetles.keystore"));
+
+        SecurityDomain securityDomain = SecurityDomain.builder()
+                .addRealm("KeystoreRealm", securityRealm)
+                .build()
+                .setDefaultRealmName("KeystoreRealm")
+                .setPrincipalDecoder(new X500AttributePrincipalDecoder("2.5.4.3", 1))
+                .setPreRealmRewriter((String s) -> s.toLowerCase(Locale.ENGLISH))
+                .setPermissionMapper((permissionMappable, roles) -> PermissionVerifier.ALL)
+                .build();
+
+        SSLContext serverContext = new SSLContextBuilder()
+                .setSecurityDomain(securityDomain)
+                .setProtocolSelector(ProtocolSelector.empty().add("TLSv1.3"))
+                .setCipherSuiteSelector(CipherSuiteSelector.fromNamesString("TLS_AES_256_GCM_SHA384"))
+                .setKeyManager(getKeyManager("/ca/jks/scarab.keystore"))
+                .setTrustManager(getCATrustManager())
+                .setNeedClientAuth(true)
+                .build().create();
+
+        SecurityIdentity identity = performConnectionTest(serverContext, "protocol://test-two-way-tls13.org", "wildfly-ssl-test-config-v1_4.xml", INVALID_SESSION_CIPHER_SUITE);
+        assertNull(identity);
+    }
+
     private SecurityIdentity performConnectionTest(SSLContext serverContext, String clientUri, String clientConfigFileName, String expectedCipherSuite) throws Exception {
+        return performConnectionTest(serverContext, clientUri, clientConfigFileName, expectedCipherSuite, false);
+    }
+
+
+    private SecurityIdentity performConnectionTest(SSLContext serverContext, String clientUri, String clientConfigFileName, String expectedCipherSuite, boolean oneWay) throws Exception {
         System.setProperty("wildfly.config.url", SSLAuthenticationTest.class.getResource(clientConfigFileName).toExternalForm());
         AccessController.doPrivileged((PrivilegedAction<Integer>) () -> Security.insertProviderAt(new WildFlyElytronProvider(), 1));
 
@@ -182,8 +277,13 @@ public class TLS13AuthenticationTest {
 
         try {
             if (expectedCipherSuite != null) {
-                assertEquals("TLS_AES_128_GCM_SHA256", clientSession.getCipherSuite());
-                assertEquals("TLS_AES_128_GCM_SHA256", serverSession.getCipherSuite());
+                boolean isValid = ! expectedCipherSuite.equals(INVALID_SESSION_CIPHER_SUITE);
+                assertEquals(isValid, clientSession.isValid());
+                assertEquals(expectedCipherSuite, clientSession.getCipherSuite());
+                if (! oneWay) {
+                    assertEquals(isValid, serverSession.isValid());
+                    assertEquals(expectedCipherSuite, serverSession.getCipherSuite());
+                }
             }
             return (SecurityIdentity) serverSession.getValue(SSLUtils.SSL_SESSION_IDENTITY_KEY);
         } finally {
