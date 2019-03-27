@@ -165,4 +165,7 @@ interface ElytronMessages extends BasicLogger {
     @Message(id = 9529, value = "Unsupported algorithm \"%s\" for %s type")
     ConfigXMLParseException xmlUnsupportedAlgorithmForType(@Param Location location, String algorithm, String type);
 
+    @Message(id = 14000, value = "At least one of the '%s' and '%s' cipher-suite attributes must be provided")
+    ConfigXMLParseException atLeastOneCipherSuiteAttributeMustBeProvided(String attribute1, String attribute2);
+
 }
