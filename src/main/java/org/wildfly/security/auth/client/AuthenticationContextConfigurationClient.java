@@ -188,7 +188,7 @@ public final class AuthenticationContextConfigurationClient {
         }
         final SecurityDomain authorizationNameForwardSecurityDomain = configuration.authorizationNameForwardSecurityDomain;
         if (authorizationNameForwardSecurityDomain != null) {
-            configuration = configuration.useForwardedAuthorizationIdentity(null).useAuthorizationPrincipal(authorizationNameForwardSecurityDomain.getCurrentSecurityIdentity().getPrincipal());
+            configuration = configuration.useAuthorizationPrincipal(authorizationNameForwardSecurityDomain.getCurrentSecurityIdentity().getPrincipal());
         }
         final AccessControlContext capturedContext = configuration.getCapturedContext();
         if (capturedContext == null) {
