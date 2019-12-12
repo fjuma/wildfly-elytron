@@ -2639,9 +2639,10 @@ public final class ElytronXmlParser {
         if (selector == null) {
             selector = CipherSuiteSelector.openSslDefault(); // default cipher suites pre TLSv1.3
         }
-        if ((names == null) && xmlVersion.isAtLeast(Version.VERSION_1_5)) {
+        // The following lines should be added back when we're ready to allow TLS 1.3 to be enabled by default
+        /*if ((names == null) && xmlVersion.isAtLeast(Version.VERSION_1_5)) {
             names = CipherSuiteSelector.openSslDefaultCipherSuites(); // default cipher suites for TLSv1.3
-        }
+        }*/
         if (reader.hasNext()) {
             final int tag = reader.nextTag();
             if (tag == START_ELEMENT) {
