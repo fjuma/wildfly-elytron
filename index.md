@@ -15,16 +15,16 @@ Next-generation APIs and SPIs for Application Server Security
 
 <div class="content-grid">
 <div class="content-grid-box content-grid-box-one">
-thing 1
+Authentication
 </div>
 <div class="content-grid-box content-grid-box-two">
-thing 2
+Authoritzation
 </div>
 <div class="content-grid-box content-grid-box-three">
-thing 3
+SSL
 </div>
 <div class="content-grid-box content-grid-box-four">
-thing 4
+Secure Credential Storage
 </div>
 </div>
 
