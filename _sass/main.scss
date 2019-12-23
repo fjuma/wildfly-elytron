@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css?family=PT+Mono|Titillium+Web:200,400,700');
+
+$primary-colour: #1d679c!important;
+$accent-colour: #ff4080!important;
+$primary-colour-light: #3d96cb!important;
+$accent-colour-light: ff6498!important;
+$white-text: #FFF!important;
+$black-text: rgba(0,0,0,.87)!important;
+$title-colour: #004153!important;
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: Roboto, sans-serif;
+}
+h1 {
+  font-size: 24px;
+}
+h2 {
+  font-size: 22px;
+}
+h3 {
+  font-size: 20px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+
+
+a:not(.mdl-navigation__link) {
+    color: $accent-colour;
+}
+
+.mdl-navigation {
+    padding-top: 0px !important;
+}
+.mdl-layout__drawer {
+    border-right: none !important;
+}
+
+.mdl-layout__header {
+    background-color: $title-colour;
+}
+.side-drawer-logo-container {
+    display: flex;
+    justify-content: center;
+    background-color: $title-colour;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+
+    img {
+        max-width: 100%;
+    }
+}
+.large-logo {
+    display: flex;
+    justify-content: center;
+    background-color: $title-colour;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+
+    img {
+        max-width: 100%
+    }
+}
+.component-header {
+  margin-top: 0px;
+  background-color: $primary-colour;
+  color: $white-text;
+  font-size: 25px;
+  padding-left: 25px;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+p, ul {
+    padding: 0 10px;
+}
+.highlight {
+  color: $primary-colour;
+}
+
+.title {
+  color: $primary-colour;
+  text-align: center;
+}
+
+.logo-toolbar-container {
+   margin-top: 13px;
+   margin-bottom: 19px;
+}
+
+// For the blog post layout
+
+.demo-card-square.mdl-card {
+  width: 320px;
+  height: 320px;
+  float: left;
+  margin: 1rem;
+  position: relative;
+}
+.demo-card-square.mdl-card:hover {
+  box-shadow: 0 8px 10px 1px rgba(0, 0, 0, .14), 0 3px 14px 2px rgba(0, 0, 0, .12), 0 5px 5px -3px rgba(0, 0, 0, .2);
+}
+.demo-card-square > .mdl-card__title {
+  color: #fff;
+  height: 160px;
+  background: #03a9f4;
+}
+.demo-card-square > .mdl-card__accent {
+  background: #ff9800;
+}
+
+
+.content-grid {
+    &-box{
+        width:50%;
+        float:left;
+        padding: 30px 10px;
+        text-align: center;
+        box-sizing: border-box;
+        border: 4px solid black;
+        &-one{
+            border-right: 2px solid black;
+            border-bottom: 2px solid black;
+            background: red;
+        }
+        &-two{
+            border-left: 2px solid black;
+            border-bottom: 2px solid black;
+            background: blue;
+        }
+        &-three{
+            border-right: 2px solid black;
+            border-top: 2px solid black;
+            background: orange;
+        }
+        &-four{
+            border-left: 2px solid black;
+            border-top: 2px solid black;
+            background: yellow;
+        }
+    }
+ }

@@ -1,0 +1,10 @@
+- name: Home
+  link: /
+- name: Blog
+  link: /blog.html
+- name: Docs
+  link: https://docs.wildfly.org/18/WildFly_Elytron_Security.html
+- name: GitHub
+  link: https://github.com/wildfly-security/wildfly-elytron
+- name: Releases
+  link: https://github.com/overbaard/overbaard/releases
