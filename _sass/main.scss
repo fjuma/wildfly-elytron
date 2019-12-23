@@ -11,12 +11,13 @@ $title-colour: #004153!important;
 body {
   padding: 0;
   margin: 0;
-  font-family: Roboto, sans-serif;
+  font-family: Open Sans, Arial, sans-serif;
 }
 h1 {
   font-size: 24px;
 }
 h2 {
+  font-family: Open Sans, Arial, sans-serif;
   font-size: 22px;
 }
 h3 {
@@ -72,7 +73,7 @@ a:not(.mdl-navigation__link) {
 }
 .component-header {
   margin-top: 0px;
-  background-color: $primary-colour;
+  background-color: $title-colour;
   color: $white-text;
   font-size: 25px;
   padding-left: 25px;
@@ -89,12 +90,13 @@ p, ul {
 }
 
 .title {
-  color: $primary-colour;
+  color: $title-colour;
   text-align: center;
+  font-family: 'Open Sans', Arial, sans-serif;
 }
 
 .logo-toolbar-container {
-   margin-top: 13px;
+   margin-top: 16px;
    margin-bottom: 19px;
 }
 
@@ -121,6 +123,10 @@ p, ul {
 
 
 .content-grid {
+    &-title {
+        font-size: 25px;
+        font-family: 'Open Sans', Arial, sans-serif;
+    }
     &-box{
         width:50%;
         float:left;
@@ -150,3 +156,200 @@ p, ul {
         }
     }
  }
+
+$breakpoint-m: 48em;
+
+ .grid-wrapper {
+   display: grid;
+   grid-template-columns: repeat(12, 1fr);
+   grid-gap: 1em;
+   clear: both;
+ }
+
+ .width-1-12 {
+   grid-column: span 1;
+ }
+
+ .width-2-12 {
+   grid-column: span 2;
+ }
+
+ .width-3-12 {
+   grid-column: span 3;
+ }
+
+ .width-4-12 {
+   grid-column: span 4;
+ }
+
+ .width-5-12 {
+   grid-column: span 5;
+ }
+
+ .width-6-12 {
+   grid-column: span 6;
+ }
+
+ .width-7-12 {
+   grid-column: span 7;
+ }
+
+ .width-8-12 {
+   grid-column: span 8;
+ }
+
+ .width-9-12 {
+   grid-column: span 9;
+ }
+
+ .width-10-12 {
+   grid-column: span 10;
+ }
+
+ .width-11-12 {
+   grid-column: span 11;
+ }
+
+ .width-12-12 {
+   grid-column: span 12;
+ }
+
+ .width-1-12-m {
+   @media (max-width: $breakpoint-m) {
+     grid-column: span 1;
+   }
+ }
+
+ .width-2-12-m {
+   @media (max-width: $breakpoint-m) {
+     grid-column: span 2;
+   }
+ }
+
+ .width-3-12-m {
+   @media (max-width: $breakpoint-m) {
+     grid-column: span 3;
+   }
+ }
+
+ .width-4-12-m {
+   @media (max-width: $breakpoint-m) {
+     grid-column: span 4;
+   }
+ }
+
+ .width-5-12-m {
+   @media (max-width: $breakpoint-m) {
+     grid-column: span 5;
+   }
+ }
+
+ .width-6-12-m {
+   @media (max-width: $breakpoint-m) {
+     grid-column: span 6;
+   }
+ }
+
+ .width-7-12-m {
+   @media (max-width: $breakpoint-m) {
+     grid-column: span 7;
+   }
+ }
+
+ .width-8-12-m {
+   @media (max-width: $breakpoint-m) {
+     grid-column: span 8;
+   }
+ }
+
+ .width-9-12-m {
+   @media (max-width: $breakpoint-m) {
+     grid-column: span 9;
+   }
+ }
+
+ .width-10-12-m {
+   @media (max-width: $breakpoint-m) {
+     grid-column: span 10;
+   }
+ }
+
+ .width-11-12-m {
+   @media (max-width: $breakpoint-m) {
+     grid-column: span 11;
+   }
+ }
+
+ .width-12-12-m {
+   @media (max-width: $breakpoint-m) {
+     grid-column: span 12;
+   }
+ }
+
+ .callout {
+   padding: 0 1.5rem;
+   text-align: left;
+   margin-top: 1.5rem;
+   display:flex;
+   align-items:center;
+   h2 {
+     font-family: "Titillium Web", sans-serif;
+     font-size: 24px;
+     display: block;
+     float: left;
+     width: 35%;
+     margin: 2rem 1rem;
+     text-transform: uppercase;
+   }
+   p {
+     font-size: 16px;
+     width: 65%;
+     display: block;
+   }
+   &.grey {
+     background-color: #DCDCDC;
+   }
+   &.blue {
+     background-color: #A3DBE8;
+   }
+ }
+
+ .tablet-fullwidth {
+   @media screen and (max-width: 768px) {
+     margin-left: -6rem !important;
+     margin-right: -6rem !important;
+   }
+   @media screen and (max-width: 480px) {
+     margin-left: -2rem !important;
+     margin-right: -2rem !important;
+   }
+ }
+
+@media screen and (max-width: 1505px) {
+  .callout {
+    h2, p {
+      width: 50%;
+    }
+  }
+}
+
+
+@media screen and (max-width: 1024px) {
+  .callout {
+    display: block;
+    padding: 1rem 1.5rem;
+    h2, p {
+      display: block;
+      width: 100%;
+      margin: 1rem 0;
+    }
+  }
+}
+
+.home-section {
+  text-align: center;
+  padding-bottom: 4rem;
+  &:not(:last-of-type){
+    border-bottom: 4px solid white;
+  }
+}

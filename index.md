@@ -10,21 +10,47 @@ title: Home
 </div-->  
 
 <h1 class="title">
-Next-generation APIs and SPIs for Application Server Security
+Java APIs and SPIs for Application Server Security
 </h1>
+
+<div class="grid-wrapper">
+  <div class="grid__item width-12-12 home-section">
+    <div class="callout grey tablet-fullwidth">
+      <h2>Authentication</h2>
+      <p>Provides both HTTP and SASL based authentication mechanisms.</p>
+    </div>
+    <div class="callout blue tablet-fullwidth">
+      <h2>Authorization</h2>
+      <p>Provides a very flexible approach for assigning roles and permissions to a security identity.</p>
+    </div>
+    <div class="callout grey tablet-fullwidth">
+      <h2>SSL/TLS</h2>
+      <p>Allows for centralized SSL/TLS configuration with the ability to configure advanced options such as cipher suites and protocols.</p>
+    </div>
+    <div class="callout blue tablet-fullwidth">
+       <h2>Secure Credential Storage</h2>
+       <p>Allows for secure storage of various credential types.</p>
+    </div>
+    <div class="callout grey tablet-fullwidth">
+        <h2>Standalone Library</h2>
+        <p>Although it was initially developed for the WildFly Application Server, WildFly Elytron is an open-source,
+           standalone library that can be used in other Java server environments.</p>
+    </div>
+  </div>
+</div>
 
 <div class="content-grid">
 <div class="content-grid-box content-grid-box-one">
-Authentication
+<h2 class="content-grid-title">Authentication</h2>
 </div>
 <div class="content-grid-box content-grid-box-two">
-Authoritzation
+<h2 class="content-grid-title">Authorization</h2>
 </div>
 <div class="content-grid-box content-grid-box-three">
-SSL
+<h2 class="content-grid-title">SSL/TLS</h2>
 </div>
 <div class="content-grid-box content-grid-box-four">
-Secure Credential Storage
+<h2 class="content-grid-title">Secure Credential Storage</h2>
 </div>
 </div>
 
