@@ -32,7 +32,7 @@ h5 {
 
 
 a:not(.mdl-navigation__link) {
-    color: $accent-colour;
+    color: $title-colour;
 }
 
 .mdl-navigation {
@@ -81,6 +81,8 @@ a:not(.mdl-navigation__link) {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  text-align: center;
+  font-family: "Titillium Web", sans-serif;
 }
 p, ul {
     padding: 0 10px;
@@ -164,6 +166,13 @@ $breakpoint-m: 48em;
    grid-template-columns: repeat(12, 1fr);
    grid-gap: 1em;
    clear: both;
+
+   h1 {
+       font-family: "Titillium Web", sans-serif;
+       font-size: 96px;
+       text-align: center;
+       color: $title-colour;
+   }
  }
 
  .width-1-12 {
