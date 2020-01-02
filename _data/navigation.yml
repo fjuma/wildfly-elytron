@@ -5,6 +5,6 @@
 - name: Community
   link: /community.html
 - name: Blog
-  link: /blog.html
+  link: /blog/
 - name: GitHub
   link: https://github.com/wildfly-security/wildfly-elytron
