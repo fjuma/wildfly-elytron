@@ -11,7 +11,7 @@ layout: default
         {% if author.emailhash %}
           <img class="headshot" src="https://www.gravatar.com/avatar/{{ author.emailhash }}">
         {% endif %}
-        <p class="byline">By {{ author.name }} | {{ page.date | date: '%B %d, %Y' }}</p>
+        <p class="byline">By <a href="{{ author.bio }}">{{ author.name }}</a> | {{ page.date | date: '%B %d, %Y' }}</p>
       </div>
       <div class="grid__item width-4-12 width-12-12-m">{% include share-page.html url=page.url title=page.title %}</div>
       <div class="grid__item width-12-12">
