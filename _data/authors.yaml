@@ -1,8 +1,13 @@
 darranl:
   name: "Darran Lofthouse"
-  email: "darran.lofthouse@redhat.com"
+  bio: "https://github.com/darranl"
 fjuma:
   name: "Farah Juma"
-  email: "fjuma@redhat.com"
   emailhash: "e07a676199f6ad0af96a61a691b114b3"
   bio: "https://github.com/fjuma"
+aabdelsa:
+  name: Ashley Abdel-Sayed
+  bio: "https://github.com/ashley-abdelsayed98"
+jucook:
+  name: Justin Cook
+  bio: "https://github.com/justinmcook"
