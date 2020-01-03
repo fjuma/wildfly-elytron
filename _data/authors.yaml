@@ -1,6 +1,9 @@
 darranl:
   name: "Darran Lofthouse"
   bio: "https://github.com/darranl"
+dvilkola:
+  name: "Diana Vilkolakova"
+  bio: "https://github.com/Skyllarr"
 fjuma:
   name: "Farah Juma"
   emailhash: "e07a676199f6ad0af96a61a691b114b3"
@@ -11,3 +14,9 @@ aabdelsa:
 jucook:
   name: Justin Cook
   bio: "https://github.com/justinmcook"
+hkalina:
+  name: Honza Kalina
+  bio: "https://github.com/hkalina"
+stuartwdouglas:
+  name: Stuart Douglas
+  bio: "https://github.com/stuartwdouglas"
