@@ -8,17 +8,27 @@ $white-text: #FFF!important;
 $black-text: rgba(0,0,0,.87)!important;
 $title-colour: #004153!important;
 
+$breakpoint-m: 48em;
+
 body {
   padding: 0;
   margin: 0;
-  font-family: Open Sans, Arial, sans-serif;
+//  font-family: Open Sans, Arial, sans-serif;
 }
+
+body div.content {
+  padding: 0 13rem;
+  @media screen and (max-width: 1170px) { padding: 0 0rem; }
+  line-height: 1.2;
+  overflow: none;
+}
+
 h1 {
   font-size: 24px;
 }
 h2 {
-  font-family: Open Sans, Arial, sans-serif;
-  font-size: 22px;
+//  font-family: Open Sans, Arial, sans-serif;
+  font-size: 2.5rem;
 }
 h3 {
   font-size: 20px;
@@ -59,6 +69,10 @@ a:not(.mdl-navigation__link) {
     }
 }
 .large-logo {
+    @media (max-width: $breakpoint-m) {
+         display: none;
+    }
+
     display: flex;
     justify-content: center;
     background-color: $title-colour;
@@ -84,9 +98,10 @@ a:not(.mdl-navigation__link) {
   text-align: center;
   font-family: "Titillium Web", sans-serif;
 }
-p, ul {
-    padding: 0 10px;
+* {
+  font-family: "Titillium Web", sans-serif;
 }
+
 .highlight {
   color: $primary-colour;
 }
@@ -94,12 +109,15 @@ p, ul {
 .title {
   color: $title-colour;
   text-align: center;
-  font-family: 'Open Sans', Arial, sans-serif;
+  font-family: "Titillium Web", sans-serif;
 }
 
 .logo-toolbar-container {
-   margin-top: 16px;
-   margin-bottom: 19px;
+   line-height:48px;
+}
+
+.mdl-layout__header-row{
+    padding: 0 40px 0 60px;
 }
 
 // For the blog post layout
@@ -127,7 +145,7 @@ p, ul {
 .content-grid {
     &-title {
         font-size: 25px;
-        font-family: 'Open Sans', Arial, sans-serif;
+//        font-family: 'Open Sans', Arial, sans-serif;
     }
     &-box{
         width:50%;
@@ -159,7 +177,6 @@ p, ul {
     }
  }
 
-$breakpoint-m: 48em;
 
  .grid-wrapper {
    display: grid;
@@ -169,9 +186,14 @@ $breakpoint-m: 48em;
 
    h1 {
        font-family: "Titillium Web", sans-serif;
-       font-size: 96px;
+       font-size: 70px;
        text-align: center;
        color: $title-colour;
+       margin: 36px 0px 24px;
+      @media (max-width: $breakpoint-m) {
+        font-size: 30px;
+        margin: 18px 0px 12px;
+      }
    }
  }
 
@@ -298,7 +320,7 @@ $breakpoint-m: 48em;
  .callout {
    padding: 0 1.5rem;
    text-align: left;
-   margin-top: 1.5rem;
+   margin-bottom: 1.5rem;
    display:flex;
    align-items:center;
    h2 {
@@ -311,26 +333,16 @@ $breakpoint-m: 48em;
      text-transform: uppercase;
    }
    p {
-     font-size: 16px;
+     font-size: 18px;
      width: 65%;
      display: block;
+     margin: 0 0 0;
    }
    &.grey {
      background-color: #DCDCDC;
    }
    &.blue {
      background-color: #A3DBE8;
-   }
- }
-
- .tablet-fullwidth {
-   @media screen and (max-width: 768px) {
-     margin-left: -6rem !important;
-     margin-right: -6rem !important;
-   }
-   @media screen and (max-width: 480px) {
-     margin-left: -2rem !important;
-     margin-right: -2rem !important;
    }
  }
 
@@ -350,7 +362,7 @@ $breakpoint-m: 48em;
     h2, p {
       display: block;
       width: 100%;
-      margin: 1rem 0;
+      margin: 0 0 1rem 0;
     }
   }
 }
@@ -361,4 +373,8 @@ $breakpoint-m: 48em;
   &:not(:last-of-type){
     border-bottom: 4px solid white;
   }
+}
+
+.mdl-navigation__link {
+  font-size: 17px;
 }

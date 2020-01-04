@@ -22,7 +22,7 @@ body.post {
 }
 .blog-page {
   .blog-list-item {
-    margin-bottom: 5rem;
+    margin-bottom: 3rem;
     p {
       margin: 0;
     }
@@ -83,15 +83,17 @@ body.post {
 }
 
 @media screen and (max-width: $breakpoint-m) {
-  .blog-list-item .share-page {
+  .blog-list-item .share-page, .post-page .share-page {
     text-align: left;
   }
   .blog-page p.byline {
     font-size: 1rem;
     line-height: 1.25rem;
   }
+  .post-page, .blog-page {
+    padding: 0px 10px;
+  }
 }
-.blog-page,
-.post-page {
-  padding-bottom: 6rem;
+.blog-page, .post-page {
+  padding: 10px 20px;
 }

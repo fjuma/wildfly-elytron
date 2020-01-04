@@ -63,12 +63,12 @@
     </div>
     <main class="mdl-layout__content">
         <div class="page-content">
-            {%  if page.url != '/' %}
-            <div class="component-header">
-                {{ page.title }}
-            </div>
+            {%  if page.url == '/' %}
+                <div class="large-logo">
+                    <img src="assets/images/wildfly-elytron-title.png">
+                </div>
             {% endif %}
-            <div class="component-body">
+            <div class="content">
                 {{ content }}
             </div>
         </div>
