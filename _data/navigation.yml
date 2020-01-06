@@ -3,7 +3,7 @@
 - name: Docs
   link: https://docs.wildfly.org/18/WildFly_Elytron_Security.html
 - name: Community
-  link: /community.html
+  link: /community/
 - name: Blog
   link: /blog/
 - name: GitHub
