@@ -383,3 +383,36 @@ a:not(.mdl-navigation__link) {
     font-weight: bold;
   }
 }
+
+a.button-cta {
+  text-align: center;
+  //color: $dark-blue;
+  //background-color: $yellow;
+  border: 2px solid; //$yellow;
+  text-transform: uppercase;
+  text-decoration: none;
+  margin: .5rem;
+  padding: 12px 40px;
+  white-space: nowrap;
+  line-height: 3.5;
+  transition: background .2s ease-in 0s;
+  &:hover, &:active, &:focus {
+    //background-color: $dark-yellow;
+    //border-color: $dark-yellow;
+    //color: $yellow;
+  }
+  @media screen and (max-width: 768px) {
+    line-height: 1.5;
+  }
+}
+
+a.button-cta.secondary {
+  background: none;
+  border: 2px solid; //$yellow;
+  //color: $yellow;
+  &:hover, &:active, &:focus {
+    //background-color: $dark-yellow;
+    //border-color: $dark-yellow;
+    //color: $yellow;
+  }
+}
