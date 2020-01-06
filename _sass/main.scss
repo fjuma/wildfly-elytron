@@ -377,4 +377,9 @@ a:not(.mdl-navigation__link) {
 
 .mdl-navigation__link {
   font-size: 17px;
+
+  &--current {
+    opacity: 1;
+    font-weight: bold;
+  }
 }
