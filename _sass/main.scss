@@ -416,3 +416,9 @@ a.button-cta.secondary {
     //color: $yellow;
   }
 }
+
+.hide-mobile {
+  @media screen and (max-width: 768px) {
+    display: none;
+  }
+}
