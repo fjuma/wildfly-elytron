@@ -39,7 +39,7 @@ These instructions will allow you to run the Elytron website locally for develop
 
 **For more regarding the use of Jekyll, please refer to the [Jekyll Step by Step Tutorial](https://jekyllrb.com/docs/step-by-step/01-setup/).**
 
-## Writing a blog
+## Writing a blog post
 
 To write a blog post:
 
