@@ -20,7 +20,6 @@ title: WildFly Elytron
 #url: "" # the base hostname & protocol for your site, e.g. http://example.com
 #twitter_username: WildFlyAS
 #github_username:  wildfly-security
-fjuma_jboss_developer_url: https://developer.jboss.org/people/fjuma/blog/feeds/posts
 # Build settings
 markdown: kramdown
 theme: minima
@@ -84,6 +83,13 @@ pagination:
   # Optional, the default name of the index file for generated pages (e.g. 'index.html')
   # Without file extension
   # indexpage: 'index'
+
+defaults:
+  -
+    scope:
+      type: "posts"
+    values:
+      permalink: /blog/:title/
 
 ############################################################
 
