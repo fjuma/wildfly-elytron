@@ -7,7 +7,7 @@ $accent-colour-light: ff6498!important;
 $white-text: #FFF!important;
 $black-text: rgba(0,0,0,.87)!important;
 $title-colour: #004153!important;
-$button-highligh-colour: #8EC0D5!important;
+$button-highlight-colour: #8EC0D5!important;
 
 $breakpoint-m: 48em;
 
@@ -385,11 +385,24 @@ a:not(.mdl-navigation__link) {
   }
 }
 
+.hide-mobile {
+  @media screen and (max-width: 768px) {
+    display: none;
+  }
+}
+
+.paginator-btns a {
+  margin: 1rem 0;
+  @media screen and (max-width: 768px) {
+    display: block;
+  }
+}
+
 a.button-cta {
   text-align: center;
   color: $white-text;
   background-color: $title-colour;
-  border: 2px solid; //$yellow;
+  border: 2px solid;
   text-transform: uppercase;
   text-decoration: none;
   padding: 12px 40px;
@@ -397,8 +410,8 @@ a.button-cta {
   line-height: 3.5;
   transition: background .2s ease-in 0s;
   &:hover, &:active, &:focus {
-    background-color: $button-highligh-colour;
-    border-color: $button-highligh-colour;
+    background-color: $button-highlight-colour;
+    border-color: $button-highlight-colour;
     color: $title-colour;
   }
   @media screen and (max-width: 768px) {
@@ -408,17 +421,10 @@ a.button-cta {
 
 a.button-cta.secondary {
   background: none;
-  border: 2px solid; //$yellow;
-  //color: $yellow;
+  border: 2px solid;
   &:hover, &:active, &:focus {
-    background-color: $button-highligh-colour;
-    border-color: $button-highligh-colour;
+    background-color: $button-highlight-colour;
+    border-color: $button-highlight-colour;
     color: $title-colour;
-  }
-}
-
-.hide-mobile {
-  @media screen and (max-width: 768px) {
-    display: none;
   }
 }
