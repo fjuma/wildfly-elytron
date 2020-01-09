@@ -7,6 +7,7 @@ $accent-colour-light: ff6498!important;
 $white-text: #FFF!important;
 $black-text: rgba(0,0,0,.87)!important;
 $title-colour: #004153!important;
+$button-highligh-colour: #8EC0D5!important;
 
 $breakpoint-m: 48em;
 
@@ -386,8 +387,8 @@ a:not(.mdl-navigation__link) {
 
 a.button-cta {
   text-align: center;
-  //color: $dark-blue;
-  //background-color: $yellow;
+  color: $white-text;
+  background-color: $title-colour;
   border: 2px solid; //$yellow;
   text-transform: uppercase;
   text-decoration: none;
@@ -396,9 +397,9 @@ a.button-cta {
   line-height: 3.5;
   transition: background .2s ease-in 0s;
   &:hover, &:active, &:focus {
-    //background-color: $dark-yellow;
-    //border-color: $dark-yellow;
-    //color: $yellow;
+    background-color: $button-highligh-colour;
+    border-color: $button-highligh-colour;
+    color: $title-colour;
   }
   @media screen and (max-width: 768px) {
     line-height: 1.5;
@@ -410,9 +411,9 @@ a.button-cta.secondary {
   border: 2px solid; //$yellow;
   //color: $yellow;
   &:hover, &:active, &:focus {
-    //background-color: $dark-yellow;
-    //border-color: $dark-yellow;
-    //color: $yellow;
+    background-color: $button-highligh-colour;
+    border-color: $button-highligh-colour;
+    color: $title-colour;
   }
 }
 
