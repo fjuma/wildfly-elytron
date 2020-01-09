@@ -16,13 +16,6 @@ layout: default
       <div class="grid__item width-4-12 width-12-12-m">{% include share-page.html url=page.url title=page.title %}</div>
       <div class="grid__item width-12-12">
           {{ content }}
-          {% if page.bibquery %}
-            {% assign publications = site.data.publications %}
-            {% for query in page.bibquery %}
-              {% assign publications = publications | where_exp: "pub", query %}
-            {% endfor %}
-            {% include publication-entries.html %}
-          {% endif %}
       </div>
     </div>
   </div>
