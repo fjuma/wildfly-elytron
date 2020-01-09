@@ -7,6 +7,11 @@ $breakpoint-m: 48em;
   clear: both;
 }
 
+.width-2-12 {
+  grid-column: span 2;
+}
+
+
 .width-4-12 {
   grid-column: span 4;
 }
@@ -19,6 +24,16 @@ $breakpoint-m: 48em;
   grid-column: span 12;
 }
 
+.width-10-12 {
+  grid-column: span 10;
+}
+
+.width-2-12-m {
+  @media (max-width: $breakpoint-m) {
+    grid-column: span 2;
+  }
+}
+
 .width-4-12-m {
   @media (max-width: $breakpoint-m) {
     grid-column: span 4;
@@ -28,6 +43,12 @@ $breakpoint-m: 48em;
 .width-8-12-m {
   @media (max-width: $breakpoint-m) {
     grid-column: span 8;
+  }
+}
+
+.width-10-12-m {
+  @media (max-width: $breakpoint-m) {
+    grid-column: span 10;
   }
 }
 
