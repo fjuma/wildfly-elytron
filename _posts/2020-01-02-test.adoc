@@ -16,7 +16,14 @@ To add new posts, simply add a file in the `_posts` directory that follows the c
 
 Jekyll also offers powerful support for code snippets:
 
-[source,ruby]
+[source,shell]
 puts "Hello, World!"
+
+[source,java]
+----
+private void print(String s) {
+   System.out.println(s);
+}
+----
 
 Check out the https://jekyllrb.com/docs/home[docs] for more info on how to get the most out of Jekyll.

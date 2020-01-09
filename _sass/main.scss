@@ -12,7 +12,7 @@ body {
   margin: 0;
 }
 
-body div.content {
+body .page-content > .content {
   padding: 0 13rem;
   @media screen and (max-width: 1170px) { padding: 0 0rem; }
   line-height: 1.2;
@@ -59,6 +59,12 @@ a:not(.mdl-navigation__link) {
     background-repeat: no-repeat;
     background-size: cover;
     position: relative;
+    color: $white-text;
+
+    h3 {
+        line-height: initial;
+        margin: 10px 0px;
+    }
 
     img {
         max-width: 100%;
@@ -297,3 +303,126 @@ a.button-cta.secondary {
     color: $title-colour;
   }
 }
+
+
+
+
+pre, pre span {
+  color: #be9100;
+}
+
+code, pre, pre span {
+  background-color: inherit;
+  padding: 0;
+  a {
+    text-decoration: none;
+    color: inherit;
+    font: inherit;
+  }
+  font-family: 'Roboto Mono', monospace;
+}
+
+pre {
+ background: #282a36;
+ overflow: inherit;
+ padding: 0;
+}
+
+pre.highlight {
+ border: 1px solid #4695EB;
+ padding: 1rem;
+ line-height: 1.2em;
+ overflow-x: auto;
+}
+
+pre > code,
+table code {
+  border: none;
+  background-color: transparent;
+}
+
+
+pre > code,
+table code {
+  border: none;
+  background-color: transparent;
+}
+
+.hljs {
+  display: inline;
+  overflow: inherit;
+  overflow-x: inherit;
+  overflow-y: hidden;
+  background: inherit;
+  padding: 0;
+  line-height: 1.4em;
+}
+
+.hljs-built_in,
+.hljs-selector-tag,
+.hljs-section,
+.hljs-link,
+.hljs-function,
+.hljs-params {
+  color: $white;
+}
+
+.hljs-keyword,
+.hljs-tag, .hljs-tag .hljs-name {
+  color: $link;
+}
+
+.hljs,
+.hljs-subst {
+  color: $gray-0;
+}
+
+.hljs-title,
+.hljs-attr {
+  color: $yellow;
+}
+
+.hljs-string,
+.hljs-meta,
+.hljs-name,
+.hljs-type,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition,
+.hljs-variable,
+.hljs-template-tag,
+.hljs-template-variable {
+  color: $orange;
+}
+
+.hljs-comment,
+.hljs-quote,
+.hljs-deletion {
+  color: $gray-1;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-title,
+.hljs-section,
+.hljs-doctag,
+.hljs-type,
+.hljs-name,
+.hljs-strong {
+  // font-weight: bold;
+}
+
+.hljs-literal,
+.hljs-number {
+  color: $yellow;
+}
+
+.hljs-emphasis {
+  // font-style: italic;
+}
+
+.blog-page, .post-page, .getting-started-page {
+  padding: 10px 20px;
+}
+
