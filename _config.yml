@@ -26,6 +26,14 @@ theme: minima
 plugins:
   - jekyll-feed
 
+asciidoctor:
+  base_dir: :docdir
+  safe: unsafe
+  attributes:
+    source-highlighter: highlightjs
+    sectanchors: ''
+    icons: font
+
 ############################################################
 # Site configuration for the Jekyll 3 Pagination Gem
 # The values here represent the defaults if nothing is set
