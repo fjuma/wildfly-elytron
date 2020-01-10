@@ -34,7 +34,6 @@
     <header class="mdl-layout__header mdl-layout__header--scroll">
         <div class="mdl-layout__header-row ">
             <!-- Title -->
-            <!--span class="mdl-layout-title logo-toolbar-container"><img src="/assets/images/wildfly-elytron-title-menu-side.png"></span-->
             <span class="mdl-layout-title"><h3>Wild<strong>Fly</strong>  Elytron</h3></span>
             <!-- Add spacer, to align navigation to the right -->
             <div class="mdl-layout-spacer"></div>
@@ -53,7 +52,7 @@
         </div>
     </header>
     <div class="mdl-layout__drawer">
-        <div class="side-drawer-logo-container"><h3>Wild<strong>Fly</strong>  Elytron</h3><!--img src="/assets/images/wildfly-elytron-title-menu.png"--></div>
+        <div class="side-drawer-logo-container"><h3>Wild<strong>Fly</strong>  Elytron</h3></div>
         <nav class="mdl-navigation">
             {% for item in site.data.navigation %}
             {% if page.url == item.link %}
@@ -72,7 +71,6 @@
         <div class="page-content">
             {%  if page.url == '/' %}
                 <div class="large-logo">
-                    <!--img src="assets/images/wildfly-elytron-title.png"-->
                     <h1>Wild<strong>Fly</strong> Elytron</h1>
                 </div>
             {% endif %}
