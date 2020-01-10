@@ -18,7 +18,7 @@ it is possible to use Elytron outside of WildFly.
 [%hardbreaks]
 https://github.com/wildfly-security/wildfly-elytron[Git Repository]
 https://issues.redhat.com/projects/ELY[Issue Tracker]
-http://wildfly-security.github.io/wildfly-elytron/javadoc[Javadoc]
+https://wildfly-security.github.io/wildfly-elytron/javadoc[Javadoc]
  
 === WildFly Core
  
