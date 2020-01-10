@@ -25,7 +25,7 @@
         gtag('js', new Date());
         gtag('config', 'UA-135301155-1');
     </script>
-    <script>
+    <!--script>
         window.addEventListener('load',
             function () {
                 if(location.href.indexOf('/blog') > -1) {
@@ -33,7 +33,7 @@
                     blogMenuItem.className += " mdl-navigation__link--current";
                 }
         });
-    </script>
+    </script-->
 </head>
 <body>
 
@@ -51,6 +51,8 @@
                 {% for item in site.data.navigation %}
                     {% if page.url == item.link %}
                         {% assign class = 'mdl-navigation__link mdl-navigation__link--current' %}
+                    {% elsif page.url contains 'blog' and item.name == 'Blog' %}
+                        {% assign class = 'mdl-navigation__link mdl-navigation__link--current' %}
                     {% else %}
                         {% assign class = 'mdl-navigation__link' %}
                     {% endif %}
@@ -64,6 +66,8 @@
         <nav class="mdl-navigation">
             {% for item in site.data.navigation %}
             {% if page.url == item.link %}
+            {% assign class = 'mdl-navigation__link mdl-navigation__link--current' %}
+            {% elsif page.url contains 'blog' and item.name == 'Blog' %}
             {% assign class = 'mdl-navigation__link mdl-navigation__link--current' %}
             {% else %}
             {% assign class = 'mdl-navigation__link' %}
