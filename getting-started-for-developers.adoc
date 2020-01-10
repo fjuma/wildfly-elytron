@@ -4,8 +4,8 @@ title: Getting Started For Developers
 permalink: /getting-started-for-developers/
 ---
 = Getting Started for Developers
-
 :toc:
+:toc-title:
 
 == A Quick Introduction to the Projects
 
