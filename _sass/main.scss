@@ -24,6 +24,7 @@ h1 {
 }
 h2 {
   font-size: 2.5rem;
+  color: $black;
 }
 h3 {
   font-size: 20px;
@@ -210,6 +211,7 @@ a:not(.mdl-navigation__link) {
    }
    p {
      font-size: 18px;
+     color: $black;
      width: 65%;
      display: block;
      margin: 0 0 0;
@@ -424,6 +426,10 @@ table code {
 
 .blog-page, .post-page, .getting-started-page {
   padding: 10px 20px;
+  p {
+    font-size: 16px;
+    color: $black;
+  }
 }
 
 .getting-started-page {
@@ -439,5 +445,5 @@ table code {
    }
    * {
         font-family: "Titillium Web", sans-serif;
-     }
+   }
 }
