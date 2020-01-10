@@ -427,7 +427,17 @@ table code {
 }
 
 .getting-started-page {
-    h2 {
+   h1 {
        color: $title-colour;
+       font-size: 35px;
    }
+   h2 {
+        font-size: 20px;
+   }
+   h3 {
+        font-size: 18px;
+   }
+   * {
+        font-family: "Titillium Web", sans-serif;
+     }
 }
