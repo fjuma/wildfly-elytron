@@ -24,7 +24,6 @@ h1 {
 }
 h2 {
   font-size: 2.5rem;
-  color: $black;
 }
 h3 {
   font-size: 20px;
@@ -65,10 +64,15 @@ a:not(.mdl-navigation__link) {
     h3 {
         line-height: initial;
         margin: 10px 0px;
+        //color: $white-text;
     }
 
     img {
         max-width: 100%;
+    }
+
+    * {
+          color: $white-text;
     }
 }
 .large-logo {
@@ -92,6 +96,7 @@ a:not(.mdl-navigation__link) {
     * {
       font-family: "Titillium Web", sans-serif;
       font-size: 46px;
+      color: $white-text;
     }
 }
 .component-header {
@@ -115,6 +120,9 @@ a:not(.mdl-navigation__link) {
   color: $title-colour;
   text-align: center;
   font-family: "Titillium Web", sans-serif;
+  b {
+      color: $title-colour;
+  }
 }
 
 .logo-toolbar-container {
@@ -123,6 +131,16 @@ a:not(.mdl-navigation__link) {
 
 .mdl-layout__header-row{
     padding: 0 40px 0 60px;
+}
+
+.mdl-layout-title {
+   * {
+      color: $white-text;
+   }
+}
+
+.material-icons {
+    color: $white-text;
 }
 
  .grid-wrapper {
@@ -211,7 +229,6 @@ a:not(.mdl-navigation__link) {
    }
    p {
      font-size: 18px;
-     color: $black;
      width: 65%;
      display: block;
      margin: 0 0 0;
@@ -428,7 +445,6 @@ table code {
   padding: 10px 20px;
   p {
     font-size: 16px;
-    color: $black;
   }
 }
 
@@ -446,4 +462,8 @@ table code {
    * {
         font-family: "Titillium Web", sans-serif;
    }
+}
+
+* {
+   color: $black;
 }
