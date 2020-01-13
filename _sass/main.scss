@@ -65,7 +65,6 @@ a:not(.mdl-navigation__link) {
     h3 {
         line-height: initial;
         margin: 10px 0px;
-        //color: $white-text;
     }
 
     img {
@@ -431,17 +430,10 @@ table code {
 .hljs-doctag,
 .hljs-type,
 .hljs-name,
-.hljs-strong {
-  // font-weight: bold;
-}
 
 .hljs-literal,
 .hljs-number {
   color: $yellow;
-}
-
-.hljs-emphasis {
-  // font-style: italic;
 }
 
 .blog-page, .post-page, .getting-started-page {
