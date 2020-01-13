@@ -17,6 +17,12 @@ body .page-content > .content {
   @media screen and (max-width: 1170px) { padding: 0 0rem; }
   line-height: 1.2;
   overflow: none;
+  * {
+        font-family: "Titillium Web", sans-serif;
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+        }
+  }
 }
 
 h1 {
@@ -339,7 +345,7 @@ code, pre, pre span {
     font: inherit;
   }
   font-family: 'Roboto Mono', monospace;
-  font-size: 16px;
+  font-size: 18px;
   white-space: pre-wrap;
 }
 
@@ -446,7 +452,7 @@ table code {
 .blog-page, .post-page, .getting-started-page {
   padding: 10px 20px;
   p {
-    font-size: 16px;
+    font-size: 18px;
   }
 }
 
@@ -454,15 +460,19 @@ table code {
    h1 {
        color: $title-colour;
        font-size: 35px;
+       font-weight: bold;
    }
    h2 {
-        font-size: 20px;
+        font-size: 22px;
+        font-weight: bold;
    }
    h3 {
-        font-size: 18px;
+        font-size: 20px;
+        font-weight: bold;
    }
    * {
         font-family: "Titillium Web", sans-serif;
+        font-size: 18px;
    }
 }
 

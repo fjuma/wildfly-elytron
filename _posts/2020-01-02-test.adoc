@@ -26,4 +26,17 @@ private void print(String s) {
 }
 ----
 
+=== Another section
+
+This is a section. Blah Blah.
+Test test test.
+
+==== Another subsection
+
+
+This is a section. Blah Blah.
+Test test test.
+
+== Summary
+
 Check out the https://jekyllrb.com/docs/home[docs] for more info on how to get the most out of Jekyll.
