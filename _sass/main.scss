@@ -17,12 +17,7 @@ body .page-content > .content {
   @media screen and (max-width: 1170px) { padding: 0 0rem; }
   line-height: 1.2;
   overflow: none;
-  * {
-        font-family: "Titillium Web", sans-serif;
-        h1, h2, h3, h4, h5, h6 {
-            font-weight: 600;
-        }
-  }
+
 }
 
 h1 {
@@ -451,7 +446,7 @@ table code {
 
 .blog-page, .post-page, .getting-started-page {
   padding: 10px 20px;
-  p {
+  a, p {
     font-size: 18px;
   }
 }
