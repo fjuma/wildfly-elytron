@@ -46,7 +46,7 @@
                     {% else %}
                         {% assign class = 'mdl-navigation__link' %}
                     {% endif %}
-                    <a class="{{class}} {{ item.name }}-menuitem" href="{{ item.link }}">{{ item.name }}</a>
+                    <a class="{{class}} {{ item.name }}-menuitem" href="{{ item.link | relative_url }}">{{ item.name }}</a>
                 {% endfor %}
             </nav>
         </div>
