@@ -7,7 +7,7 @@ layout: null
 
     <channel>
         <title>{{ site.title }}</title>
-        <link>{{ site.url }}</link>
+        <link>{{ site.url }}{{ site.baseurl }}</link>
         <description>{{ site.description }}</description>
         <lastBuildDate>{{ site.time | date_to_rfc822 }}</lastBuildDate>
         {% for post in site.posts limit:10 %}
