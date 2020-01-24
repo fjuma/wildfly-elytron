@@ -21,7 +21,7 @@ gem "github-pages", "~> 203", group: :jekyll_plugins
 group :jekyll_plugins do
   gem "jekyll-feed", "~> 0.13.0"
   gem 'jekyll-asciidoc'
-  gem 'jekyll-paginate-v2'
+  gem 'jekyll-paginate'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
