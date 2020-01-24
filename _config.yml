@@ -19,7 +19,7 @@ title: WildFly Elytron
 url: "https://fjuma.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: WildFlyAS
 # Build settings
-#baseurl: "/wildfly-elytron"
+baseurl: "/wildfly-elytron"
 markdown: kramdown
 theme: minima
 plugins:
