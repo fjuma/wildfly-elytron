@@ -47,9 +47,9 @@
                         {% assign class = 'mdl-navigation__link' %}
                     {% endif %}
                     {% if item.name == 'Docs' or item.name == 'GitHub' %}
-                         <a class="{{class}} e {{ item.name }}-menuitem" href="{{ item.link }}">{{ item.name }}</a>
+                         <a class="{{class}} {{ item.name }}-menuitem" href="{{ item.link }}">{{ item.name }}</a>
                     {% else %}
-                         <a class="{{class}} f {{ item.name }}-menuitem" href="{{ item.link | relative_url }}">{{ item.name }}</a>
+                         <a class="{{class}} {{ item.name }}-menuitem" href="{{ item.link | relative_url }}">{{ item.name }}</a>
                     {% endif %}
                 {% endfor %}
             </nav>

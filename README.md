@@ -38,7 +38,7 @@ The following steps are based on the [Jekyll static site generator docs](https:/
         
    Please refer to these [instructions](https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers) to fix this.       
         
-8. Now browse to http://localhost:4000
+8. Now browse to http://localhost:4000/wildfly-elytron/
 
 > If you encounter any unexpected errors during the above, please refer to the [troubleshooting](https://jekyllrb.com/docs/troubleshooting/#configuration-problems) page or the [requirements](https://jekyllrb.com/docs/installation/#requirements) page, as you might be missing development headers or other prerequisites.
 
@@ -53,7 +53,7 @@ To write a blog post:
     - `emailhash` is used to fetch your picture from the Gravatar service
 - Create a blog post entry under [_posts](https://github.com/wildfly-security/wildfly-elytron/tree/gh-pages/_posts)
     - The file name should be `yyyy-mm-dd-slug.adoc`
-- Your blog post should be in asciidoc format (take a look at other blogs posts in the _posts directoy to see examples)
-    - To view your blog post locally, browse to http://localhost:4000/blog and then click on your post
+- Your blog post should be in asciidoc format (take a look at other blogs posts in the _posts directory to see examples)
+    - To view your blog post locally, browse to http://localhost:4000/wildfly-elytron/blog and then click on your post
 - Submit a pull request against the gh-pages branch
 
