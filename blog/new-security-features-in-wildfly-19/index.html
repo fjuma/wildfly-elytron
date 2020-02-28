@@ -137,8 +137,9 @@
           <div class="paragraph">
 <p>This blog post highlights the new security features that have been included in WildFly 19.</p>
 </div>
-<div class="sect2">
-<h3 id="support-for-microprofile-jwt-1-1"><a class="anchor" href="#support-for-microprofile-jwt-1-1"></a>Support for MicroProfile JWT 1.1</h3>
+<div class="sect1">
+<h2 id="support-for-microprofile-jwt-1-1"><a class="anchor" href="#support-for-microprofile-jwt-1-1"></a>Support for MicroProfile JWT 1.1</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>Support has been added for the <a href="https://microprofile.io/project/eclipse/microprofile-jwt-auth">Eclipse MicroProfile JWT RBAC</a>
 1.1.1 specification with the addition of a new <code>microprofile-jwt-smallrye</code> subsystem. Traditionally, security for
@@ -148,33 +149,42 @@ provides the ability for authenticated identities to be established from the con
 tokens received with each request.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="support-for-tls-1-3"><a class="anchor" href="#support-for-tls-1-3"></a>Support for TLS 1.3</h3>
+</div>
+<div class="sect1">
+<h2 id="support-for-tls-1-3"><a class="anchor" href="#support-for-tls-1-3"></a>Support for TLS 1.3</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>It is now possible to use TLS 1.3 with WildFly when running against JDK 11 or higher. However, there is an important
 caveat to be aware of. If JDK 11 is in use and if there is a very large number of TLS 1.3 requests being made, it is
 possible that a drop in performance (throughput and response time) will occur compared to when using TLS 1.2 with WildFly.
-Upgrading to newer JDK versions should improve performance. For this reason, the use of TLS 1.3 is currently disabled by
-default. TLS 1.3 can be enabled by configuring the new <code>cipher-suite-names</code> attribute in the SSL Context resource definition
-in the Elytron subsystem. It is recommended to test for performance degradation prior to enabling TLS 1.3 in a production environment.</p>
+Simply upgrading to newer JDK versions should improve performance. For this reason, the use of TLS 1.3 is currently
+disabled by default. It is recommended to test for performance degradation prior to enabling TLS 1.3 in a production
+environment. Take a look at this <a href="https://wildfly-security.github.io/wildfly-elytron/blog/tls-13-with-wildfly/">blog post</a>
+to learn how to enable TLS 1.3.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="web-services-integration-with-elytron"><a class="anchor" href="#web-services-integration-with-elytron"></a>Web Services Integration with Elytron</h3>
+</div>
+<div class="sect1">
+<h2 id="web-services-integration-with-elytron"><a class="anchor" href="#web-services-integration-with-elytron"></a>Web Services Integration with Elytron</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>Elytron already provides an API and a configuration file that can be used to configure client side security for outgoing
 calls. It is now possible to use this Elytron client configuration with Web Services deployments.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="resolution-of-system-properties-in-permission-files"><a class="anchor" href="#resolution-of-system-properties-in-permission-files"></a>Resolution of System Properties in Permission Files</h3>
+</div>
+<div class="sect1">
+<h2 id="resolution-of-system-properties-in-permission-files"><a class="anchor" href="#resolution-of-system-properties-in-permission-files"></a>Resolution of System Properties in Permission Files</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>It is now possible to enable/disable the resolution of system properties in the permissions.xml and jboss-permissions.xml
 files. More details can be found <a href="https://github.com/wildfly/wildfly/blob/master/docs/src/main/asciidoc/_admin-guide/subsystem-configuration/EE_Application_Deployment_Configuration.adoc#jboss-descriptor-property-replacement">here</a>.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="where-to-find-more-information"><a class="anchor" href="#where-to-find-more-information"></a>Where to Find More Information</h3>
+</div>
+<div class="sect1">
+<h2 id="where-to-find-more-information"><a class="anchor" href="#where-to-find-more-information"></a>Where to Find More Information</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>Be sure to check out our <a href="https://wildfly-security.github.io/wildfly-elytron/blog/">blog posts</a> page, where we have all our
 blog posts on Elytron features. If there is an Elytron topic you’d like to see a blog post on, feel free to let us know
@@ -182,6 +192,7 @@ on WildFly’s <a href="https://groups.google.com/forum/#!forum/wildfly">user fo
 </div>
 <div class="paragraph">
 <p>To learn more about Elytron, check out our new <a href="https://wildfly-security.github.io/wildfly-elytron/">site</a>.</p>
+</div>
 </div>
 </div>
       </div>
