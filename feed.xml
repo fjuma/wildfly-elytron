@@ -5,7 +5,21 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description>WildFly Elytron: Security, Authentication, and Authorization SPIs for the WildFly project</description>
-        <lastBuildDate>Fri, 28 Feb 2020 17:07:19 +0000</lastBuildDate>
+        <lastBuildDate>Fri, 28 Feb 2020 18:31:46 +0000</lastBuildDate>
+        
+        <item>
+            <title>New Security Features in WildFly 19</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-in-wildfly-19/
+            </link>
+            <description>
+                This blog post highlights the new security features that have been included in WildFly 19. Support for MicroProfile JWT 1.1 Support has been added for the Eclipse MicroProfile JWT RBAC 1.1.1 specification with the addition of a new microprofile-jwt-smallrye subsystem. Traditionally, security for deployments would depend on resources defined within...
+            </description>
+            <pubDate>Fri, 28 Feb 2020 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-in-wildfly-19/
+            </guid>
+        </item>
         
         <item>
             <title>Planned Security Features for WildFly 19</title>
@@ -130,20 +144,6 @@
             <pubDate>Wed, 12 Jun 2019 00:00:00 +0000</pubDate>
             <guid>
                 https://darranl.blogspot.com/2019/06/wildfly-elytron-aggregation-of.html
-            </guid>
-        </item>
-        
-        <item>
-            <title>Security Features for WildFly 18</title>
-            <link>
-                https://developer.jboss.org/people/fjuma/blog/2019/06/12/security-features-for-wildfly-18
-            </link>
-            <description>
-                
-            </description>
-            <pubDate>Wed, 12 Jun 2019 00:00:00 +0000</pubDate>
-            <guid>
-                https://developer.jboss.org/people/fjuma/blog/2019/06/12/security-features-for-wildfly-18
             </guid>
         </item>
         
