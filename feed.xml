@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description>WildFly Elytron: Security, Authentication, and Authorization SPIs for the WildFly project</description>
-        <lastBuildDate>Mon, 09 Mar 2020 14:42:10 +0000</lastBuildDate>
+        <lastBuildDate>Wed, 11 Mar 2020 18:06:22 +0000</lastBuildDate>
         
         <item>
             <title>TLS 1.3 with WildFly</title>
