@@ -197,8 +197,8 @@ mvn wildfly:deploy</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>We can now access our two virtual hosts using <a href="http://app1.com" class="bare">http://app1.com</a> and <a href="http://app2.com" class="bare">http://app2.com</a>. In the next few sections,
-we&#8217;re going to go through the steps need to configure one-way SSL and provide support for SNI.</p>
+<p>We can now access our two virtual hosts using <a href="http://app1.com:8080" class="bare">http://app1.com:8080</a> and <a href="http://app2.com:8080" class="bare">http://app2.com:8080</a>. In the next few sections,
+we&#8217;re going to go through the steps needed to configure one-way SSL and provide support for SNI matching.</p>
 </div>
 </div>
 </div>
@@ -207,8 +207,8 @@ we&#8217;re going to go through the steps need to configure one-way SSL and prov
 <div class="sectionbody">
 <div class="paragraph">
 <p>We need a certificate for each virtual host that we have configured. Normally, you would obtain a signed
-certificate from a trusted certificate authority. For this example, we&#8217;re simply going to generate and
-make use of self-signed certificates as shown in the following commands:</p>
+certificate from a trusted certificate authority for each virtual host. For this example, we&#8217;re simply
+going to generate and make use of self-signed certificates as shown in the following commands:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -222,7 +222,7 @@ make use of self-signed certificates as shown in the following commands:</p>
 <code>app2.com</code>, and one that we want to use for <code>localhost</code>.</p>
 </div>
 <div class="sect2">
-<h3 id="sni-configuration"><a class="anchor" href="#sni-configuration"></a>SNI Configuration</h3>
+<h3 id="sni-matching-configuration"><a class="anchor" href="#sni-matching-configuration"></a>SNI Matching Configuration</h3>
 <div class="paragraph">
 <p>Now that we have configured our server keystore, our next step is to generate a few key managers that will be used
 to select each of the above certificates:</p>
@@ -286,7 +286,7 @@ reload</code></pre>
 <p>Now that we&#8217;ve enabled server side SNI matching, we can use our browser to access <code>app1.com</code> and <code>app2.com</code>
 via HTTPS. Let&#8217;s first try to access <a href="https://app1.com:8443" class="bare">https://app1.com:8443</a>. Note that the browser is going to add the SNI
 extension with value <code>app1.com</code> in the ClientHello message it sends to the server at the beginning of the
-TLS handshake. Note that since the server&#8217;s certificate is self-signed, it won&#8217;t be trusted by your browser.
+TLS handshake. Now, since the server&#8217;s certificate is self-signed, it won&#8217;t be trusted by your browser.
 You&#8217;ll need to manually confirm that this certificate is trusted or configure your browser to trust it.
 Inspect the certificate that was presented by the server. Notice that it&#8217;s the certificate for <code>app1.com</code>.</p>
 </div>
