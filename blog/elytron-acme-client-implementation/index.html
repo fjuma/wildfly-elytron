@@ -143,7 +143,7 @@ project provides a Java ACME client SPI that has been integrated in WildFly for 
 making it possible to
 <a href="https://developer.jboss.org/people/fjuma/blog/2018/08/31/obtaining-certificates-from-lets-encrypt-using-the-wildfly-cli">automatically obtain and manage</a> signed certificates from any certificate
 authority that implements the ACME protocol using WildFly CLI commands. It is also possible to integrate Elytron&#8217;s
-ACME client SPI in other HTTPS server environments. In this blog post, we&#8217;re
+ACME client SPI in other web server environments. In this blog post, we&#8217;re
 going to take a closer look at this SPI and how to make use of it.</p>
 </div>
 <div class="paragraph">
@@ -204,7 +204,7 @@ implemented as specified in <a href="https://tools.ietf.org/html/rfc8555">RFC 85
 abstract methods in <code>AcmeClientSpi</code>, <a href="https://wildfly-security.github.io/wildfly-elytron/1.12.x/full-javadoc/org/wildfly/security/x500/cert/acme/AcmeClientSpi.html#proveIdentifierControl(org.wildfly.security.x500.cert.acme.AcmeAccount,java.util.List)">proveIdentifierControl</a>
 and <a href="https://wildfly-security.github.io/wildfly-elytron/1.12.x/full-javadoc/org/wildfly/security/x500/cert/acme/AcmeClientSpi.html#cleanupAfterChallenge(org.wildfly.security.x500.cert.acme.AcmeAccount,org.wildfly.security.x500.cert.acme.AcmeChallenge)">cleanupAfterChallenge</a>.
 These are the only two methods that a class that extends <code>AcmeClientSpi</code> is required to implement. This means that to
-make use of Elytron&#8217;s <code>AcmeClientSpi</code> in your HTTPS server environment, the main step is to create a class that extends
+make use of Elytron&#8217;s <code>AcmeClientSpi</code> in your web server environment, the main step is to create a class that extends
 <code>AcmeClientSpi</code> and implements <code>proveIdentifierControl</code> and <code>cleanupAfterChallenge</code>. We&#8217;ll see how your <code>proveIdentifierControl</code>
 and <code>cleanUpAfterChallenge</code> method implementations will get used in the section on
 <a href="#obtaining-a-certificate-from-a-certificate-authority">obtaining a certificate from a certificate authority</a>.</p>
@@ -262,7 +262,7 @@ simply deletes the file that was created to prove control of the identifier asso
 <div class="paragraph">
 <p>Once you have a created a class that extends <code>AcmeClientSpi</code> and implements the two methods that have
 been described above, you are ready to start using your ACME client to obtain certificates for your
-HTTPS server:</p>
+web server:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -375,15 +375,15 @@ generating the certificate signing request that will be sent to the certificate 
 <div class="paragraph">
 <p>Notice that the <code>obtainCertificateChain</code> method returns an <a href="https://wildfly-security.github.io/wildfly-elytron/1.12.x/full-javadoc/org/wildfly/security/x500/cert/X509CertificateChainAndSigningKey.html">X509CertificateChainAndSigningKey</a>,
 which consists of the X.509 certificate chain that was obtained from the certificate authority as well as the private key for your
-HTTPS server that the ACME client generated for you. These can be obtained using the <a href="https://wildfly-security.github.io/wildfly-elytron/1.12.x/full-javadoc/org/wildfly/security/x500/cert/X509CertificateChainAndSigningKey.html#getCertificateChain()">X509CertificateChainAndSigningKey#getCertificateChain</a> method and
+web server that the ACME client generated for you. These can be obtained using the <a href="https://wildfly-security.github.io/wildfly-elytron/1.12.x/full-javadoc/org/wildfly/security/x500/cert/X509CertificateChainAndSigningKey.html#getCertificateChain()">X509CertificateChainAndSigningKey#getCertificateChain</a> method and
 the <a href="https://wildfly-security.github.io/wildfly-elytron/1.12.x/full-javadoc/org/wildfly/security/x500/cert/X509CertificateChainAndSigningKey.html#getSigningKey()">X509CertificateChainAndSigningKey#getSigningKey</a> method. You can store this key pair in a Java key store.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="automating-certificate-renewals"><a class="anchor" href="#automating-certificate-renewals"></a>Automating certificate renewals</h3>
 <div class="paragraph">
-<p>Some certificate authorities, like Let&#8217;s Encrypt, recommend renewing your certificate every 60 days. Renewals
-can be easily automated by creating a script that checks if the certificate is due for renewal in the next 30 days and if
+<p>Some certificate authorities, like Let&#8217;s Encrypt, recommend renewing your web server&#8217;s certificate every 60 days. Renewals
+can be easily automated by creating a script that checks if your web server&#8217;s certificate is due for renewal in the next 30 days and if
 so, the <a href="https://wildfly-security.github.io/wildfly-elytron/1.12.x/full-javadoc/org/wildfly/security/x500/cert/acme/AcmeClientSpi.html#obtainCertificateChain(org.wildfly.security.x500.cert.acme.AcmeAccount,boolean,java.lang.String%E2%80%A6%E2%80%8B)">AcmeClientSpi#obtainCertificateChain</a> method can simply be used to obtain a new certificate. To see an example
 of how this can be done using WildFly, take a look <a href="https://developer.jboss.org/people/fjuma/blog/2018/08/31/obtaining-certificates-from-lets-encrypt-using-the-wildfly-cli#jive_content_id_Using_a_CLI_script_to_automate_certificate_renewal">here</a>.</p>
 </div>
@@ -450,7 +450,7 @@ certificate authority.</p>
 <div class="paragraph">
 <p>In this blog post, we&#8217;ve taken a detailed look at Elytron&#8217;s ACME client SPI. This SPI has already been integrated in WildFly,
 making it possible to automatically obtain and manage signed certificates using WildFly&#8217;s CLI. This blog post has described
-how Elytron&#8217;s ACME client SPI can also be used in other HTTPS server environments.</p>
+how Elytron&#8217;s ACME client SPI can also be used in other web server environments.</p>
 </div>
 </div>
 </div>
