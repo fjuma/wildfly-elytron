@@ -132,8 +132,26 @@
 </div>
 </div>
       <div class="grid__item width-12-12">
-          <div id="toc" class="toc">
-<div id="toctitle"></div>
+          <div class="paragraph">
+<p>The Automated Certificate Management Environment (ACME) protocol became an
+<a href="https://letsencrypt.org/2019/03/11/acme-protocol-ietf-standard.html">IETF standard</a> a little over
+a year ago. This protocol makes it possible to automate the process of obtaining signed
+certificates from a certificate authority without the need for human intervention. The WildFly Elytron
+project provides a Java ACME client SPI that has been integrated in WildFly for quite some time now,
+making it possible to
+<a href="https://developer.jboss.org/people/fjuma/blog/2018/08/31/obtaining-certificates-from-lets-encrypt-using-the-wildfly-cli">automatically obtain and manage</a> signed certificates from any certificate
+authority that implements the ACME protocol using WildFly CLI commands. It is also possible to easily
+integrate Elytron&#8217;s ACME client SPI in other Java server environments. In this blog post, we&#8217;re
+going to take a closer look at this SPI and how to make use of it.</p>
+</div>
+<div class="paragraph">
+<p>Note: A <a href="https://groups.google.com/d/msg/smallrye/5rmW3KCvyf0/Wm0sSgXsAgAJ">discussion</a> has been started
+on possibly moving Elytron&#8217;s ACME Client SPI to a new <a href="https://github.com/smallrye">SmallRye project</a> in
+case other projects find it easier to consume SmallRye components instead of WildFly Elytron components.
+Keep an eye on the discussion there for updates and feel free to add your thoughts there as well.</p>
+</div>
+<div id="toc" class="toc">
+<div id="toctitle" class="title">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#an-overview-of-the-acme-protocol">An Overview of the ACME Protocol</a></li>
 <li><a href="#elytrons-acme-client-spi">Elytron&#8217;s ACME Client SPI</a>
@@ -151,33 +169,6 @@
 </li>
 <li><a href="#summary">Summary</a></li>
 </ul>
-</div>
-<div class="paragraph">
-<p>The Automated Certificate Management Environment (ACME) protocol became an
-<a href="https://letsencrypt.org/2019/03/11/acme-protocol-ietf-standard.html">IETF standard</a> a little over
-a year ago. This protocol makes it possible to automate the process of obtaining signed
-certificates from a certificate authority without the need for human intervention. The WildFly Elytron
-project provides a Java ACME client SPI that has been integrated in WildFly for quite some time now,
-making it possible to
-<a href="https://developer.jboss.org/people/fjuma/blog/2018/08/31/obtaining-certificates-from-lets-encrypt-using-the-wildfly-cli">automatically obtain and manage</a> signed certificates from any certificate
-authority that implements the ACME protocol using WildFly CLI commands. It is also possible to easily
-integrate Elytron&#8217;s ACME client SPI in other Java server environments. In this blog post, we&#8217;re
-going to take a closer look at this SPI and how to make use of it.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-A <a href="https://groups.google.com/d/msg/smallrye/5rmW3KCvyf0/Wm0sSgXsAgAJ">discussion</a> has been started
-on possibly moving Elytron&#8217;s ACME Client SPI to a new <a href="https://github.com/smallrye">SmallRye project</a> in
-case other projects find it easier to consume SmallRye components instead of WildFly Elytron components.
-Keep an eye on the discussion there for updates and feel free to add your thoughts there as well.
-</td>
-</tr>
-</table>
 </div>
 <div class="sect1">
 <h2 id="an-overview-of-the-acme-protocol"><a class="anchor" href="#an-overview-of-the-acme-protocol"></a>An Overview of the ACME Protocol</h2>
