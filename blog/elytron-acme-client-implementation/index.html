@@ -153,7 +153,7 @@ case other projects find it easier to consume SmallRye components instead of Wil
 Keep an eye on the discussion there for updates and feel free to add your thoughts there as well.</p>
 </div>
 <div id="toc" class="toc">
-<div id="toctitle" class="title">Table of Contents</div>
+<div id="toctitle" class="title"></div>
 <ul class="sectlevel1">
 <li><a href="#an-overview-of-the-acme-protocol">An Overview of the ACME Protocol</a></li>
 <li><a href="#elytrons-acme-client-spi">Elytron&#8217;s ACME Client SPI</a>
@@ -207,7 +207,7 @@ These are the only two methods that a class that extends <code>AcmeClientSpi</co
 make use of Elytron&#8217;s <code>AcmeClientSpi</code> in your Java server environment, the main step is to create a class that extends
 <code>AcmeClientSpi</code> and implements <code>proveIdentifierControl</code> and <code>cleanupAfterChallenge</code>. We&#8217;ll see how your <code>proveIdentifierControl</code>
 and <code>cleanUpAfterChallenge</code> method implementations will get used in the section on
-<a href="#obtaining-a-certificate-from-a-certificate-authority">Obtaining a certificate from a certificate authority</a>.</p>
+<a href="#obtaining-a-certificate-from-a-certificate-authority">obtaining a certificate from a certificate authority</a>.</p>
 </div>
 <div class="sect3">
 <h4 id="implementing-proveidentifiercontrol"><a class="anchor" href="#implementing-proveidentifiercontrol"></a>Implementing proveIdentifierControl</h4>
