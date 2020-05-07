@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description>WildFly Elytron: Security, Authentication, and Authorization SPIs for the WildFly project</description>
-        <lastBuildDate>Thu, 07 May 2020 13:55:27 +0000</lastBuildDate>
+        <lastBuildDate>Thu, 07 May 2020 14:11:12 +0000</lastBuildDate>
         
         <item>
             <title></title>
@@ -13,9 +13,9 @@
                 https://wildfly-security.github.io/wildfly-elytron/blog/2020-05-07-elytron-acme-client-implementation/
             </link>
             <description>
-                The Automated Certificate Management Environment (ACME) protocol became an IETF standard a little over a year ago. This protocol makes it possible to automate the process of obtaining signed certificates from a certificate authority without the need for human intervention. The WildFly Elytron project provides a Java ACME client SPI...
+                An Overview of the ACME Protocol Elytron&#8217;s ACME Client SPI Creating an implementation of AcmeClientSpi Using your ACME client implementation Creating a certificate authority account Updating the contact URLs associated with a certificate authority account Obtaining a certificate from a certificate authority Automating certificate renewals Revoking a certificate Updating a...
             </description>
-            <pubDate>Thu, 07 May 2020 13:55:27 +0000</pubDate>
+            <pubDate>Thu, 07 May 2020 14:11:12 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/2020-05-07-elytron-acme-client-implementation/
             </guid>

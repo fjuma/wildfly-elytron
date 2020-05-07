@@ -132,7 +132,27 @@
 </div>
 </div>
       <div class="grid__item width-12-12">
-          <div class="paragraph">
+          <div id="toc" class="toc">
+<div id="toctitle"></div>
+<ul class="sectlevel1">
+<li><a href="#an-overview-of-the-acme-protocol">An Overview of the ACME Protocol</a></li>
+<li><a href="#elytrons-acme-client-spi">Elytron&#8217;s ACME Client SPI</a>
+<ul class="sectlevel2">
+<li><a href="#creating-an-implementation-of-acmeclientspi">Creating an implementation of AcmeClientSpi</a></li>
+<li><a href="#using-your-acme-client-implementation">Using your ACME client implementation</a></li>
+<li><a href="#creating-a-certificate-authority-account">Creating a certificate authority account</a></li>
+<li><a href="#updating-the-contact-urls-associated-with-a-certificate-authority-account">Updating the contact URLs associated with a certificate authority account</a></li>
+<li><a href="#obtaining-a-certificate-from-a-certificate-authority">Obtaining a certificate from a certificate authority</a></li>
+<li><a href="#automating-certificate-renewals">Automating certificate renewals</a></li>
+<li><a href="#revoking-a-certificate">Revoking a certificate</a></li>
+<li><a href="#updating-a-certificate-authority-account-key">Updating a certificate authority account key</a></li>
+<li><a href="#deactivating-an-account">Deactivating an account</a></li>
+</ul>
+</li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+</div>
+<div class="paragraph">
 <p>The Automated Certificate Management Environment (ACME) protocol became an
 <a href="https://letsencrypt.org/2019/03/11/acme-protocol-ietf-standard.html">IETF standard</a> a little over
 a year ago. This protocol makes it possible to automate the process of obtaining signed
