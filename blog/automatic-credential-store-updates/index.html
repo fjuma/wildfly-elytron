@@ -147,18 +147,30 @@ with an alias. This alias is then subsequently used to reference the credential 
 needing to specify the credential directly. As an example, when configuring a <code>key-store</code> in the Elytron
 subsystem, we need to specify the keystore password. Instead of specifying the password in clear text, we
 can first add the keystore password to a credential store and then reference the alias that we associated with
-that password, as shown below:</p>
+that password, as shown below.</p>
+</div>
+<div class="paragraph">
+<p>First, let&#8217;s create a credential store:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="shell" class="language-shell hljs"># First, let's create a credential store
-/subsystem=elytron/credential-store=myCredStore:add(location=mycredstore.cs, relative-to=jboss.server.config.dir, credential-reference={clear-text=StorePassword}, create=true)
-
-# Next, we'll add our keystore password to this store and associate it with the alias `example`
-/subsystem=elytron/credential-store=myCredStore:add-alias(alias=example, secret-value=mySecretPassword)
-
-# Finally, we'll reference our credential store and alias when configuring our key-store
-/subsystem=elytron/key-store=myKS:add(relative-to=jboss.server.config.dir, path=my.keystore, type=JCEKS, credential-reference={store=myCredStore, alias=example})</code></pre>
+<pre class="highlightjs highlight"><code data-lang="shell" class="language-shell hljs">/subsystem=elytron/credential-store=myCredStore:add(location=mycredstore.cs, relative-to=jboss.server.config.dir, credential-reference={clear-text=StorePassword}, create=true)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, we&#8217;ll add our keystore password to this store and associate it with the alias <code>example</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="shell" class="language-shell hljs">/subsystem=elytron/credential-store=myCredStore:add-alias(alias=example, secret-value=mySecretPassword)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Finally, we&#8217;ll reference our credential store and alias when configuring our key-store:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="shell" class="language-shell hljs">/subsystem=elytron/key-store=myKS:add(relative-to=jboss.server.config.dir, path=my.keystore, type=JCEKS, credential-reference={store=myCredStore, alias=example})</code></pre>
 </div>
 </div>
 <div class="paragraph">
