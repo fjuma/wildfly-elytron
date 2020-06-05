@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description>WildFly Elytron: Security, Authentication, and Authorization SPIs for the WildFly project</description>
-        <lastBuildDate>Thu, 28 May 2020 21:44:57 +0000</lastBuildDate>
+        <lastBuildDate>Fri, 05 Jun 2020 17:48:14 +0000</lastBuildDate>
         
         <item>
             <title>Automatic Credential Store Updates</title>
@@ -15,7 +15,7 @@
             <description>
                 WildFly 20 adds support for automatic credential store updates. This blog post will give an overview of this new feature. Credential Stores Credential stores allow credentials to be stored securely. When adding a credential to a store, it is associated with an alias. This alias is then subsequently used to...
             </description>
-            <pubDate>Thu, 28 May 2020 00:00:00 +0000</pubDate>
+            <pubDate>Fri, 05 Jun 2020 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/automatic-credential-store-updates/
             </guid>
