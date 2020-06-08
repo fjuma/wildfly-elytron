@@ -197,7 +197,7 @@ cd elytron-examples</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>We&#8217;re going to be looking at the <code>source-address-role-decoder</code> project.</p>
+<p>We&#8217;re going to be looking at the <a href="https://github.com/wildfly-security-incubator/elytron-examples/tree/master/source-address-role-decoder">source-address-role-decoder</a> project.</p>
 </div>
 </div>
 </div>
@@ -207,7 +207,7 @@ cd elytron-examples</code></pre>
 <div class="paragraph">
 <p>A WildFly CLI script that contains all of the commands used in this example can be found in the
 <a href="https://github.com/wildfly-security-incubator/elytron-examples/tree/master/source-address-role-decoder">source-address-role-decoder</a>
-project in the <code>elytron-examples</code> git repository.</p>
+project.</p>
 </div>
 <div class="sect2">
 <h3 id="prerequisite-configuration"><a class="anchor" href="#prerequisite-configuration"></a>Prerequisite Configuration</h3>
@@ -237,7 +237,7 @@ defined in the default Elytron subsystem configuration and we’re going to make
 <div class="paragraph">
 <p>Finally, we&#8217;ll add an <code>application-security-domain</code> mapping in the EJB3 subsystem to indicate that security for EJBs should
 be handled by Elytron. We&#8217;ll also update the <code>http-remoting-connector</code> in the Remoting subsystem to reference the SASL authentication
-factory that is backed by our Elytron security domain</p>
+factory that is backed by our Elytron security domain.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -293,7 +293,7 @@ directory, run the following command:</p>
 <p>The client configuration that we will be using for this example can be found in <code>$PATH_TO_ELYTRON_EXAMPLES/src/main/resources/wildfly-config.xml</code>.
 Notice that this file contains all of the information that&#8217;s needed to connect to the server. In particular, it specifies that
 we want to use <code>alice</code> as the username and it also specifies her password. (It also specifies that we want to use
-"127.0.0.2" as the IP address for our EJB client. We are using this for demonstration purposes here since our server
+"127.0.0.2" as the IP address for our EJB Client. We are using this for demonstration purposes here since our server
 and client are both running locally.)</p>
 </div>
 <div class="paragraph">
@@ -325,11 +325,11 @@ Principal has admin permission: true
 <div class="paragraph">
 <p>We can see that we were able to successfully invoke both EJB methods. This is because our filesystem-based
 identity store assigns <code>alice</code> the <code>employee</code> role that&#8217;s required to invoke the first method. Our
-<code>source-address-role-decoder</code> also assigns <code>alice</code> the <code>admin</code> role since the IP address of our remote
+<code>source-address-role-decoder</code> assigns <code>alice</code> the <code>admin</code> role since the IP address of our remote
 client is 127.0.0.2.</p>
 </div>
 <div class="paragraph">
-<p>Let&#8217;s update our <code>$PATH_TO_ELYTRON_EXAMPLES/src/main/resources/wildfly-config.xml</code> file so that a different IP address will be used for our remote client.
+<p>Now, let&#8217;s update our <code>$PATH_TO_ELYTRON_EXAMPLES/src/main/resources/wildfly-config.xml</code> file so that a different IP address will be used for our remote client.
 To do this, we&#8217;re going to update the <code>bind-address</code> as follows:</p>
 </div>
 <div class="listingblock">
@@ -384,7 +384,7 @@ following example:</p>
 <h2 id="summary"><a class="anchor" href="#summary"></a>Summary</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This blog post has given an overview on how to make use of an IP address of a remote client for authorization
+<p>This blog post has given an overview of how to make use of an IP address of a remote client for authorization
 decisions. For more information, be sure to take a look at the Elytron <a href="https://docs.wildfly.org/20/WildFly_Elytron_Security.html#creating-elytron-subsystem-components">documentation</a>.</p>
 </div>
 </div>
