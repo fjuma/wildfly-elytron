@@ -5,19 +5,19 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description>WildFly Elytron: Security, Authentication, and Authorization SPIs for the WildFly project</description>
-        <lastBuildDate>Thu, 11 Jun 2020 16:22:14 +0000</lastBuildDate>
+        <lastBuildDate>Thu, 11 Jun 2020 16:29:50 +0000</lastBuildDate>
         
         <item>
             <title>Planned Security Features for WildFly</title>
             <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/planned-security-features-for-wildfly/
+                https://wildfly-security.github.io/wildfly-elytron/blog/planned-security-features-for-wildfly-21/
             </link>
             <description>
                 Since the feature development phase for WildFly 21 has now started, we wanted to highlight the new security features that we will be working on. Planned Features Security Realm Enhancements WFCORE-4485 Support for multiple security realms - Distributed Identities This new feature will make it possible to use multiple security...
             </description>
             <pubDate>Thu, 11 Jun 2020 00:00:00 +0000</pubDate>
             <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/planned-security-features-for-wildfly/
+                https://wildfly-security.github.io/wildfly-elytron/blog/planned-security-features-for-wildfly-21/
             </guid>
         </item>
         
