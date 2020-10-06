@@ -183,7 +183,7 @@ More details can be found in this <a href="https://wildfly-security.github.io/wi
 <h2 id="tls-1-3-support-with-openssl"><a class="anchor" href="#tls-1-3-support-with-openssl"></a>TLS 1.3 Support with OpenSSL</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>A little while ago, we added support for TLS 1.3 for WildFly when using the JSSE TLS provider. WildFly 21 also
+<p>A little while ago, we added support for TLS 1.3 for WildFly when using the JSSE TLS provider. WildFly 21 now
 adds support for TLS 1.3 when using the OpenSSL TLS provider. As with the JSSE TLS provider, there is an important
 caveat to be aware of when using the OpenSSL TLS provider with TLS 1.3. If JDK 11 is in use and if there is a very
 large number of TLS 1.3 requests being made, it is possible that a drop in performance (throughput and response time)
