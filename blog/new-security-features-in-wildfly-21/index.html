@@ -46,7 +46,7 @@
                 
                     
                     
-                         <a class="mdl-navigation__link Docs-menuitem" href="https://docs.wildfly.org/20/WildFly_Elytron_Security.html">Docs</a>
+                         <a class="mdl-navigation__link Docs-menuitem" href="https://docs.wildfly.org/21/WildFly_Elytron_Security.html">Docs</a>
                     
                 
                     
@@ -78,7 +78,7 @@
             
             
             
-                <a class="mdl-navigation__link Docs-menuitem" href="https://docs.wildfly.org/20/WildFly_Elytron_Security.html">Docs</a>
+                <a class="mdl-navigation__link Docs-menuitem" href="https://docs.wildfly.org/21/WildFly_Elytron_Security.html">Docs</a>
             
             
             
@@ -142,14 +142,15 @@
 <div class="sectionbody">
 <div class="paragraph">
 <p>If a security realm becomes unavailable for some reason, it is now possible to fail over to an alternate security
-realm. Check out the <a href="https://github.com/wildfly/wildfly/blob/master/docs/src/main/asciidoc/_elytron/components/Failover_Security_Realm.adoc">documentation</a>
-for details on how to configure the new <code>failover-realm</code> resource in the Elytron subsystem.</p>
+realm.</p>
 </div>
 <div class="paragraph">
 <p>WildFly 21 also adds support for distributed security realms, where identities can be stored in multiple security
 realms. When retrieving an identity from a distributed security realm, each of the configired realms is invoked
-sequentially until a realm containing the identity is found. A distributed security realm can be configured
-using the new <code>distributed-realm</code> resource in the Elytron subsystem.</p>
+sequentially until a realm containing the identity is found.</p>
+</div>
+<div class="paragraph">
+<p>For an overview of these two new realm implementations, check out this <a href="https://wildfly-security.github.io/wildfly-elytron/blog/distributed-and-failover-realms/">blog post</a>.</p>
 </div>
 </div>
 </div>
