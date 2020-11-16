@@ -18,6 +18,7 @@
 
 package org.wildfly.security.x500.cert.acme;
 
+import static org.wildfly.security.jose.jwk.JWKUtil.base64UrlEncode;
 import static org.wildfly.security.x500.cert.acme.ElytronMessages.acme;
 
 import java.math.BigInteger;
@@ -28,7 +29,6 @@ import java.security.interfaces.RSAPublicKey;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.wildfly.common.codec.Base64Alphabet;
 import org.wildfly.common.iteration.ByteIterator;
 
 /**
@@ -193,48 +193,5 @@ public final class Acme {
                 throw acme.unableToDetermineCurveParameterFromAlgHeader(algHeader);
         }
     }
-
-
-
-    static String base64UrlEncode(byte[] data) {
-        return ByteIterator.ofBytes(data).base64Encode(BASE64_URL, false).drainToString();
-    }
-
-    /**
-     * The <a href="http://tools.ietf.org/html/rfc4648">RFC 4648</a> base64url alphabet.
-     */
-    static final Base64Alphabet BASE64_URL = new Base64Alphabet(false) {
-        public int encode(final int val) {
-            if (val <= 25) {
-                return 'A' + val;
-            } else if (val <= 51) {
-                return 'a' + val - 26;
-            } else if (val <= 61) {
-                return '0' + val - 52;
-            } else if (val == 62) {
-                return '-';
-            } else {
-                assert val == 63;
-                return '_';
-            }
-        }
-
-        public int decode(final int codePoint) throws IllegalArgumentException {
-            if ('A' <= codePoint && codePoint <= 'Z') {
-                return codePoint - 'A';
-            } else if ('a' <= codePoint && codePoint <= 'z') {
-                return codePoint - 'a' + 26;
-            } else if ('0' <= codePoint && codePoint <= '9') {
-                return codePoint - '0' + 52;
-            } else if (codePoint == '-') {
-                return 62;
-            } else if (codePoint == '_') {
-                return 63;
-            } else {
-                return -1;
-            }
-        }
-    };
-
 }
 

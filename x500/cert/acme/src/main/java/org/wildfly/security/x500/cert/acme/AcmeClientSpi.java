@@ -18,13 +18,14 @@
 
 package org.wildfly.security.x500.cert.acme;
 
+import static org.wildfly.security.jose.jwk.JWKUtil.BASE64_URL;
+import static org.wildfly.security.jose.jwk.JWKUtil.base64UrlEncode;
 import static org.wildfly.security.x500.cert.acme.Acme.ACCEPT_LANGUAGE;
 import static org.wildfly.security.x500.cert.acme.Acme.ACCOUNT;
 import static org.wildfly.security.x500.cert.acme.Acme.ALG;
 import static org.wildfly.security.x500.cert.acme.Acme.AUTHORIZATION;
 import static org.wildfly.security.x500.cert.acme.Acme.AUTHORIZATIONS;
 import static org.wildfly.security.x500.cert.acme.Acme.BAD_NONCE;
-import static org.wildfly.security.x500.cert.acme.Acme.BASE64_URL;
 import static org.wildfly.security.x500.cert.acme.Acme.CAA_IDENTITIES;
 import static org.wildfly.security.x500.cert.acme.Acme.CERTIFICATE;
 import static org.wildfly.security.x500.cert.acme.Acme.CHALLENGES;
@@ -76,7 +77,6 @@ import static org.wildfly.security.x500.cert.acme.Acme.USER_AGENT;
 import static org.wildfly.security.x500.cert.acme.Acme.VALID;
 import static org.wildfly.security.x500.cert.acme.Acme.VALUE;
 import static org.wildfly.security.x500.cert.acme.Acme.WEBSITE;
-import static org.wildfly.security.x500.cert.acme.Acme.base64UrlEncode;
 import static org.wildfly.security.x500.cert.acme.Acme.getAlgHeaderFromSignatureAlgorithm;
 import static org.wildfly.security.x500.cert.acme.Acme.getJwk;
 import static org.wildfly.security.x500.cert.acme.ElytronMessages.acme;
