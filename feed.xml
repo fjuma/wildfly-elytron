@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description>WildFly Elytron: Security, Authentication, and Authorization SPIs for the WildFly project</description>
-        <lastBuildDate>Thu, 21 Jan 2021 18:24:47 +0000</lastBuildDate>
+        <lastBuildDate>Fri, 22 Jan 2021 15:24:32 +0000</lastBuildDate>
         
         <item>
             <title>Planned Security Features for WildFly</title>
@@ -13,9 +13,9 @@
                 https://wildfly-security.github.io/wildfly-elytron/blog/planned-security-features-for-wildfly-23/
             </link>
             <description>
-                Since the feature development phase for WildFly 23 has now started, we wanted to highlight the security features that we will be working on. Planned Features Expression Resolution WFC0RE-4360 Support expression resolution backed by a credential store Currently, credential store references can be used anywhere in the model where a...
+                Since the feature development phase for WildFly 23 has now started, we wanted to highlight the security features that we will be working on. As usual, please keep in mind that this blog post is a summary of our general plans and not a guarantee that each of these features...
             </description>
-            <pubDate>Thu, 21 Jan 2021 00:00:00 +0000</pubDate>
+            <pubDate>Fri, 22 Jan 2021 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/planned-security-features-for-wildfly-23/
             </guid>
