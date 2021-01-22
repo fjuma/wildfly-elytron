@@ -18,8 +18,8 @@
 
 package org.wildfly.security.x500.cert.acme;
 
-import static org.wildfly.security.jwk.JWKUtil.BASE64_URL;
-import static org.wildfly.security.jwk.JWKUtil.base64UrlEncode;
+import static org.wildfly.security.jose.jwk.JWKUtil.BASE64_URL;
+import static org.wildfly.security.jose.jwk.JWKUtil.base64UrlEncode;
 import static org.wildfly.security.x500.cert.acme.Acme.ACCEPT_LANGUAGE;
 import static org.wildfly.security.x500.cert.acme.Acme.ACCOUNT;
 import static org.wildfly.security.x500.cert.acme.Acme.ALG;

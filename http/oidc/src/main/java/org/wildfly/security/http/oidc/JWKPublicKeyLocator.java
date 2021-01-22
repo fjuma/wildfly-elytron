@@ -25,9 +25,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.http.client.methods.HttpGet;
-import org.wildfly.security.jwk.JWK;
-import org.wildfly.security.jwk.JsonWebKeySet;
-import org.wildfly.security.jwk.JsonWebKeySetUtil;
+import org.wildfly.security.jose.jwk.JWK;
+import org.wildfly.security.jose.jwk.JsonWebKeySet;
+import org.wildfly.security.jose.jwk.JsonWebKeySetUtil;
 
 /**
  * A public key locator that dynamically obtains the public key from an OpenID

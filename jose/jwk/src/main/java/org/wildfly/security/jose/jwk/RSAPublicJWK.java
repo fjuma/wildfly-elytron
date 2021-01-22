@@ -16,9 +16,9 @@
  *  limitations under the License.
  */
 
-package org.wildfly.security.jwk;
+package org.wildfly.security.jose.jwk;
 
-import static org.wildfly.security.jwk.JWKUtil.generateThumbprint;
+import static org.wildfly.security.jose.jwk.JWKUtil.generateThumbprint;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

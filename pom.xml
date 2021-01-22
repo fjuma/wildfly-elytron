@@ -32,6 +32,12 @@
     <groupId>org.wildfly.security</groupId>
     <artifactId>wildfly-elytron-parent</artifactId>
     <version>1.14.2.CR1-SNAPSHOT</version>
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+    </dependencies>
     <packaging>pom</packaging>
 
     <name>WildFly Elytron Parent</name>
@@ -600,7 +606,13 @@
 
             <dependency>
                 <groupId>org.wildfly.security</groupId>
-                <artifactId>wildfly-elytron-jwk</artifactId>
+                <artifactId>wildfly-elytron-jose-jwk</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-jose-jws</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

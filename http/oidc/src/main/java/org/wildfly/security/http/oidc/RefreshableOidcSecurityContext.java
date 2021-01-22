@@ -26,6 +26,8 @@ import java.io.IOException;
 import org.wildfly.security.http.oidc.token.AccessToken;
 import org.wildfly.security.http.oidc.token.AccessAndIDTokenResponse;
 import org.wildfly.security.http.oidc.token.IDToken;
+import org.wildfly.security.http.oidc.token.Token;
+import org.wildfly.security.http.oidc.token.TokenVerifier;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -146,6 +148,8 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
             AccessToken accessToken = null;
             IDToken idToken = null;
             try {
+                TokenVerifier.VerifiedTokens tokens = TokenVerifier.verifyTokens(clientConfiguration)
+
                 AdapterTokenVerifier.VerifiedTokens tokens = AdapterTokenVerifier.verifyTokens(accessTokenString, response.getIDToken(), clientConfiguration);
                 accessToken = tokens.getAccessToken();
                 idToken = tokens.getIdToken();

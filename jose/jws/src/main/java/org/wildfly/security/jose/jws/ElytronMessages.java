@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.wildfly.security.jwk;
+package org.wildfly.security.jose.jws;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -35,22 +35,13 @@ import org.jboss.logging.annotations.ValidIdRanges;
  */
 @MessageLogger(projectCode = "ELY", length = 5)
 @ValidIdRanges({
-        @ValidIdRange(min = 20000, max = 20999)
+        @ValidIdRange(min = 21000, max = 21999)
 })
 interface ElytronMessages extends BasicLogger {
 
-    ElytronMessages log = Logger.getMessageLogger(ElytronMessages.class, "org.wildfly.security.jwk");
+    ElytronMessages log = Logger.getMessageLogger(ElytronMessages.class, "org.wildfly.security.jose.jws");
 
-    @Message(id = 20000, value = "Unable to parse string JWK")
-    IllegalArgumentException unableToParseStringJWK(@Cause Exception cause);
-
-    @Message(id = 20001, value = "Unsupported key type for JWK: \"%s\"")
-    IllegalArgumentException unsupportedKeyTypeForJWK(String keyType);
-
-    @Message(id = 20002, value = "Unsupported curve")
-    IllegalArgumentException unsupportedCurve();
-
-    @Message(id = 20003, value = "Unable to create public key from JWK")
-    RuntimeException unableToCreatePublicKeyFromJWK(@Cause Exception cause);
+    @Message(id = 21000, value = "Unable to parse token string")
+    IllegalArgumentException unableToParseTokenString();
 
 }

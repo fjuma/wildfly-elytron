@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
-import static org.wildfly.security.jwk.JWKUtil.BASE64_URL;
+import static org.wildfly.security.jose.jwk.JWKUtil.BASE64_URL;
 import static org.wildfly.security.x500.cert.acme.Acme.ACCOUNT;
 import static org.wildfly.security.x500.cert.acme.Acme.ORDER;
 

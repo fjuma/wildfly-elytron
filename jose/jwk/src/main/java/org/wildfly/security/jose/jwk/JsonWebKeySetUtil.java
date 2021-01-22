@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.wildfly.security.jwk;
+package org.wildfly.security.jose.jwk;
 
 import java.security.PublicKey;
 import java.util.HashMap;

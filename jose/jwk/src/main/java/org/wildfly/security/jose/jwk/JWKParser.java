@@ -16,10 +16,10 @@
  *  limitations under the License.
  */
 
-package org.wildfly.security.jwk;
+package org.wildfly.security.jose.jwk;
 
-import static org.wildfly.security.jwk.ElytronMessages.log;
-import static org.wildfly.security.jwk.JWKUtil.BASE64_URL;
+import static org.wildfly.security.jose.jwk.ElytronMessages.log;
+import static org.wildfly.security.jose.jwk.JWKUtil.BASE64_URL;
 
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;

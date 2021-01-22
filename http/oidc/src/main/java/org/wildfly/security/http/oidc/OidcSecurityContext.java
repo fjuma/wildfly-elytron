@@ -29,7 +29,7 @@ import java.io.Serializable;
 import org.wildfly.security.http.oidc.token.AccessToken;
 import org.wildfly.security.http.oidc.token.IDToken;
 import org.wildfly.security.json.util.JsonSerialization;
-import org.wildfly.security.jwk.JWKUtil;
+import org.wildfly.security.jose.jwk.JWKUtil;
 
 /**
  * Available in secured requests under HttpServletRequest.getAttribute().

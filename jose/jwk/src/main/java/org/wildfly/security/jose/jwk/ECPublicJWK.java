@@ -16,27 +16,54 @@
  *  limitations under the License.
  */
 
-package org.wildfly.security.jwk;
+package org.wildfly.security.jose.jwk;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * A class that represents a JSON Web Key set.
+ * An EC public JWK.
  *
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
- * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  * @since 1.14.0
  */
-public class JsonWebKeySet {
+public class ECPublicJWK extends JWK {
 
-    @JsonProperty("keys")
-    private JWK[] keys;
+    public static final String EC = "EC";
 
-    public JWK[] getKeys() {
-        return keys;
+    public static final String CRV = "crv";
+    public static final String X = "x";
+    public static final String Y = "y";
+
+    @JsonProperty(CRV)
+    private String crv;
+
+    @JsonProperty(X)
+    private String x;
+
+    @JsonProperty(Y)
+    private String y;
+
+    public String getCrv() {
+        return crv;
     }
 
-    public void setKeys(JWK[] keys) {
-        this.keys = keys;
+    public void setCrv(String crv) {
+        this.crv = crv;
+    }
+
+    public String getX() {
+        return x;
+    }
+
+    public void setX(String x) {
+        this.x = x;
+    }
+
+    public String getY() {
+        return y;
+    }
+
+    public void setY(String y) {
+        this.y = y;
     }
 }

@@ -18,7 +18,7 @@
 
 package org.wildfly.security.x500.cert.acme;
 
-import static org.wildfly.security.jwk.JWKUtil.base64UrlEncode;
+import static org.wildfly.security.jose.jwk.JWKUtil.base64UrlEncode;
 import static org.wildfly.security.x500.cert.acme.ElytronMessages.acme;
 
 import java.math.BigInteger;
