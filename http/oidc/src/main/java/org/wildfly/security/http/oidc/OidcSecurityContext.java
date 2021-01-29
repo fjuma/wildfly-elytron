@@ -26,8 +26,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-import org.wildfly.security.http.oidc.token.AccessToken;
-import org.wildfly.security.http.oidc.token.IDToken;
 import org.wildfly.security.json.util.JsonSerialization;
 import org.wildfly.security.jose.jwk.JWKUtil;
 

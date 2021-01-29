@@ -23,11 +23,6 @@ import static org.wildfly.security.http.oidc.Oidc.getCurrentTimeInSeconds;
 
 import java.io.IOException;
 
-import org.wildfly.security.http.oidc.token.AccessToken;
-import org.wildfly.security.http.oidc.token.AccessAndIDTokenResponse;
-import org.wildfly.security.http.oidc.token.IDToken;
-import org.wildfly.security.http.oidc.token.Token;
-import org.wildfly.security.http.oidc.token.TokenVerifier;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

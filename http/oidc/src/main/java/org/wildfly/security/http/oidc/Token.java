@@ -16,18 +16,13 @@
  *  limitations under the License.
  */
 
-package org.wildfly.security.http.oidc.token;
+package org.wildfly.security.http.oidc;
 
-/**
- * The enumeration of token types.
- *
- * @author <a href="fjuma@redhat.com">Farah Juma</a>
- */
-public enum TokenCategory {
-    INTERNAL,
-    ACCESS,
-    ID,
-    ADMIN,
-    USERINFO,
-    LOGOUT
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+public interface Token {
+
+    @JsonIgnore
+    TokenCategory getCategory();
+
 }

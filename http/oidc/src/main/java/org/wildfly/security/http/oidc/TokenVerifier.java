@@ -16,12 +16,14 @@
  *  limitations under the License.
  */
 
-package org.wildfly.security.http.oidc.token;
+package org.wildfly.security.http.oidc;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.jose4j.jwt.consumer.JwtConsumer;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.wildfly.security.http.oidc.OidcClientConfiguration;
 
 public class TokenVerifier<T extends JsonWebToken> {
@@ -124,6 +126,11 @@ public class TokenVerifier<T extends JsonWebToken> {
             this.clientConfiguration = clientConfiguration;
             return this;
         }
+    }
+
+    public void parseToken(String tokenString) {
+        JwtConsumer jwtConsumer = new JwtConsumerBuilder()
+                .
     }
 
 }

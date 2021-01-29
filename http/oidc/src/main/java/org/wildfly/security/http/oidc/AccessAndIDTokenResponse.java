@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.wildfly.security.http.oidc.token;
+package org.wildfly.security.http.oidc;
 
 import java.util.HashMap;
 import java.util.Map;

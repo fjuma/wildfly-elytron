@@ -97,5 +97,18 @@ interface ElytronMessages extends BasicLogger {
     @Message(id = 19014, value = "Failed to refresh the token with a longer time-to-live than the minimum")
     void failedToRefreshTokenWithALongerTTLThanMin();
 
+    @Message(id = 19015, value = "No expected issuer given")
+    IllegalArgumentException noExpectedIssuerGiven();
+
+    @Message(id = 19016, value = "No client ID given")
+    IllegalArgumentException noClientIDGiven();
+
+    @Message(id = 19017, value = "No expected JWS algorithm given")
+    IllegalArgumentException noExpectedJwsAlgorithmGiven();
+
+    @Message(id = 19018, value = "No JWKS public key given")
+    IllegalArgumentException noJwksPublicKeyGiven();
+
+
 }
 
