@@ -20,6 +20,7 @@ package org.wildfly.security.http.oidc;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
+import static org.jboss.logging.annotations.Message.NONE;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -29,6 +30,7 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.ValidIdRange;
 import org.jboss.logging.annotations.ValidIdRanges;
+import org.jose4j.jwt.MalformedClaimException;
 
 
 /**
@@ -106,9 +108,14 @@ interface ElytronMessages extends BasicLogger {
     @Message(id = 19017, value = "No expected JWS algorithm given")
     IllegalArgumentException noExpectedJwsAlgorithmGiven();
 
-    @Message(id = 19018, value = "No JWKS public key given")
-    IllegalArgumentException noJwksPublicKeyGiven();
+    @Message(id = 19018, value = "No JWKS public key or client secret key given")
+    IllegalArgumentException noJwksPublicKeyOrClientSecretKeyGiven();
 
+    @Message(id = 19019, value = "Invalid ID token")
+    OidcException invalidIDToken(@Cause Throwable cause);
+
+    @Message(id = NONE, value = "Unexpected value for azp (issued for) claim")
+    String unexpectedValueForIssuedForClaim();
 
 }
 

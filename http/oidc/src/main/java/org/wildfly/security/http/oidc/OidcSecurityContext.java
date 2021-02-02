@@ -26,6 +26,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.consumer.InvalidJwtException;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.wildfly.security.json.util.JsonSerialization;
 import org.wildfly.security.jose.jwk.JWKUtil;
 
@@ -42,21 +45,21 @@ public class OidcSecurityContext implements Serializable {
     protected String idTokenString;
 
     // Don't store parsed tokens into HTTP session
-    protected transient AccessToken token;
-    protected transient IDToken idToken;
+    protected transient JwtClaims token;
+    protected transient JwtClaims idToken;
     protected transient AuthorizationContext authorizationContext;
 
     public OidcSecurityContext() {
     }
 
-    public OidcSecurityContext(String tokenString, AccessToken token, String idTokenString, IDToken idToken) {
+    public OidcSecurityContext(String tokenString, JwtClaims token, String idTokenString, JwtClaims idToken) {
         this.tokenString = tokenString;
         this.token = token;
         this.idToken = idToken;
         this.idTokenString = idTokenString;
     }
 
-    public AccessToken getToken() {
+    public JwtClaims getToken() {
         return token;
     }
 
@@ -68,7 +71,7 @@ public class OidcSecurityContext implements Serializable {
         return authorizationContext;
     }
 
-    public IDToken getIdToken() {
+    public JwtClaims getIdToken() {
         return idToken;
     }
 
@@ -96,23 +99,11 @@ public class OidcSecurityContext implements Serializable {
         Object objectFilter = ObjectInputFilter.Config.createFilter(ois, filterPattern);
         setObjectInputFilterMethod.invoke(ois, objectFilter);
 
-        token = parseToken(tokenString, AccessToken.class);
-        idToken = parseToken(idTokenString, IDToken.class);
-    }
-
-    // Just decode token without any verifications
-    private <T> T parseToken(String encoded, Class<T> clazz) throws IOException {
-        if (encoded == null)
-            return null;
-
-        String[] parts = encoded.split("\\.");
-        if (parts.length < 2 || parts.length > 3) {
+        try {
+            token = new JwtConsumerBuilder().setSkipAllValidators().build().processToClaims(tokenString);
+            idToken = new JwtConsumerBuilder().setSkipAllValidators().build().processToClaims(idTokenString);
+        } catch (InvalidJwtException e) {
             throw log.unableToParseToken();
         }
-
-        byte[] bytes = JWKUtil.base64UrlDecode(parts[1]);
-        return JsonSerialization.readValue(bytes, clazz);
     }
-
-
 }

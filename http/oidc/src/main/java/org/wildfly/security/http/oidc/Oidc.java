@@ -59,6 +59,7 @@ public class Oidc {
     public static final String REDIRECT_URI = "redirect_uri";
     public static final String RESPONSE_TYPE = "response_type";
     public static final String STATE = "state";
+    public static final int INVALID_ISSUED_FOR_CLAIM = -1;
     static final String OIDC_CLIENT_CONFIG_RESOLVER = "oidc.config.resolver";
     static final String OIDC_CONFIG_FILE_LOCATION = "oidc.config.file";
     static final String OIDC_JSON_FILE = "/WEB-INF/oidc.json";

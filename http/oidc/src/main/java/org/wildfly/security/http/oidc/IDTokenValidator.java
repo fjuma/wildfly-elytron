@@ -19,12 +19,21 @@
 package org.wildfly.security.http.oidc;
 
 import static org.wildfly.security.http.oidc.ElytronMessages.log;
+import static org.wildfly.security.http.oidc.Oidc.INVALID_ISSUED_FOR_CLAIM;
 
+import java.security.PrivateKey;
 import java.security.PublicKey;
 
+import javax.crypto.SecretKey;
+
 import org.jose4j.jwa.AlgorithmConstraints;
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.MalformedClaimException;
+import org.jose4j.jwt.consumer.ErrorCodeValidator;
+import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.jose4j.jwt.consumer.JwtContext;
 import org.wildfly.common.Assert;
 
 /**
@@ -34,6 +43,32 @@ import org.wildfly.common.Assert;
  */
 public class IDTokenValidator {
 
+    private JwtConsumer jwtConsumer;
+
+    private IDTokenValidator(Builder builder) {
+        this.jwtConsumer = builder.jwtConsumer;
+    }
+
+    /**
+     * Parse and verify the given ID token.
+     *
+     * @param idToken the ID token
+     * @return the {@code JwtContext} if the ID token was valid
+     * @throws OidcException if the ID token is invalid
+     */
+    public JwtContext parseAndVerifyToken(final String idToken) throws OidcException {
+        try {
+            return jwtConsumer.process(idToken);
+        } catch (InvalidJwtException e) {
+            throw log.invalidIDToken(e);
+        }
+    }
+
+    /**
+     * Construct a new builder instance.
+     *
+     * @return the new builder instance
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -43,6 +78,9 @@ public class IDTokenValidator {
         private String clientID;
         private String expectedJwsAlgorithm;
         private PublicKey jwksPublicKey;
+        private SecretKey clientSecretKey;
+        private PrivateKey decryptionKey;
+        private JwtConsumer jwtConsumer;
 
         /**
          * Construct a new uninitialized instance.
@@ -63,7 +101,7 @@ public class IDTokenValidator {
         }
 
         /**
-         * The client ID that was registered with the OpenID provider.
+         * Set the client ID that was registered with the OpenID provider.
          *
          * @param clientID the client ID that was registered with the OpenID provider
          * @return this builder instance
@@ -76,7 +114,7 @@ public class IDTokenValidator {
 
 
         /**
-         * The expected JWS signature algorithm.
+         * Set the expected JWS signature algorithm.
          *
          * @param expectedJwsAlgorithm the expected JWS signature algorithm
          * @return this builder instance
@@ -88,7 +126,7 @@ public class IDTokenValidator {
         }
 
         /**
-         * The OpenID provider's public key.
+         * Set the OpenID provider's public key.
          *
          * @param jwksPublicKey the OpenID provider's public key to be used to validate the signature
          * @return this builder instance
@@ -96,6 +134,30 @@ public class IDTokenValidator {
         public Builder setJwksPublicKey(final PublicKey jwksPublicKey) {
             Assert.checkNotNullParam("jwksPublicKey", jwksPublicKey);
             this.jwksPublicKey = jwksPublicKey;
+            return this;
+        }
+
+        /**
+         * Set the client secret key.
+         *
+         * @param clientSecretKey the client secret key
+         * @return this builder instance
+         */
+        public Builder setClientSecretKey(final SecretKey clientSecretKey) {
+            Assert.checkNotNullParam("clientSecretKey", clientSecretKey);
+            this.clientSecretKey = clientSecretKey;
+            return this;
+        }
+
+        /**
+         * Set the key to be used for decryption.
+         *
+         * @param decryptionKey the key to be used for decryption
+         * @return this builder instance
+         */
+        public Builder setDecryptionKey(final PrivateKey decryptionKey) {
+            Assert.checkNotNullParam("decryptionKey", decryptionKey);
+            this.decryptionKey = decryptionKey;
             return this;
         }
 
@@ -115,24 +177,56 @@ public class IDTokenValidator {
             if (expectedJwsAlgorithm == null || expectedJwsAlgorithm.length() == 0) {
                 throw log.noExpectedJwsAlgorithmGiven();
             }
-            if (jwksPublicKey == null) {
-                throw log.noJwksPublicKeyGiven();
+            if (jwksPublicKey == null && clientSecretKey == null) {
+                throw log.noJwksPublicKeyOrClientSecretKeyGiven();
             }
 
-            try {
-                JwtConsumer jwtConsumer = new JwtConsumerBuilder()
-                        .setExpectedIssuer(expectedIssuer)
-                        .setExpectedAudience(clientID)
-                        .setJwsAlgorithmConstraints(
-                                new AlgorithmConstraints(AlgorithmConstraints.ConstraintType.PERMIT, expectedJwsAlgorithm))
-                        .setVerificationKeyResolver()
-                        .build();
+            JwtConsumerBuilder jwtConsumerBuilder = new JwtConsumerBuilder()
+                    .setExpectedIssuer(expectedIssuer)
+                    .setExpectedAudience(clientID)
+                    .setJwsAlgorithmConstraints(
+                            new AlgorithmConstraints(AlgorithmConstraints.ConstraintType.PERMIT, expectedJwsAlgorithm))
+                    .setVerificationKey(jwksPublicKey != null ? jwksPublicKey : clientSecretKey)
+                    .registerValidator(new AzpValidator(clientID))
+                    .setRequireExpirationTime();
+
+            if (decryptionKey != null) {
+                jwtConsumerBuilder.setDecryptionKey(decryptionKey);
             }
+
+            jwtConsumer = jwtConsumerBuilder.build();
+            return new IDTokenValidator(this);
         }
 
 
     }
 
+    private static class AzpValidator implements ErrorCodeValidator {
+        public static final String AZP = "azp";
+        private final String issuedFor;
+
+        public AzpValidator(String issuedFor) {
+            this.issuedFor = issuedFor;
+        }
+
+        public ErrorCodeValidator.Error validate(JwtContext jwtContext) throws MalformedClaimException {
+            JwtClaims jwtClaims = jwtContext.getJwtClaims();
+            boolean valid = false;
+            if (jwtClaims.getAudience().size() > 1) {
+                // if the ID token contains multiple audiences, then verify that an azp claim is present
+                if (jwtClaims.hasClaim(AZP)) {
+                    String azpValue = jwtClaims.getStringClaimValue(AZP);
+                    valid = azpValue != null && jwtClaims.getClaimValueAsString(AZP).equals(issuedFor);
+                }
+            } else {
+                valid = true; // one audience
+            }
+            if (! valid) {
+                return new ErrorCodeValidator.Error(INVALID_ISSUED_FOR_CLAIM, log.unexpectedValueForIssuedForClaim());
+            }
+            return null;
+        }
+    }
 
 }
 

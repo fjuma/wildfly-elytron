@@ -23,6 +23,8 @@ import static org.wildfly.security.http.oidc.Oidc.getCurrentTimeInSeconds;
 
 import java.io.IOException;
 
+import org.jose4j.jwt.JwtClaims;
+
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -39,7 +41,7 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
     }
 
     public RefreshableOidcSecurityContext(OidcClientConfiguration clientConfiguration, OidcTokenStore tokenStore, String tokenString,
-                                          AccessToken token, String idTokenString, IDToken idToken, String refreshToken) {
+                                          JwtClaims token, String idTokenString, JwtClaims idToken, String refreshToken) {
         super(tokenString, token, idTokenString, idToken);
         this.clientConfiguration = clientConfiguration;
         this.tokenStore = tokenStore;
@@ -47,7 +49,7 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
     }
 
     @Override
-    public AccessToken getToken() {
+    public JwtClaims getToken() {
         refreshExpiredToken(true);
         return super.getToken();
     }
@@ -59,7 +61,7 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
     }
 
     @Override
-    public IDToken getIdToken() {
+    public JwtClaims getIdToken() {
         refreshExpiredToken(true);
         return super.getIdToken();
     }
