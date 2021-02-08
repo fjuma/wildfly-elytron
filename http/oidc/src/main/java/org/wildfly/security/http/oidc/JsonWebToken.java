@@ -18,10 +18,18 @@
 
 package org.wildfly.security.http.oidc;
 
+import static org.wildfly.security.http.oidc.ElytronMessages.log;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import javax.json.Json;
+import javax.json.JsonValue;
 
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.MalformedClaimException;
+import org.wildfly.common.Assert;
 
 /**
  * Representation of a JSON Web Token, as per <a href="https://tools.ietf.org/html/rfc7519">RFC 7519</a>.
@@ -37,119 +45,234 @@ public class JsonWebToken {
 
     private final JwtClaims jwtClaims;
 
+    /**
+     * Construct a new instance.
+     *
+     * @param jwtClaims the JWT claims for this instance (may not be {@code null})
+     */
     public JsonWebToken(JwtClaims jwtClaims) {
+        Assert.checkNotNullParam("jwtClaims", jwtClaims);
         this.jwtClaims = jwtClaims;
     }
 
+    /**
+     * Get the issuer claim.
+     *
+     * @return the issuer claim
+     * @throws IllegalArgumentException if the issuer claim is malformed
+     */
     public String getIssuer() {
         try {
             return jwtClaims.getIssuer();
         } catch (MalformedClaimException e) {
-
+            throw log.invalidTokenClaimValue();
         }
     }
 
+    /**
+     * Get the subject claim.
+     *
+     * @return the subject claim
+     * @throws IllegalArgumentException if the subject claim is malformed
+     */
     public String getSubject() {
         try {
             return jwtClaims.getSubject();
         } catch (MalformedClaimException e) {
-
+            throw log.invalidTokenClaimValue();
         }
     }
 
+    /**
+     * Get the audience claim.
+     *
+     * @return the audience claim
+     * @throws IllegalArgumentException if the audience claim is malformed
+     */
     public List<String> getAudience() {
         try {
             return jwtClaims.getAudience();
         } catch (MalformedClaimException e) {
-
+            throw log.invalidTokenClaimValue();
         }
     }
 
+    /**
+     * Get the expiration claim.
+     *
+     * @return the expiration claim
+     * @throws IllegalArgumentException if the expiration claim is malformed
+     */
     public Long getExpiration() {
         return getClaimValueAsLong(EXP);
     }
 
+    /**
+     * Return whether this JWT is expired.
+     *
+     * @return {@code true} if this JWT is expired and {@code false} otherwise
+     * @throws IllegalArgumentException if the issuer claim is malformed
+     */
     public boolean isExpired() {
         Long expiration = getExpiration();
         return expiration != null && expiration != 0 ? getCurrentTimeInSeconds() > expiration : false;
     }
 
+    /**
+     * Get the not before claim.
+     *
+     * @return the not before claim
+     * @throws IllegalArgumentException if the not before claim is malformed
+     */
     public Long getNotBefore() {
         return getClaimValueAsLong(NBF);
     }
 
+    /**
+     * Return whether the current time is greater than or equal to the value of the
+     * not before claim.
+     *
+     * @return {@code true} if the not before claim is null or if the current time is greater than or equal to the value
+     * of the not before claim and {@code false} otherwise
+     * @throws IllegalArgumentException if the not before claim is malformed
+     */
     public boolean isNotBefore() {
         Long notBefore = getNotBefore();
         return notBefore != null ? getCurrentTimeInSeconds() >= notBefore : true;
     }
 
     /**
-     * Checks that the token is not expired and isn't prior to not-before.
+     * Checks that the token is not expired and isn't prior to the not before time.
      *
-     * @return {@code true} if the token is active; {@code false} otherwise
+     * @return {@code true} if the token is active and {@code false} otherwise
      */
     public boolean isActive() {
         return !isExpired() && isNotBefore();
     }
 
+    /**
+     * Get the issued at claim.
+     *
+     * @return the issued at claim
+     * @throws IllegalArgumentException if the issued at claim is malformed
+     */
     public Long getIssuedAt() {
         return getClaimValueAsLong(IAT);
     }
 
-    public String getId() {
+    /**
+     * Get the ID claim.
+     *
+     * @return the ID claim
+     * @throws IllegalArgumentException if the ID claim is malformed
+     */
+    public String getID() {
         try {
             return jwtClaims.getJwtId();
         } catch (MalformedClaimException e) {
-
+            throw log.invalidTokenClaimValue();
         }
     }
 
     /**
-     * This is a map of any other claims and data that might be in the token.
+     * Get the claim names.
      *
-     * @return
+     * @return the claim names
      */
-    public Map<String, Object> getOtherClaims() {
-        return otherClaims;
+    public Set<String> getClaimNames() {
+        return new HashSet<>(jwtClaims.getClaimNames());
+    }
+
+    /**
+     * Return whether this token has the given claim.
+     *
+     * @param claimName the claim name to check
+     * @return {@code true} if this token has the given claim and {@code false} otherwise
+     */
+    public boolean hasClaim(String claimName) {
+        Assert.checkNotNullParam("claimName", claimName);
+        return jwtClaims.hasClaim(claimName);
+    }
+
+    /**
+     * Get the value of the given claim.
+     *
+     * @param claimName the claim to retrieve
+     * @return the value of the given claim
+     */
+    public Object getClaimValue(String claimName) {
+        Assert.checkNotNullParam("claimName", claimName);
+        return jwtClaims.getClaimValue(claimName);
+    }
+
+    /**
+     * Get the value of the given claim.
+     *
+     * @param claimName the claim to retrieve
+     * @param type the type that should be returned
+     * @param <T> the type of the value
+     * @return the value of the given claim
+     * @throws IllegalArgumentException if the claim is malformed
+     */
+    public <T> T getClaimValue(String claimName, Class<T> type) {
+        Assert.checkNotNullParam("claimName", claimName);
+        try {
+            return jwtClaims.getClaimValue(claimName, type);
+        } catch (MalformedClaimException e) {
+            throw log.invalidTokenClaimValue();
+        }
+    }
+
+    /**
+     * Get the value of the given claim.
+     *
+     * @param claimName the claim to retrieve
+     * @return the value of the given claim as a string
+     */
+    public String getClaimValueAsString(String claimName) {
+        Assert.checkNotNullParam("claimName", claimName);
+        return jwtClaims.getClaimValueAsString(claimName);
     }
 
     private static int getCurrentTimeInSeconds() {
         return ((int) (System.currentTimeMillis() / 1000));
     }
 
-    private Long getClaimValueAsLong(String claimName) {
+    Long getClaimValueAsLong(String claimName) {
         try {
             Long claimValue = jwtClaims.getClaimValue(claimName, Long.class);
             if (claimValue == null) {
                 claimValue = 0L;
             }
+            return claimValue;
         } catch (MalformedClaimException e) {
-
+            throw log.invalidTokenClaimValue();
         }
     }
 
-    protected Object getClaimValue(String claimName) {
-        Object claim = null;
+    public static JsonValue wrapValue(Object value) {
+        JsonValue jsonValue = null;
 
-        switch (claimName) {
-            // convert NumericDate values to Long
-            case EXP:
-            case IAT:
-            case AUTH_TIME:
-            case NBF:
-            case UPDATED_AT:
-                try {
-                    claim = jwtClaims.getClaimValue(claimName, Long.class);
-                    if (claim == null) {
-                        claim = 0L;
-                    }
-                } catch (MalformedClaimException e) {
-                    throw log.
-                }
-                break;
-            default:
-                claim = jwtClaims.getClaimValue(claimName);
+        if (value instanceof JsonValue) {
+            // This may already be a JsonValue
+            jsonValue = (JsonValue) value;
+        } else if (value instanceof String) {
+            jsonValue = Json.createValue(value.toString());
+        } else if ((value instanceof Long) || (value instanceof Integer)) {
+            jsonValue = Json.createValue(((Number) value).longValue());
+        } else if (value instanceof Number) {
+            jsonValue = Json.createValue(((Number) value).doubleValue());
+        } else if (value instanceof Boolean) {
+            jsonValue = (Boolean) value ? JsonValue.TRUE : JsonValue.FALSE;
+        } else if (value instanceof Collection) {
+            jsonValue = toJsonArray((Collection<?>) value);
+        } else if (value instanceof Map) {
+            @SuppressWarnings("unchecked")
+            JsonObject entryJsonObject = replaceMap((Map<String, Object>) value);
+            jsonValue = entryJsonObject;
         }
-        return claim;
+
+        return jsonValue;
     }
+
 }

@@ -117,5 +117,7 @@ interface ElytronMessages extends BasicLogger {
     @Message(id = NONE, value = "Unexpected value for azp (issued for) claim")
     String unexpectedValueForIssuedForClaim();
 
+    @Message(id = 19020, value = "Invalid token claim value")
+    IllegalArgumentException invalidTokenClaimValue();
 }
 

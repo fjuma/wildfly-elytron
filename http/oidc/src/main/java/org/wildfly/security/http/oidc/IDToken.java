@@ -18,32 +18,17 @@
 
 package org.wildfly.security.http.oidc;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.wildfly.security.json.util.StringOrArrayDeserializer;
-import org.wildfly.security.json.util.StringOrArraySerializer;
-
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.jose4j.jwt.JwtClaims;
 
 /**
  * Representation of an OIDC ID token, as per <a href="https://openid.net/specs/openid-connect-core-1_0.html">OpenID Connect Core 1.0</a>.
- * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
+ *
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
 public class IDToken extends JsonWebToken {
 
-    public static final String AUTH_TIME = "auth_time";
-    public static final String NONCE = "nonce";
-    public static final String ACR = "acr";
-    public static final String AZP = "azp";
+    public static final String AT_HASH = "at_hash";
+    public static final String C_HASH = "c_hash";
     public static final String NAME = "name";
     public static final String GIVEN_NAME = "given_name";
     public static final String FAMILY_NAME = "family_name";
@@ -64,318 +49,113 @@ public class IDToken extends JsonWebToken {
     public static final String ADDRESS = "address";
     public static final String UPDATED_AT = "updated_at";
     public static final String CLAIMS_LOCALES = "claims_locales";
-    public static final String AT_HASH = "at_hash";
-    public static final String C_HASH = "c_hash";
-
-    // Financial API - Part 2: Read and Write API Security Profile
-    // http://openid.net/specs/openid-financial-api-part-2.html#authorization-server
+    public static final String ACR = "acr";
     public static final String S_HASH = "s_hash";
 
-    @JsonProperty(AUTH_TIME)
-    protected Long authTime;
-
-    @JsonProperty(NONCE)
-    protected String nonce;
-
-    @JsonProperty(ACR)
-    protected String acr;
-
-    @JsonProperty(AZP)
-    public String issuedFor;
-
-    @JsonProperty(NAME)
-    protected String name;
-
-    @JsonProperty(GIVEN_NAME)
-    protected String givenName;
-
-    @JsonProperty(FAMILY_NAME)
-    protected String familyName;
-
-    @JsonProperty(MIDDLE_NAME)
-    protected String middleName;
-
-    @JsonProperty(NICKNAME)
-    protected String nickName;
-
-    @JsonProperty(PREFERRED_USERNAME)
-    protected String preferredUsername;
-
-    @JsonProperty(PROFILE)
-    protected String profile;
-
-    @JsonProperty(PICTURE)
-    protected String picture;
-
-    @JsonProperty(WEBSITE)
-    protected String website;
-
-    @JsonProperty(EMAIL)
-    protected String email;
-
-    @JsonProperty(EMAIL_VERIFIED)
-    protected Boolean emailVerified;
-
-    @JsonProperty(GENDER)
-    protected String gender;
-
-    @JsonProperty(BIRTHDATE)
-    protected String birthdate;
-
-    @JsonProperty(ZONEINFO)
-    protected String zoneinfo;
-
-    @JsonProperty(LOCALE)
-    protected String locale;
-
-    @JsonProperty(PHONE_NUMBER)
-    protected String phoneNumber;
-
-    @JsonProperty(PHONE_NUMBER_VERIFIED)
-    protected Boolean phoneNumberVerified;
-
-    @JsonProperty(ADDRESS)
-    protected AddressClaimSet address;
-
-    @JsonProperty(UPDATED_AT)
-    protected Long updatedAt;
-
-    @JsonProperty(CLAIMS_LOCALES)
-    protected String claimsLocales;
-
-    @JsonProperty(AT_HASH)
-    protected String accessTokenHash;
-
-    @JsonProperty(C_HASH)
-    protected String codeHash;
-
-    // Financial API - Part 2: Read and Write API Security Profile
-    // http://openid.net/specs/openid-financial-api-part-2.html#authorization-server
-    @JsonProperty(S_HASH)
-    protected String stateHash;
-
-    public Long getAuthTime() {
-        return authTime;
-    }
-
-    public void setAuthTime(Long authTime) {
-        this.authTime = authTime;
-    }
-
-    public String getNonce() {
-        return nonce;
-    }
-
-    public void setNonce(String nonce) {
-        this.nonce = nonce;
-    }
-
-    public String getAcr() {
-        return acr;
-    }
-
-    public void setAcr(String acr) {
-        this.acr = acr;
-    }
-
-    public String getIssuedFor() {
-        return issuedFor;
-    }
-
-    public JsonWebToken setIssuedFor(String issuedFor) {
-        this.issuedFor = issuedFor;
-        return this;
+    /**
+     * Construct a new instance.
+     *
+     * @param jwtClaims the JWT claims for this instance (may not be {@code null})
+     */
+    public IDToken(JwtClaims jwtClaims) {
+        super(jwtClaims);
     }
 
     public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        return getClaimValueAsString(NAME);
     }
 
     public String getGivenName() {
-        return this.givenName;
-    }
-
-    public void setGivenName(String givenName) {
-        this.givenName = givenName;
+        return getClaimValueAsString(GIVEN_NAME);
     }
 
     public String getFamilyName() {
-        return this.familyName;
-    }
-
-    public void setFamilyName(String familyName) {
-        this.familyName = familyName;
+        return getClaimValueAsString(FAMILY_NAME);
     }
 
     public String getMiddleName() {
-        return this.middleName;
-    }
-
-    public void setMiddleName(String middleName) {
-        this.middleName = middleName;
+        return getClaimValueAsString(MIDDLE_NAME);
     }
 
     public String getNickName() {
-        return this.nickName;
-    }
-
-    public void setNickName(String nickName) {
-        this.nickName = nickName;
+        return getClaimValueAsString(NICKNAME);
     }
 
     public String getPreferredUsername() {
-        return this.preferredUsername;
-    }
-
-    public void setPreferredUsername(String preferredUsername) {
-        this.preferredUsername = preferredUsername;
+        return getClaimValueAsString(PREFERRED_USERNAME);
     }
 
     public String getProfile() {
-        return this.profile;
-    }
-
-    public void setProfile(String profile) {
-        this.profile = profile;
+        return getClaimValueAsString(PROFILE);
     }
 
     public String getPicture() {
-        return this.picture;
-    }
-
-    public void setPicture(String picture) {
-        this.picture = picture;
+        return getClaimValueAsString(PICTURE);
     }
 
     public String getWebsite() {
-        return this.website;
-    }
-
-    public void setWebsite(String website) {
-        this.website = website;
+        return getClaimValueAsString(WEBSITE);
     }
 
     public String getEmail() {
-        return this.email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+        return getClaimValueAsString(EMAIL);
     }
 
     public Boolean getEmailVerified() {
-        return this.emailVerified;
-    }
-
-    public void setEmailVerified(Boolean emailVerified) {
-        this.emailVerified = emailVerified;
+        return getClaimValue(EMAIL_VERIFIED, Boolean.class);
     }
 
     public String getGender() {
-        return this.gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
+        return getClaimValueAsString(GENDER);
     }
 
     public String getBirthdate() {
-        return this.birthdate;
-    }
-
-    public void setBirthdate(String birthdate) {
-        this.birthdate = birthdate;
+        return getClaimValueAsString(BIRTHDATE);
     }
 
     public String getZoneinfo() {
-        return this.zoneinfo;
-    }
-
-    public void setZoneinfo(String zoneinfo) {
-        this.zoneinfo = zoneinfo;
+        return getClaimValueAsString(ZONEINFO);
     }
 
     public String getLocale() {
-        return this.locale;
-    }
-
-    public void setLocale(String locale) {
-        this.locale = locale;
+        return getClaimValueAsString(LOCALE);
     }
 
     public String getPhoneNumber() {
-        return this.phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+        return getClaimValueAsString(PHONE_NUMBER);
     }
 
     public Boolean getPhoneNumberVerified() {
-        return this.phoneNumberVerified;
-    }
-
-    public void setPhoneNumberVerified(Boolean phoneNumberVerified) {
-        this.phoneNumberVerified = phoneNumberVerified;
+        return getClaimValue(PHONE_NUMBER_VERIFIED, Boolean.class);
     }
 
     public AddressClaimSet getAddress() {
+        Object addressValue = getClaimValue(ADDRESS);
         return address;
     }
 
-    public void setAddress(AddressClaimSet address) {
-        this.address = address;
-    }
-
     public Long getUpdatedAt() {
-        return this.updatedAt;
-    }
-
-    public void setUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
+        return getClaimValueAsLong(UPDATED_AT);
     }
 
     public String getClaimsLocales() {
-        return this.claimsLocales;
-    }
-
-    public void setClaimsLocales(String claimsLocales) {
-        this.claimsLocales = claimsLocales;
+        return getClaimValueAsString(CLAIMS_LOCALES);
     }
 
     public String getAccessTokenHash() {
-        return accessTokenHash;
-    }
-
-    public void setAccessTokenHash(String accessTokenHash) {
-        this.accessTokenHash = accessTokenHash;
+        return getClaimValueAsString(AT_HASH);
     }
 
     public String getCodeHash() {
-        return codeHash;
+        return getClaimValueAsString(C_HASH);
     }
 
-    public void setCodeHash(String codeHash) {
-        this.codeHash = codeHash;
-    }
-
-    // Financial API - Part 2: Read and Write API Security Profile
-    // http://openid.net/specs/openid-financial-api-part-2.html#authorization-server
     public String getStateHash() {
-        return stateHash;
+        return getClaimValueAsString(S_HASH);
     }
 
-    public void setStateHash(String stateHash) {
-        this.stateHash = stateHash;
-    }
-
-    @Override
-    public TokenCategory getCategory() {
-        return TokenCategory.ID;
+    public String getAcr() {
+        return getClaimValueAsString(ACR);
     }
 
 }
