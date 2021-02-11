@@ -122,6 +122,8 @@ public class OidcClientConfiguration {
     protected boolean delegateBearerErrorResponseSending = false;
     protected boolean verifyTokenAudience = false;
 
+    protected String jwsSignatureAlgorithm = "RS256";
+
     public OidcClientConfiguration() {
     }
 
@@ -620,4 +622,11 @@ public class OidcClientConfiguration {
         client = callable;
     }
 
+    public void setJwsSignatureAlgorithm(String jwsSignatureAlgorithm) {
+        this.jwsSignatureAlgorithm = jwsSignatureAlgorithm;
+    }
+
+    public String getJwsSignatureAlgorithm() {
+        return jwsSignatureAlgorithm;
+    }
 }

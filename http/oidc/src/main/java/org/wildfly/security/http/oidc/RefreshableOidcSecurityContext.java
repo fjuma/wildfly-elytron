@@ -22,8 +22,7 @@ import static org.wildfly.security.http.oidc.ElytronMessages.log;
 import static org.wildfly.security.http.oidc.Oidc.getCurrentTimeInSeconds;
 
 import java.io.IOException;
-
-import org.jose4j.jwt.JwtClaims;
+import java.security.PublicKey;
 
 
 /**
@@ -41,7 +40,7 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
     }
 
     public RefreshableOidcSecurityContext(OidcClientConfiguration clientConfiguration, OidcTokenStore tokenStore, String tokenString,
-                                          JwtClaims token, String idTokenString, JwtClaims idToken, String refreshToken) {
+                                          AccessToken token, String idTokenString, IDToken idToken, String refreshToken) {
         super(tokenString, token, idTokenString, idToken);
         this.clientConfiguration = clientConfiguration;
         this.tokenStore = tokenStore;
@@ -49,7 +48,7 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
     }
 
     @Override
-    public JwtClaims getToken() {
+    public AccessToken getToken() {
         refreshExpiredToken(true);
         return super.getToken();
     }
@@ -61,15 +60,15 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
     }
 
     @Override
-    public JwtClaims getIdToken() {
+    public IDToken getIDToken() {
         refreshExpiredToken(true);
-        return super.getIdToken();
+        return super.getIDToken();
     }
 
     @Override
-    public String getIdTokenString() {
+    public String getIDTokenString() {
         refreshExpiredToken(true);
-        return super.getIdTokenString();
+        return super.getIDTokenString();
     }
 
     public String getRefreshToken() {
@@ -85,7 +84,7 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
     }
 
     public boolean isActive() {
-        return token != null && this.token.isActive() && clientConfiguration !=null && this.token.getIssuedAt() >= clientConfiguration.getNotBefore();
+        return token != null && this.token.isActive() && clientConfiguration != null && this.token.getIssuedAt() >= clientConfiguration.getNotBefore();
     }
 
     public boolean isTokenTimeToLiveSufficient(AccessToken token) {
@@ -149,6 +148,16 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
 
                 AdapterTokenVerifier.VerifiedTokens tokens = AdapterTokenVerifier.verifyTokens(accessTokenString, response.getIDToken(), clientConfiguration);
                 accessToken = tokens.getAccessToken();
+
+                if (publicKey == null && clientConfiguration.get)
+                IDTokenValidator idTokenValidator = IDTokenValidator.builder()
+                        .setExpectedIssuer(clientConfiguration.getIssuerUrl())
+                        .setClientId(clientConfiguration.getResourceName())
+                        .setExpectedJwsAlgorithm(clientConfiguration.getJwsSignatureAlgorithm())
+                        .setJwksPublicKey(null)
+                        .build()
+
+
                 idToken = tokens.getIdToken();
                 log.debug("Token Verification succeeded!");
             } catch (VerificationException e) {

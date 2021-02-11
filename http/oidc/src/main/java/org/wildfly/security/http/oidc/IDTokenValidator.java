@@ -56,9 +56,13 @@ public class IDTokenValidator {
      * @return the {@code JwtContext} if the ID token was valid
      * @throws OidcException if the ID token is invalid
      */
-    public JwtContext parseAndVerifyToken(final String idToken) throws OidcException {
+    public IDToken parseAndVerifyToken(final String idToken) throws OidcException {
         try {
-            return jwtConsumer.process(idToken);
+            JwtClaims jwtClaims = jwtConsumer.process(idToken).getJwtClaims();
+            if (jwtClaims == null) {
+                throw log.invalidIDTokenClaims();
+            }
+            return new IDToken(jwtClaims);
         } catch (InvalidJwtException e) {
             throw log.invalidIDToken(e);
         }
@@ -86,6 +90,19 @@ public class IDTokenValidator {
          * Construct a new uninitialized instance.
          */
         Builder() {
+        }
+
+        /**
+         * Construct a new uninitialized instance.
+         *
+         * @param clientConfiguration the OIDC client configuration
+         */
+        Builder(OidcClientConfiguration clientConfiguration) {
+            Assert.checkNotNullParam("clientConfiguration", clientConfiguration);
+            setExpectedIssuer(clientConfiguration.getIssuerUrl());
+            setClientId(clientConfiguration.getResourceName());
+            setExpectedJwsAlgorithm(clientConfiguration.getJwsSignatureAlgorithm());
+            setJwksPublicKey(getPublicKey())
         }
 
         /**
@@ -197,8 +214,6 @@ public class IDTokenValidator {
             jwtConsumer = jwtConsumerBuilder.build();
             return new IDTokenValidator(this);
         }
-
-
     }
 
     private static class AzpValidator implements ErrorCodeValidator {
@@ -226,6 +241,11 @@ public class IDTokenValidator {
             }
             return null;
         }
+    }
+
+    private PublicKey getPublicKey(PublicKeyLocator publicKeyLocator) {
+        PublicKey publicKey = publicKeyLocator.getPublicKey(kid, clientConfiguration);
+        return publicKey;
     }
 
 }

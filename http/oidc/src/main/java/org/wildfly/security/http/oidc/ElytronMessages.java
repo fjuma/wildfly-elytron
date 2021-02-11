@@ -119,5 +119,9 @@ interface ElytronMessages extends BasicLogger {
 
     @Message(id = 19020, value = "Invalid token claim value")
     IllegalArgumentException invalidTokenClaimValue();
+
+    @Message(id = 19021, value = "Invalid ID token claims")
+    OidcException invalidIDTokenClaims();
+
 }
 

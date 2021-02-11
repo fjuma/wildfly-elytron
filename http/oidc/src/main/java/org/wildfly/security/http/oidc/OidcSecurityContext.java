@@ -45,21 +45,21 @@ public class OidcSecurityContext implements Serializable {
     protected String idTokenString;
 
     // Don't store parsed tokens into HTTP session
-    protected transient JwtClaims token;
-    protected transient JwtClaims idToken;
+    protected transient AccessToken token;
+    protected transient IDToken idToken;
     protected transient AuthorizationContext authorizationContext;
 
     public OidcSecurityContext() {
     }
 
-    public OidcSecurityContext(String tokenString, JwtClaims token, String idTokenString, JwtClaims idToken) {
+    public OidcSecurityContext(String tokenString, AccessToken token, String idTokenString, IDToken idToken) {
         this.tokenString = tokenString;
         this.token = token;
         this.idToken = idToken;
         this.idTokenString = idTokenString;
     }
 
-    public JwtClaims getToken() {
+    public AccessToken getToken() {
         return token;
     }
 
@@ -71,11 +71,11 @@ public class OidcSecurityContext implements Serializable {
         return authorizationContext;
     }
 
-    public JwtClaims getIdToken() {
+    public IDToken getIDToken() {
         return idToken;
     }
 
-    public String getIdTokenString() {
+    public String getIDTokenString() {
         return idTokenString;
     }
 
@@ -100,8 +100,8 @@ public class OidcSecurityContext implements Serializable {
         setObjectInputFilterMethod.invoke(ois, objectFilter);
 
         try {
-            token = new JwtConsumerBuilder().setSkipAllValidators().build().processToClaims(tokenString);
-            idToken = new JwtConsumerBuilder().setSkipAllValidators().build().processToClaims(idTokenString);
+            token = new AccessToken(new JwtConsumerBuilder().setSkipAllValidators().build().processToClaims(tokenString));
+            idToken = new IDToken(new JwtConsumerBuilder().setSkipAllValidators().build().processToClaims(idTokenString));
         } catch (InvalidJwtException e) {
             throw log.unableToParseToken();
         }

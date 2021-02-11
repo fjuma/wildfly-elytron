@@ -26,17 +26,28 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jose4j.jwt.JwtClaims;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Representation of an access token.
  *
- * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-public class AccessToken extends IDToken {
-    public static class Access implements Serializable {
+public class AccessToken extends JsonWebToken {
+
+    /**
+     * Construct a new instance.
+     *
+     * @param jwtClaims the JWT claims for this instance (may not be {@code null})
+     */
+    public AccessToken(JwtClaims jwtClaims) {
+        super(jwtClaims);
+    }
+
+    /*public static class Access implements Serializable {
         @JsonProperty("roles")
         protected Set<String> roles;
         @JsonProperty("verify_caller")
@@ -145,11 +156,11 @@ public class AccessToken extends IDToken {
         this.resourceAccess = resourceAccess;
     }
 
-    /**
+    *//**
      * Does the realm require verifying the caller?
      *
      * @return
-     */
+     *//*
     @JsonIgnore
     public boolean isVerifyCaller() {
         if (getRealmAccess() != null && getRealmAccess().getVerifyCaller() != null)
@@ -157,12 +168,12 @@ public class AccessToken extends IDToken {
         return false;
     }
 
-    /**
+    *//**
      * Does the resource override the requirement of verifying the caller?
      *
      * @param resource
      * @return
-     */
+     *//*
     @JsonIgnore
     public boolean isVerifyCaller(String resource) {
         Access access = getResourceAccess(resource);
@@ -280,5 +291,5 @@ public class AccessToken extends IDToken {
     public TokenCategory getCategory() {
         return TokenCategory.ACCESS;
     }
-
+*/
 }

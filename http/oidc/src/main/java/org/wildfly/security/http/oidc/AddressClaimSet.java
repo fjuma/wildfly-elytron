@@ -18,7 +18,11 @@
 
 package org.wildfly.security.http.oidc;
 
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+
 import org.jose4j.jwt.JwtClaims;
+import org.wildfly.common.Assert;
 
 /**
  * Representation of an address claim as per <a href="https://openid.net/specs/openid-connect-core-1_0.html">OpenID Connect Core 1.0</a>.
@@ -33,36 +37,39 @@ public class AddressClaimSet {
     public static final String POSTAL_CODE = "postal_code";
     public static final String COUNTRY = "country";
 
+    private final Map<String, String> addressClaimSet;
+
     /**
      * Construct a new instance.
      *
-     * @param jwtClaims the JWT claims for this instance (may not be {@code null})
+     * @param addressClaimSet the address claim set for this instance (may not be {@code null})
      */
-    public AddressClaimSet(JwtClaims jwtClaims) {
-        super(jwtClaims);
+    public AddressClaimSet(Map<String, String> addressClaimSet) {
+        Assert.checkNotNullParam("addressClaimSet", addressClaimSet);
+        this.addressClaimSet = addressClaimSet;
     }
 
     public String getFormattedAddress() {
-        return this.formattedAddress;
+        return addressClaimSet.get(FORMATTED);
     }
 
     public String getStreetAddress() {
-        return this.streetAddress;
+        return addressClaimSet.get(STREET_ADDRESS);
     }
 
     public String getLocality() {
-        return this.locality;
+        return addressClaimSet.get(LOCALITY);
     }
 
     public String getRegion() {
-        return this.region;
+        return addressClaimSet.get(REGION);
     }
 
     public String getPostalCode() {
-        return this.postalCode;
+        return addressClaimSet.get(POSTAL_CODE);
     }
 
     public String getCountry() {
-        return this.country;
+        return addressClaimSet.get(COUNTRY);
     }
 }
