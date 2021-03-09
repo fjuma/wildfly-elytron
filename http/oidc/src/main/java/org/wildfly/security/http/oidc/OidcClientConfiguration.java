@@ -44,7 +44,7 @@ import org.wildfly.security.json.util.JsonSerialization;
 
 /**
  * The OpenID Connect (OIDC) configuration for a client application. This class is based on
- * {@code org.keycloak.adapters.KeycloakDeploypment}.
+ * {@code org.keycloak.adapters.KeycloakDeployment}.
  *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author <a href="mailto:brad.culley@spartasystems.com">Brad Culley</a>

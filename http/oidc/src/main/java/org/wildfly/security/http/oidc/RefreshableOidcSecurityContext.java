@@ -141,6 +141,7 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
                 log.trace("received refresh response");
             }
             String accessTokenString = response.getAccessToken();
+            String idTokenString = response.getIDToken();
             AccessToken accessToken = null;
             IDToken idToken = null;
             try {
@@ -149,18 +150,10 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
                 AdapterTokenVerifier.VerifiedTokens tokens = AdapterTokenVerifier.verifyTokens(accessTokenString, response.getIDToken(), clientConfiguration);
                 accessToken = tokens.getAccessToken();
 
-                if (publicKey == null && clientConfiguration.get)
-                IDTokenValidator idTokenValidator = IDTokenValidator.builder()
-                        .setExpectedIssuer(clientConfiguration.getIssuerUrl())
-                        .setClientId(clientConfiguration.getResourceName())
-                        .setExpectedJwsAlgorithm(clientConfiguration.getJwsSignatureAlgorithm())
-                        .setJwksPublicKey(null)
-                        .build()
-
-
-                idToken = tokens.getIdToken();
+                IDTokenValidator idTokenValidator = IDTokenValidator.builder(clientConfiguration).build();
+                idToken = idTokenValidator.parseAndVerifyToken(idTokenString);
                 log.debug("Token Verification succeeded!");
-            } catch (VerificationException e) {
+            } catch (OidcException e) {
                 log.failedVerificationOfToken();
                 return false;
             }

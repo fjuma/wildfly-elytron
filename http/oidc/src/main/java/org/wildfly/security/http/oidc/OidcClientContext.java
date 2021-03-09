@@ -102,7 +102,7 @@ public class OidcClientContext {
      * Ever method is delegated except URL get methods and isConfigured()
      *
      */
-    /*protected static class OidcClientConfigurationDelegate extends OidcClientConfiguration {
+    protected static class OidcClientConfigurationDelegate extends OidcClientConfiguration {
         protected OidcClientConfiguration delegate;
 
         public OidcClientConfigurationDelegate(OidcClientConfiguration delegate) {
@@ -509,5 +509,5 @@ public class OidcClientContext {
             builder.port(request.getPort());
         }
         return builder;
-    }*/
+    }
 }

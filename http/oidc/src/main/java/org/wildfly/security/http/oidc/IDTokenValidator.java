@@ -22,7 +22,6 @@ import static org.wildfly.security.http.oidc.ElytronMessages.log;
 import static org.wildfly.security.http.oidc.Oidc.INVALID_ISSUED_FOR_CLAIM;
 
 import java.security.PrivateKey;
-import java.security.PublicKey;
 
 import javax.crypto.SecretKey;
 
@@ -43,10 +42,13 @@ import org.wildfly.common.Assert;
  */
 public class IDTokenValidator {
 
-    private JwtConsumer jwtConsumer;
+    private static final int HEADER_INDEX = 0;
+    private JwtConsumerBuilder jwtConsumerBuilder;
+    private OidcClientConfiguration clientConfiguration;
 
     private IDTokenValidator(Builder builder) {
-        this.jwtConsumer = builder.jwtConsumer;
+        this.jwtConsumerBuilder = builder.jwtConsumerBuilder;
+        this.clientConfiguration = builder.clientConfiguration;
     }
 
     /**
@@ -58,7 +60,23 @@ public class IDTokenValidator {
      */
     public IDToken parseAndVerifyToken(final String idToken) throws OidcException {
         try {
-            JwtClaims jwtClaims = jwtConsumer.process(idToken).getJwtClaims();
+            // first pass to determine the kid, if present
+            JwtConsumer firstPassJwtConsumer = new JwtConsumerBuilder()
+                    .setSkipAllValidators()
+                    .setDisableRequireSignature()
+                    .setSkipSignatureVerification()
+                    .build();
+            JwtContext jwtContext = firstPassJwtConsumer.process(idToken);
+            String kid =  jwtContext.getJoseObjects().get(HEADER_INDEX).getKeyIdHeaderValue();
+            if (kid != null && clientConfiguration.getPublicKeyLocator() != null) {
+                jwtConsumerBuilder.setVerificationKey(clientConfiguration.getPublicKeyLocator().getPublicKey(kid, clientConfiguration));
+            } else {
+                jwtConsumerBuilder.setVerificationKey(); // secret key
+            }
+
+            // second pass to validate
+            jwtConsumerBuilder.build().processContext(jwtContext);
+            JwtClaims jwtClaims = jwtContext.getJwtClaims();
             if (jwtClaims == null) {
                 throw log.invalidIDTokenClaims();
             }
@@ -71,26 +89,22 @@ public class IDTokenValidator {
     /**
      * Construct a new builder instance.
      *
+     * @param clientConfiguration the OIDC client configuration
      * @return the new builder instance
      */
-    public static Builder builder() {
-        return new Builder();
+    public static Builder builder(OidcClientConfiguration clientConfiguration) {
+        return new Builder(clientConfiguration);
     }
 
     public static class Builder {
+        private OidcClientConfiguration clientConfiguration;
         private String expectedIssuer;
         private String clientID;
         private String expectedJwsAlgorithm;
-        private PublicKey jwksPublicKey;
+        private PublicKeyLocator publicKeyLocator;
         private SecretKey clientSecretKey;
         private PrivateKey decryptionKey;
-        private JwtConsumer jwtConsumer;
-
-        /**
-         * Construct a new uninitialized instance.
-         */
-        Builder() {
-        }
+        private JwtConsumerBuilder jwtConsumerBuilder;
 
         /**
          * Construct a new uninitialized instance.
@@ -99,83 +113,7 @@ public class IDTokenValidator {
          */
         Builder(OidcClientConfiguration clientConfiguration) {
             Assert.checkNotNullParam("clientConfiguration", clientConfiguration);
-            setExpectedIssuer(clientConfiguration.getIssuerUrl());
-            setClientId(clientConfiguration.getResourceName());
-            setExpectedJwsAlgorithm(clientConfiguration.getJwsSignatureAlgorithm());
-            setJwksPublicKey(getPublicKey())
-        }
-
-        /**
-         * Set the expected issuer identifier for the OpenID provider.
-         *
-         * @param expectedIssuer the expected issuer
-         * @return this builder instance
-         */
-        public Builder setExpectedIssuer(final String expectedIssuer) {
-            Assert.checkNotNullParam("expectedIssuer", expectedIssuer);
-            this.expectedIssuer = expectedIssuer;
-            return this;
-        }
-
-        /**
-         * Set the client ID that was registered with the OpenID provider.
-         *
-         * @param clientID the client ID that was registered with the OpenID provider
-         * @return this builder instance
-         */
-        public Builder setClientId(final String clientID) {
-            Assert.checkNotNullParam("clientID", clientID);
-            this.clientID = clientID;
-            return this;
-        }
-
-
-        /**
-         * Set the expected JWS signature algorithm.
-         *
-         * @param expectedJwsAlgorithm the expected JWS signature algorithm
-         * @return this builder instance
-         */
-        public Builder setExpectedJwsAlgorithm(final String expectedJwsAlgorithm) {
-            Assert.checkNotNullParam("expectedJwsAlgorithm", expectedJwsAlgorithm);
-            this.expectedJwsAlgorithm = expectedJwsAlgorithm;
-            return this;
-        }
-
-        /**
-         * Set the OpenID provider's public key.
-         *
-         * @param jwksPublicKey the OpenID provider's public key to be used to validate the signature
-         * @return this builder instance
-         */
-        public Builder setJwksPublicKey(final PublicKey jwksPublicKey) {
-            Assert.checkNotNullParam("jwksPublicKey", jwksPublicKey);
-            this.jwksPublicKey = jwksPublicKey;
-            return this;
-        }
-
-        /**
-         * Set the client secret key.
-         *
-         * @param clientSecretKey the client secret key
-         * @return this builder instance
-         */
-        public Builder setClientSecretKey(final SecretKey clientSecretKey) {
-            Assert.checkNotNullParam("clientSecretKey", clientSecretKey);
-            this.clientSecretKey = clientSecretKey;
-            return this;
-        }
-
-        /**
-         * Set the key to be used for decryption.
-         *
-         * @param decryptionKey the key to be used for decryption
-         * @return this builder instance
-         */
-        public Builder setDecryptionKey(final PrivateKey decryptionKey) {
-            Assert.checkNotNullParam("decryptionKey", decryptionKey);
-            this.decryptionKey = decryptionKey;
-            return this;
+            this.clientConfiguration = clientConfiguration;
         }
 
         /**
@@ -185,33 +123,34 @@ public class IDTokenValidator {
          * @throws IllegalArgumentException if a required builder parameter is missing or invalid
          */
         public IDTokenValidator build() throws IllegalArgumentException {
+            expectedIssuer = clientConfiguration.getIssuerUrl();
             if (expectedIssuer == null || expectedIssuer.length() == 0) {
                 throw log.noExpectedIssuerGiven();
             }
+            clientID = clientConfiguration.getResourceName();
             if (clientID == null || clientID.length() == 0) {
                 throw log.noClientIDGiven();
             }
+            expectedJwsAlgorithm = clientConfiguration.getJwsSignatureAlgorithm();
             if (expectedJwsAlgorithm == null || expectedJwsAlgorithm.length() == 0) {
                 throw log.noExpectedJwsAlgorithmGiven();
             }
-            if (jwksPublicKey == null && clientSecretKey == null) {
+            publicKeyLocator = clientConfiguration.getPublicKeyLocator();
+            if (publicKeyLocator == null && clientSecretKey == null) {
                 throw log.noJwksPublicKeyOrClientSecretKeyGiven();
             }
 
-            JwtConsumerBuilder jwtConsumerBuilder = new JwtConsumerBuilder()
+            jwtConsumerBuilder = new JwtConsumerBuilder()
                     .setExpectedIssuer(expectedIssuer)
                     .setExpectedAudience(clientID)
                     .setJwsAlgorithmConstraints(
                             new AlgorithmConstraints(AlgorithmConstraints.ConstraintType.PERMIT, expectedJwsAlgorithm))
-                    .setVerificationKey(jwksPublicKey != null ? jwksPublicKey : clientSecretKey)
                     .registerValidator(new AzpValidator(clientID))
                     .setRequireExpirationTime();
 
             if (decryptionKey != null) {
                 jwtConsumerBuilder.setDecryptionKey(decryptionKey);
             }
-
-            jwtConsumer = jwtConsumerBuilder.build();
             return new IDTokenValidator(this);
         }
     }
@@ -241,11 +180,6 @@ public class IDTokenValidator {
             }
             return null;
         }
-    }
-
-    private PublicKey getPublicKey(PublicKeyLocator publicKeyLocator) {
-        PublicKey publicKey = publicKeyLocator.getPublicKey(kid, clientConfiguration);
-        return publicKey;
     }
 
 }
