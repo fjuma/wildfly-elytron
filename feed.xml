@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description>WildFly Elytron: Security, Authentication, and Authorization SPIs for the WildFly project</description>
-        <lastBuildDate>Wed, 10 Mar 2021 19:47:16 +0000</lastBuildDate>
+        <lastBuildDate>Wed, 10 Mar 2021 19:56:47 +0000</lastBuildDate>
         
         <item>
             <title>New Security Features in WildFly 23</title>
@@ -13,7 +13,7 @@
                 https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-in-wildfly-23/
             </link>
             <description>
-                This blog post highlights the new security features that are in WildFly 23. Expression Resolution WildFly 23 adds support for expressions in the management model to be encrypted using AES encryption and these expressions are dynamically decrypted at runtime using a SecretKey from a credential store. Principal Propagation In certain...
+                This blog post highlights the new security features that are in WildFly 23 and also gives an update on the new security features that the Elytron team has been working on. New Features in WildFly 23 Expression Resolution WildFly 23 adds support for expressions in the management model to be...
             </description>
             <pubDate>Wed, 10 Mar 2021 00:00:00 +0000</pubDate>
             <guid>

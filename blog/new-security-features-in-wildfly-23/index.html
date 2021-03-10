@@ -135,33 +135,33 @@
 </div>
       <div class="grid__item width-12-12">
           <div class="paragraph">
-<p>This blog post highlights the new security features that are in WildFly 23.</p>
+<p>This blog post highlights the new security features that are in WildFly 23 and also gives an update
+on the new security features that the Elytron team has been working on.</p>
 </div>
 <div class="sect1">
-<h2 id="expression-resolution"><a class="anchor" href="#expression-resolution"></a>Expression Resolution</h2>
+<h2 id="new-features-in-wildfly-23"><a class="anchor" href="#new-features-in-wildfly-23"></a>New Features in WildFly 23</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="expression-resolution"><a class="anchor" href="#expression-resolution"></a>Expression Resolution</h3>
 <div class="paragraph">
 <p>WildFly 23 adds support for expressions in the management model to be encrypted using AES encryption and these expressions
 are dynamically decrypted at runtime using a <code>SecretKey</code> from a credential store.</p>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="principal-propagation"><a class="anchor" href="#principal-propagation"></a>Principal Propagation</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="principal-propagation"><a class="anchor" href="#principal-propagation"></a>Principal Propagation</h3>
 <div class="paragraph">
 <p>In certain cases, the principal associated with an unsecured EJB can differ depending on whether Elytron or legacy
 security is in use. WildFly 23 makes it possible for users to decide which behaviour they would like to use.
 More information can be found in this <a href="https://wildfly-security.github.io/wildfly-elytron/blog/normalization-of-EJB-principal-propagation/">blog post</a>.</p>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="support-for-microprofile-jwt-1-2"><a class="anchor" href="#support-for-microprofile-jwt-1-2"></a>Support for MicroProfile JWT 1.2</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="support-for-microprofile-jwt-1-2"><a class="anchor" href="#support-for-microprofile-jwt-1-2"></a>Support for MicroProfile JWT 1.2</h3>
 <div class="paragraph">
 <p>The version of MicroProfile JWT supported by WildFly has been upgraded to version 1.2. More
 information about what&#8217;s new in MicroProfile JWT 1.2 can be found <a href="https://github.com/eclipse/microprofile-jwt-auth/releases/tag/1.2">here</a>.</p>
+</div>
 </div>
 </div>
 </div>
