@@ -18,33 +18,16 @@
 
 package org.wildfly.security.http.oidc;
 
-import static org.apache.http.HttpHeaders.ACCEPT;
-import static org.wildfly.security.http.oidc.ElytronMessages.log;
-import static org.wildfly.security.http.oidc.Oidc.CLIENTS_MANAGEMENT_REGISTER_NODE_PATH;
-import static org.wildfly.security.http.oidc.Oidc.CLIENTS_MANAGEMENT_UNREGISTER_NODE_PATH;
-import static org.wildfly.security.http.oidc.Oidc.DISCOVERY_PATH;
-import static org.wildfly.security.http.oidc.Oidc.JSON_CONTENT_TYPE;
-import static org.wildfly.security.http.oidc.Oidc.KEYCLOAK_REALMS_PATH;
-import static org.wildfly.security.http.oidc.Oidc.SLASH;
 import static org.wildfly.security.http.oidc.Oidc.SSLRequired;
 import static org.wildfly.security.http.oidc.Oidc.TokenStore;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.security.PublicKey;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.util.EntityUtils;
-import org.jboss.logging.Logger;
-import org.wildfly.security.json.util.JsonSerialization;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.wildfly.security.json.util.SystemPropertiesJsonParserFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -68,14 +51,14 @@ public class OidcClientConfigurationBuilder {
     }
 
 
-    protected OidcClientConfiguration internalBuild(final AdapterConfig adapterConfig) {
-        if (adapterConfig.getRealm() == null) throw new RuntimeException("Must set 'realm' in config");
-        oidcClientConfiguration.setRealm(adapterConfig.getRealm());
-        String resource = adapterConfig.getResource();
+    protected OidcClientConfiguration internalBuild(final OidcJsonConfiguration oidcJsonConfiguration) {
+        if (oidcJsonConfiguration.getRealm() == null) throw new RuntimeException("Must set 'realm' in config"); //********************************************************************
+        oidcClientConfiguration.setRealm(oidcJsonConfiguration.getRealm());
+        String resource = oidcJsonConfiguration.getResource();
         if (resource == null) throw new RuntimeException("Must set 'resource' in config");
         oidcClientConfiguration.setResourceName(resource);
 
-        String realmKeyPem = adapterConfig.getRealmKey();
+        String realmKeyPem = oidcJsonConfiguration.getRealmKey();
         if (realmKeyPem != null) {
             PublicKey realmKey;
             try {
@@ -90,73 +73,73 @@ public class OidcClientConfigurationBuilder {
             oidcClientConfiguration.setPublicKeyLocator(pkLocator);
         }
 
-        if (adapterConfig.getSslRequired() != null) {
-            oidcClientConfiguration.setSslRequired(SSLRequired.valueOf(adapterConfig.getSslRequired().toUpperCase()));
+        if (oidcJsonConfiguration.getSslRequired() != null) {
+            oidcClientConfiguration.setSSLRequired(SSLRequired.valueOf(oidcJsonConfiguration.getSslRequired().toUpperCase()));
         } else {
-            oidcClientConfiguration.setSslRequired(SSLRequired.EXTERNAL);
+            oidcClientConfiguration.setSSLRequired(SSLRequired.EXTERNAL);
         }
 
-        if (adapterConfig.getConfidentialPort() != -1) {
-            oidcClientConfiguration.setConfidentialPort(adapterConfig.getConfidentialPort());
+        if (oidcJsonConfiguration.getConfidentialPort() != -1) {
+            oidcClientConfiguration.setConfidentialPort(oidcJsonConfiguration.getConfidentialPort());
         }
 
-        if (adapterConfig.getTokenStore() != null) {
-            oidcClientConfiguration.setTokenStore(TokenStore.valueOf(adapterConfig.getTokenStore().toUpperCase()));
+        if (oidcJsonConfiguration.getTokenStore() != null) {
+            oidcClientConfiguration.setTokenStore(TokenStore.valueOf(oidcJsonConfiguration.getTokenStore().toUpperCase()));
         } else {
             oidcClientConfiguration.setTokenStore(TokenStore.SESSION);
         }
-        if (adapterConfig.getTokenCookiePath() != null) {
-            oidcClientConfiguration.setAdapterStateCookiePath(adapterConfig.getTokenCookiePath());
+        if (oidcJsonConfiguration.getTokenCookiePath() != null) {
+            oidcClientConfiguration.setAdapterStateCookiePath(oidcJsonConfiguration.getTokenCookiePath());
         }
-        if (adapterConfig.getPrincipalAttribute() != null) oidcClientConfiguration.setPrincipalAttribute(adapterConfig.getPrincipalAttribute());
+        if (oidcJsonConfiguration.getPrincipalAttribute() != null) oidcClientConfiguration.setPrincipalAttribute(oidcJsonConfiguration.getPrincipalAttribute());
 
-        oidcClientConfiguration.setResourceCredentials(adapterConfig.getCredentials());
+        oidcClientConfiguration.setResourceCredentials(oidcJsonConfiguration.getCredentials());
         oidcClientConfiguration.setClientAuthenticator(ClientCredentialsProviderUtils.bootstrapClientAuthenticator(oidcClientConfiguration));
 
-        oidcClientConfiguration.setPublicClient(adapterConfig.isPublicClient());
-        oidcClientConfiguration.setUseResourceRoleMappings(adapterConfig.isUseResourceRoleMappings());
+        oidcClientConfiguration.setPublicClient(oidcJsonConfiguration.isPublicClient());
+        oidcClientConfiguration.setUseResourceRoleMappings(oidcJsonConfiguration.isUseResourceRoleMappings());
 
-        oidcClientConfiguration.setExposeToken(adapterConfig.isExposeToken());
+        oidcClientConfiguration.setExposeToken(oidcJsonConfiguration.isExposeToken());
 
-        if (adapterConfig.isCors()) {
+        if (oidcJsonConfiguration.isCors()) {
             oidcClientConfiguration.setCors(true);
-            oidcClientConfiguration.setCorsMaxAge(adapterConfig.getCorsMaxAge());
-            oidcClientConfiguration.setCorsAllowedHeaders(adapterConfig.getCorsAllowedHeaders());
-            oidcClientConfiguration.setCorsAllowedMethods(adapterConfig.getCorsAllowedMethods());
-            oidcClientConfiguration.setCorsExposedHeaders(adapterConfig.getCorsExposedHeaders());
+            oidcClientConfiguration.setCorsMaxAge(oidcJsonConfiguration.getCorsMaxAge());
+            oidcClientConfiguration.setCorsAllowedHeaders(oidcJsonConfiguration.getCorsAllowedHeaders());
+            oidcClientConfiguration.setCorsAllowedMethods(oidcJsonConfiguration.getCorsAllowedMethods());
+            oidcClientConfiguration.setCorsExposedHeaders(oidcJsonConfiguration.getCorsExposedHeaders());
         }
 
         // https://tools.ietf.org/html/rfc7636
-        if (adapterConfig.isPkce()) {
+        if (oidcJsonConfiguration.isPkce()) {
             oidcClientConfiguration.setPkce(true);
         }
 
-        oidcClientConfiguration.setBearerOnly(adapterConfig.isBearerOnly());
-        oidcClientConfiguration.setAutodetectBearerOnly(adapterConfig.isAutodetectBearerOnly());
-        oidcClientConfiguration.setEnableBasicAuth(adapterConfig.isEnableBasicAuth());
-        oidcClientConfiguration.setAlwaysRefreshToken(adapterConfig.isAlwaysRefreshToken());
-        oidcClientConfiguration.setRegisterNodeAtStartup(adapterConfig.isRegisterNodeAtStartup());
-        oidcClientConfiguration.setRegisterNodePeriod(adapterConfig.getRegisterNodePeriod());
-        oidcClientConfiguration.setTokenMinimumTimeToLive(adapterConfig.getTokenMinimumTimeToLive());
-        oidcClientConfiguration.setMinTimeBetweenJwksRequests(adapterConfig.getMinTimeBetweenJwksRequests());
-        oidcClientConfiguration.setPublicKeyCacheTtl(adapterConfig.getPublicKeyCacheTtl());
-        oidcClientConfiguration.setIgnoreOAuthQueryParameter(adapterConfig.isIgnoreOAuthQueryParameter());
-        oidcClientConfiguration.setRewriteRedirectRules(adapterConfig.getRedirectRewriteRules());
-        oidcClientConfiguration.setVerifyTokenAudience(adapterConfig.isVerifyTokenAudience());
+        oidcClientConfiguration.setBearerOnly(oidcJsonConfiguration.isBearerOnly());
+        oidcClientConfiguration.setAutodetectBearerOnly(oidcJsonConfiguration.isAutodetectBearerOnly());
+        oidcClientConfiguration.setEnableBasicAuth(oidcJsonConfiguration.isEnableBasicAuth());
+        oidcClientConfiguration.setAlwaysRefreshToken(oidcJsonConfiguration.isAlwaysRefreshToken());
+        oidcClientConfiguration.setRegisterNodeAtStartup(oidcJsonConfiguration.isRegisterNodeAtStartup());
+        oidcClientConfiguration.setRegisterNodePeriod(oidcJsonConfiguration.getRegisterNodePeriod());
+        oidcClientConfiguration.setTokenMinimumTimeToLive(oidcJsonConfiguration.getTokenMinimumTimeToLive());
+        oidcClientConfiguration.setMinTimeBetweenJwksRequests(oidcJsonConfiguration.getMinTimeBetweenJwksRequests());
+        oidcClientConfiguration.setPublicKeyCacheTtl(oidcJsonConfiguration.getPublicKeyCacheTtl());
+        oidcClientConfiguration.setIgnoreOAuthQueryParameter(oidcJsonConfiguration.isIgnoreOAuthQueryParameter());
+        oidcClientConfiguration.setRewriteRedirectRules(oidcJsonConfiguration.getRedirectRewriteRules());
+        oidcClientConfiguration.setVerifyTokenAudience(oidcJsonConfiguration.isVerifyTokenAudience());
 
-        if (realmKeyPem == null && adapterConfig.isBearerOnly() && adapterConfig.getAuthServerUrl() == null) {
+        if (realmKeyPem == null && oidcJsonConfiguration.isBearerOnly() && oidcJsonConfiguration.getAuthServerUrl() == null) {
             throw new IllegalArgumentException("For bearer auth, you must set the realm-public-key or auth-server-url");
         }
-        if (adapterConfig.getAuthServerUrl() == null && (!oidcClientConfiguration.isBearerOnly() || realmKeyPem == null)) {
+        if (oidcJsonConfiguration.getAuthServerUrl() == null && (!oidcClientConfiguration.isBearerOnly() || realmKeyPem == null)) {
             throw new RuntimeException("You must specify auth-server-url");
         }
-        oidcClientConfiguration.setClient(createHttpClientProducer(adapterConfig));
-        oidcClientConfiguration.setAuthServerBaseUrl(adapterConfig);
-        if (adapterConfig.getTurnOffChangeSessionIdOnLogin() != null) {
-            oidcClientConfiguration.setTurnOffChangeSessionIdOnLogin(adapterConfig.getTurnOffChangeSessionIdOnLogin());
+        oidcClientConfiguration.setClient(createHttpClientProducer(oidcJsonConfiguration));
+        oidcClientConfiguration.setAuthServerBaseUrl(oidcJsonConfiguration);
+        if (oidcJsonConfiguration.getTurnOffChangeSessionIdOnLogin() != null) {
+            oidcClientConfiguration.setTurnOffChangeSessionIdOnLogin(oidcJsonConfiguration.getTurnOffChangeSessionIdOnLogin());
         }
 
-        final PolicyEnforcerConfig policyEnforcerConfig = adapterConfig.getPolicyEnforcerConfig();
+        final PolicyEnforcerConfig policyEnforcerConfig = oidcJsonConfiguration.getPolicyEnforcerConfig();
 
         if (policyEnforcerConfig != null) {
             oidcClientConfiguration.setPolicyEnforcer(new Callable<PolicyEnforcer>() {
@@ -166,7 +149,7 @@ public class OidcClientConfigurationBuilder {
                     if (policyEnforcer == null) {
                         synchronized (oidcClientConfiguration) {
                             if (policyEnforcer == null) {
-                                policyEnforcer = new PolicyEnforcer(oidcClientConfiguration, adapterConfig);
+                                policyEnforcer = new PolicyEnforcer(oidcClientConfiguration, oidcJsonConfiguration);
                             }
                         }
                     }
@@ -178,7 +161,7 @@ public class OidcClientConfigurationBuilder {
         return oidcClientConfiguration;
     }
 
-    private Callable<HttpClient> createHttpClientProducer(final AdapterConfig adapterConfig) {
+    private Callable<HttpClient> createHttpClientProducer(final OidcJsonConfiguration oidcJsonConfiguration) {
         return new Callable<HttpClient>() {
             private HttpClient client;
             @Override
@@ -186,7 +169,7 @@ public class OidcClientConfigurationBuilder {
                 if (client == null) {
                     synchronized (oidcClientConfiguration) {
                         if (client == null) {
-                            client = new HttpClientBuilder().build(adapterConfig);
+                            client = new HttpClientBuilder().build(oidcJsonConfiguration);
                         }
                     }
                 }
@@ -196,16 +179,16 @@ public class OidcClientConfigurationBuilder {
     }
 
     public static OidcClientConfiguration build(InputStream is) {
-        AdapterConfig adapterConfig = loadAdapterConfig(is);
-        return new OidcClientConfigurationBuilder().internalBuild(adapterConfig);
+        OidcJsonConfiguration oidcJsonConfiguration = loadOidcJsonConfiguration(is);
+        return new OidcClientConfigurationBuilder().internalBuild(oidcJsonConfiguration);
     }
 
-    public static AdapterConfig loadAdapterConfig(InputStream is) {
+    public static OidcJsonConfiguration loadOidcJsonConfiguration(InputStream is) {
         ObjectMapper mapper = new ObjectMapper(new SystemPropertiesJsonParserFactory());
         mapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        AdapterConfig adapterConfig;
+        OidcJsonConfiguration adapterConfig;
         try {
-            adapterConfig = mapper.readValue(is, AdapterConfig.class);
+            adapterConfig = mapper.readValue(is, OidcJsonConfiguration.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -213,8 +196,8 @@ public class OidcClientConfigurationBuilder {
     }
 
 
-    public static OidcClientConfiguration build(AdapterConfig adapterConfig) {
-        return new OidcClientConfigurationBuilder().internalBuild(adapterConfig);
+    public static OidcClientConfiguration build(OidcJsonConfiguration oidcJsonConfiguration) {
+        return new OidcClientConfigurationBuilder().internalBuild(oidcJsonConfiguration);
     }
 
 
