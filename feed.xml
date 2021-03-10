@@ -5,7 +5,21 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description>WildFly Elytron: Security, Authentication, and Authorization SPIs for the WildFly project</description>
-        <lastBuildDate>Fri, 22 Jan 2021 15:41:52 +0000</lastBuildDate>
+        <lastBuildDate>Wed, 10 Mar 2021 19:47:16 +0000</lastBuildDate>
+        
+        <item>
+            <title>New Security Features in WildFly 23</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-in-wildfly-23/
+            </link>
+            <description>
+                This blog post highlights the new security features that are in WildFly 23. Expression Resolution WildFly 23 adds support for expressions in the management model to be encrypted using AES encryption and these expressions are dynamically decrypted at runtime using a SecretKey from a credential store. Principal Propagation In certain...
+            </description>
+            <pubDate>Wed, 10 Mar 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-in-wildfly-23/
+            </guid>
+        </item>
         
         <item>
             <title>Planned Security Features for WildFly</title>
@@ -32,6 +46,20 @@
             <pubDate>Thu, 14 Jan 2021 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/auto-self-signed-certificate-generation/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Using case principal transformers in Elytron</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/case-principal-transformer/
+            </link>
+            <description>
+                The case-principal-transformer quickstart demonstrates how to use a case-principal-transformer to adjust a principal to upper case when securing EJBs. Note, the quickstart is building from this post which more closely explains how to configure filesystem realms and SASL authentication to secure EJBs. An Overview of the Case Principal Transformer Principal...
+            </description>
+            <pubDate>Tue, 12 Jan 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/case-principal-transformer/
             </guid>
         </item>
         
@@ -116,34 +144,6 @@
             <pubDate>Wed, 14 Oct 2020 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/distributed-and-failover-realms/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Anomaly based Intrusion Detection System</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/anomaly-based-intrusion-detection-system/
-            </link>
-            <description>
-                Intrusion Detection is the art of sensing when a system or network is being used inappropriately or without authorization. Without intrusion detection, an attacker can attempt attacks many times until an attack is finally successful. Intrusion detection allows for these attacks to be identified before a successful attack is likely...
-            </description>
-            <pubDate>Sat, 29 Aug 2020 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/anomaly-based-intrusion-detection-system/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Introduction to Rule Engine & Blacklist IP Dump of Intrusion Detection System</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/introduction-rule-engine-and-blacklist-dump/
-            </link>
-            <description>
-                Earlier we introduced Intrusion Detection System using Elytron&#8217;s security events and discussed its architecture. In this blog we&#8217;ll discuss the implementation of Rule Engine &amp; Blacklist IP Dump. Rule Engine Rule Engine comprises of a set of pre-defined rules, which are used to score the event on a scale of...
-            </description>
-            <pubDate>Mon, 27 Jul 2020 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/introduction-rule-engine-and-blacklist-dump/
             </guid>
         </item>
         
