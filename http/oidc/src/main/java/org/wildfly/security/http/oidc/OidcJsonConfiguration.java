@@ -131,6 +131,8 @@ public class OidcJsonConfiguration {
     protected String authServerUrl;
     @JsonProperty("ssl-required")
     protected String sslRequired;
+    @JsonProperty("issuer-url")
+    protected String issuerUrl;
 
     /**
      * The Proxy url to use for requests to the auth-server, configurable via the adapter config property {@code proxy-url}.
@@ -353,6 +355,14 @@ public class OidcJsonConfiguration {
 
     public void setAuthServerUrl(String authServerUrl) {
         this.authServerUrl = authServerUrl;
+    }
+
+    public String getIssuerUrl() {
+        return issuerUrl;
+    }
+
+    public void setIssuerUrl(String issuerUrl) {
+        this.issuerUrl = issuerUrl;
     }
 
     public int getConfidentialPort() {

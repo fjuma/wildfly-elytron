@@ -155,7 +155,7 @@ public class OidcClientConfiguration {
         return authServerBaseUrl;
     }
 
-    public void setAuthServerBaseUrl(AdapterConfig config) {
+    public void setAuthServerBaseUrl(OidcJsonConfiguration config) {
         this.authServerBaseUrl = config.getAuthServerUrl();
         if (authServerBaseUrl == null) return;
 

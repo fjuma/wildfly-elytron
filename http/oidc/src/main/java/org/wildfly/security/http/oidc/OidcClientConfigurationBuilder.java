@@ -18,6 +18,7 @@
 
 package org.wildfly.security.http.oidc;
 
+import static org.wildfly.security.http.oidc.ElytronMessages.log;
 import static org.wildfly.security.http.oidc.Oidc.SSLRequired;
 import static org.wildfly.security.http.oidc.Oidc.TokenStore;
 
@@ -28,7 +29,9 @@ import java.util.concurrent.Callable;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.wildfly.common.iteration.CodePointIterator;
 import org.wildfly.security.json.util.SystemPropertiesJsonParserFactory;
+import org.wildfly.security.pem.Pem;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,8 +55,12 @@ public class OidcClientConfigurationBuilder {
 
 
     protected OidcClientConfiguration internalBuild(final OidcJsonConfiguration oidcJsonConfiguration) {
-        if (oidcJsonConfiguration.getRealm() == null) throw new RuntimeException("Must set 'realm' in config"); //********************************************************************
-        oidcClientConfiguration.setRealm(oidcJsonConfiguration.getRealm());
+        if (oidcJsonConfiguration.getAuthServerUrl() != null && oidcJsonConfiguration.getRealm() == null) {
+            throw log.keycloakRealmMissing();
+        }
+        if (oidcJsonConfiguration.getRealm() != null) {
+            oidcClientConfiguration.setRealm(oidcJsonConfiguration.getRealm());
+        }
         String resource = oidcJsonConfiguration.getResource();
         if (resource == null) throw new RuntimeException("Must set 'resource' in config");
         oidcClientConfiguration.setResourceName(resource);
@@ -62,7 +69,7 @@ public class OidcClientConfigurationBuilder {
         if (realmKeyPem != null) {
             PublicKey realmKey;
             try {
-                realmKey = PemUtils.decodePublicKey(realmKeyPem);
+                realmKey = Pem.parsePemPublicKey(CodePointIterator.ofString(realmKeyPem));
                 HardcodedPublicKeyLocator pkLocator = new HardcodedPublicKeyLocator(realmKey);
                 oidcClientConfiguration.setPublicKeyLocator(pkLocator);
             } catch (Exception e) {
@@ -127,11 +134,12 @@ public class OidcClientConfigurationBuilder {
         oidcClientConfiguration.setRewriteRedirectRules(oidcJsonConfiguration.getRedirectRewriteRules());
         oidcClientConfiguration.setVerifyTokenAudience(oidcJsonConfiguration.isVerifyTokenAudience());
 
-        if (realmKeyPem == null && oidcJsonConfiguration.isBearerOnly() && oidcJsonConfiguration.getAuthServerUrl() == null) {
-            throw new IllegalArgumentException("For bearer auth, you must set the realm-public-key or auth-server-url");
+        if (realmKeyPem == null && oidcJsonConfiguration.isBearerOnly()
+                && (oidcJsonConfiguration.getAuthServerUrl() == null || oidcJsonConfiguration.getIssuerUrl() == null)) {
+            throw log.invalidConfigurationForBearerAuth();
         }
-        if (oidcJsonConfiguration.getAuthServerUrl() == null && (!oidcClientConfiguration.isBearerOnly() || realmKeyPem == null)) {
-            throw new RuntimeException("You must specify auth-server-url");
+        if ((oidcJsonConfiguration.getAuthServerUrl() == null || oidcJsonConfiguration.getIssuerUrl() == null) && (!oidcClientConfiguration.isBearerOnly() || realmKeyPem == null)) {
+            throw log.authServerUrlOrIssuerUrlMustBeSet();
         }
         oidcClientConfiguration.setClient(createHttpClientProducer(oidcJsonConfiguration));
         oidcClientConfiguration.setAuthServerBaseUrl(oidcJsonConfiguration);

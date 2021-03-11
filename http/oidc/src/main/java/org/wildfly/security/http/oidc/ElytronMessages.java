@@ -123,5 +123,17 @@ interface ElytronMessages extends BasicLogger {
     @Message(id = 19021, value = "Invalid ID token claims")
     OidcException invalidIDTokenClaims();
 
+    @Message(id = 19022, value = "Must set 'realm' in config")
+    RuntimeException keycloakRealmMissing();
+
+    @Message(id = 19023, value = "Must set 'resource' in config")
+    RuntimeException resourceMissing();
+
+    @Message(id = 19024, value = "For bearer auth, you must set the realm-public-key or one of auth-server-url and issuer-url")
+    IllegalArgumentException invalidConfigurationForBearerAuth();
+
+    @Message(id = 19023, value = "Must set 'auth-server-url' or 'issuer-url'")
+    RuntimeException authServerUrlOrIssuerUrlMustBeSet();
+
 }
 
