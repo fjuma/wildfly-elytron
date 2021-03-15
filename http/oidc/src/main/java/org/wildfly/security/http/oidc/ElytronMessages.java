@@ -135,5 +135,9 @@ interface ElytronMessages extends BasicLogger {
     @Message(id = 19023, value = "Must set 'auth-server-url' or 'issuer-url'")
     RuntimeException authServerUrlOrIssuerUrlMustBeSet();
 
+    @LogMessage(level = WARN)
+    @Message(id = 19024, value = "Client %s does not have a secret configured")
+    void noClientSecretConfigured(String clientId);
+
 }
 

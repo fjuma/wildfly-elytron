@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.EnumSet;
 import java.util.UUID;
 
 import org.apache.http.HttpEntity;
@@ -64,6 +65,7 @@ public class Oidc {
     static final String OIDC_CONFIG_FILE_LOCATION = "oidc.config.file";
     static final String OIDC_JSON_FILE = "/WEB-INF/oidc.json";
     static final String JSON_CONFIG_CONTEXT_PARAM = "org.wildfly.security.http.oidc.json.config";
+    static final String AUTHORIZATION = "authorization";
 
     // keycloak-specific request parameter used to specify the identifier of the identity provider that should be used to authenticate a user
     public static final String KC_IDP_HINT = "kc_idp_hint";
@@ -139,6 +141,29 @@ public class Oidc {
     public enum TokenStore {
         SESSION,
         COOKIE
+    }
+
+    public enum ClientCredentialsProviderType {
+        SECRET("secret"),
+        JWT("jwt"),
+        SECRET_JWT("secret-jwt")
+        ;
+
+        private final String value;
+
+        private ClientCredentialsProviderType(final String value) {
+            this.value = value;
+        }
+
+        /**
+         * Get the string value for this referral mode.
+         *
+         * @return the string value for this referral mode
+         */
+        public String getValue() {
+            return value;
+        }
+
     }
 
     public static String generateId() {
