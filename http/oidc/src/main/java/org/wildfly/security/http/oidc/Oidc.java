@@ -24,12 +24,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.Key;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.UUID;
+
+import javax.crypto.SecretKey;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.jose4j.jws.AlgorithmIdentifiers;
 import org.wildfly.security.json.util.JsonSerialization;
 
 /**
@@ -66,6 +73,18 @@ public class Oidc {
     static final String OIDC_JSON_FILE = "/WEB-INF/oidc.json";
     static final String JSON_CONFIG_CONTEXT_PARAM = "org.wildfly.security.http.oidc.json.config";
     static final String AUTHORIZATION = "authorization";
+    static final String CLIENT_ASSERTION_TYPE = "client_assertion_type";
+    static final String CLIENT_ASSERTION = "client_assertion";
+    static final String CLIENT_ASSERTION_TYPE_JWT = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
+    static final String RS256 = "SHA256withRSA";
+    static final String RS384 = "SHA384withRSA";
+    static final String RS512 = "SHA512withRSA";
+    static final String HS256 = "HMACSHA256";
+    static final String HS384 = "HMACSHA384";
+    static final String HS512 = "HMACSHA512";
+    static final String ES256 = "SHA256withECDSA";
+    static final String ES384 = "SHA384withECDSA";
+    static final String ES512 = "SHA512withECDSA";
 
     // keycloak-specific request parameter used to specify the identifier of the identity provider that should be used to authenticate a user
     public static final String KC_IDP_HINT = "kc_idp_hint";
@@ -166,6 +185,31 @@ public class Oidc {
 
     }
 
+    public static String getJavaAlgorithm(String algorithm) {
+        switch (algorithm) {
+            case AlgorithmIdentifiers.RSA_USING_SHA256:
+                return RS256;
+            case AlgorithmIdentifiers.RSA_USING_SHA384:
+                return RS384;
+            case AlgorithmIdentifiers.RSA_USING_SHA512:
+                return RS512;
+            case AlgorithmIdentifiers.HMAC_SHA256:
+                return HS256;
+            case AlgorithmIdentifiers.HMAC_SHA384:
+                return HS384;
+            case AlgorithmIdentifiers.HMAC_SHA512:
+                return HS512;
+            case AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256:
+                return ES256;
+            case AlgorithmIdentifiers.ECDSA_USING_P384_CURVE_AND_SHA384:
+                return ES384;
+            case AlgorithmIdentifiers.ECDSA_USING_P521_CURVE_AND_SHA512:
+                return ES512;
+            default:
+                throw new IllegalArgumentException("Unknown algorithm " + algorithm);
+        }
+    }
+
     public static String generateId() {
         return UUID.randomUUID().toString();
     }
@@ -173,6 +217,23 @@ public class Oidc {
     static int getCurrentTimeInSeconds() {
         return ((int) (System.currentTimeMillis() / 1000));
     }
+
+    static Integer asInt(Map<String, Object> cfg, String cfgKey, int defaultValue) {
+        Object cfgObj = cfg.get(cfgKey);
+        if (cfgObj == null) {
+            return defaultValue;
+        }
+        if (cfgObj instanceof String) {
+            return Integer.parseInt(cfgObj.toString());
+        } else if (cfgObj instanceof Number) {
+            return ((Number) cfgObj).intValue();
+        } else {
+            throw log.unableToParseKeyWithValue(cfgKey, cfgObj);
+        }
+    }
+
+
+
 
 
 }

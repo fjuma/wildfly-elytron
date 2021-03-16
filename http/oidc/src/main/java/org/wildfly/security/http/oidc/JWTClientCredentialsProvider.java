@@ -19,17 +19,29 @@
 package org.wildfly.security.http.oidc;
 
 import static org.wildfly.security.http.oidc.ElytronMessages.log;
-import static org.wildfly.security.http.oidc.Oidc.AUTHORIZATION;
-import static org.wildfly.security.http.oidc.Oidc.CLIENT_ID;
+import static org.wildfly.security.http.oidc.Oidc.CLIENT_ASSERTION;
+import static org.wildfly.security.http.oidc.Oidc.CLIENT_ASSERTION_TYPE;
+import static org.wildfly.security.http.oidc.Oidc.CLIENT_ASSERTION_TYPE_JWT;
+import static org.wildfly.security.http.oidc.Oidc.asInt;
 
-import java.nio.charset.StandardCharsets;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 
+import org.jose4j.jwk.PublicJsonWebKey;
+import org.jose4j.jwk.RsaJsonWebKey;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
-import org.wildfly.common.iteration.ByteIterator;
-import org.wildfly.security.jose.jwk.JWK;
+import org.jose4j.jwt.NumericDate;
+import org.jose4j.lang.JoseException;
+import org.wildfly.security.jose.jwk.RSAPublicJWK;
 
 /**
  * Client authentication based on JWT signed by client private key.
@@ -40,9 +52,10 @@ import org.wildfly.security.jose.jwk.JWK;
  */
 public class JWTClientCredentialsProvider implements ClientCredentialsProvider {
 
-    private KeyPair keyPair;
-    private JWK publicKeyJwk;
+    private static final String PROTOCOL_CLASSPATH = "classpath:";
 
+    private KeyPair keyPair;
+    private PublicJsonWebKey publicKeyJwk;
     private int tokenTimeout;
 
     @Override
@@ -52,7 +65,10 @@ public class JWTClientCredentialsProvider implements ClientCredentialsProvider {
 
     public void setupKeyPair(KeyPair keyPair) {
         this.keyPair = keyPair;
-        this.publicKeyJwk = JWKBuilder.create().rs256(keyPair.getPublic());
+        if (! (keyPair.getPublic() instanceof RSAPublicKey)) {
+            throw log.unsupportedPublicKey();
+        }
+        this.publicKeyJwk = new RsaJsonWebKey((RSAPublicKey)keyPair.getPublic());
     }
 
     public void setTokenTimeout(int tokenTimeout) {
@@ -70,27 +86,28 @@ public class JWTClientCredentialsProvider implements ClientCredentialsProvider {
     @Override
     public void init(OidcClientConfiguration oidcClientConfiguration, Object credentialsConfig) {
         if (!(credentialsConfig instanceof Map)) {
-            throw new RuntimeException("Configuration of jwt credentials is missing or incorrect for client '" + oidcClientConfiguration.getResourceName() + "'. Check your adapter configuration");
+            throw log.invalidJwtClientCredentialsConfig(oidcClientConfiguration.getResourceName());
         }
 
         Map<String, Object> cfg = (Map<String, Object>) credentialsConfig;
-
-        String clientKeystoreFile =  (String) cfg.get("client-keystore-file");
-        if (clientKeystoreFile == null) {
-            throw new RuntimeException("Missing parameter client-keystore-file in configuration of jwt for client " + oidcClientConfiguration.getResourceName());
+        String clientKeyStoreFile =  (String) cfg.get("client-keystore-file");
+        if (clientKeyStoreFile == null) {
+            throw log.missingParameterInJwtClientCredentialsConfig("client-keystore-file", oidcClientConfiguration.getResourceName());
         }
 
-        String clientKeystoreType = (String) cfg.get("client-keystore-type");
-        KeystoreUtil.KeystoreFormat clientKeystoreFormat = clientKeystoreType==null ? KeystoreUtil.KeystoreFormat.JKS : Enum.valueOf(KeystoreUtil.KeystoreFormat.class, clientKeystoreType.toUpperCase());
+        String clientKeyStoreType = (String) cfg.get("client-keystore-type");
+        if (clientKeyStoreType == null) {
+            clientKeyStoreFile = "JKS";
+        }
 
-        String clientKeystorePassword =  (String) cfg.get("client-keystore-password");
-        if (clientKeystorePassword == null) {
-            throw new RuntimeException("Missing parameter client-keystore-password in configuration of jwt for client " + oidcClientConfiguration.getResourceName());
+        String clientKeyStorePassword =  (String) cfg.get("client-keystore-password");
+        if (clientKeyStorePassword == null) {
+            throw log.missingParameterInJwtClientCredentialsConfig("client-keystore-password", oidcClientConfiguration.getResourceName());
         }
 
         String clientKeyPassword = (String) cfg.get("client-key-password");
         if (clientKeyPassword == null) {
-            clientKeyPassword = clientKeystorePassword;
+            clientKeyPassword = clientKeyStorePassword;
         }
 
         String clientKeyAlias =  (String) cfg.get("client-key-alias");
@@ -98,57 +115,83 @@ public class JWTClientCredentialsProvider implements ClientCredentialsProvider {
             clientKeyAlias = oidcClientConfiguration.getResourceName();
         }
 
-        KeyPair keyPair = KeystoreUtil.loadKeyPairFromKeystore(clientKeystoreFile, clientKeystorePassword, clientKeyPassword, clientKeyAlias, clientKeystoreFormat);
+        KeyPair keyPair = loadKeyPairFromKeyStore(clientKeyStoreFile, clientKeyStorePassword, clientKeyPassword, clientKeyAlias, clientKeyStoreType);
         setupKeyPair(keyPair);
-
         this.tokenTimeout = asInt(cfg, "token-timeout", 10);
     }
 
-    // TODO: Generic method for this?
-    private Integer asInt(Map<String, Object> cfg, String cfgKey, int defaultValue) {
-        Object cfgObj = cfg.get(cfgKey);
-        if (cfgObj == null) {
-            return defaultValue;
-        }
-
-        if (cfgObj instanceof String) {
-            return Integer.parseInt(cfgObj.toString());
-        } else if (cfgObj instanceof Number) {
-            return ((Number) cfgObj).intValue();
-        } else {
-            throw new IllegalArgumentException("Can't parse " + cfgKey + " from the config. Value is " + cfgObj);
-        }
-    }
-
     @Override
-    public void setClientCredentials(OidcClientConfiguration oidcClientConfiguration, Map<String, String> requestHeaders, Map<String, String> formParams) {
-        String signedToken = createSignedRequestToken(oidcClientConfiguration.getResourceName(), oidcClientConfiguration.getRealmInfoUrl());
-
-        formParams.put(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT);
-        formParams.put(OAuth2Constants.CLIENT_ASSERTION, signedToken);
+    public void setClientCredentials(OidcClientConfiguration oidcClientConfiguration, Map<String, String> requestHeaders,
+                                     Map<String, String> formParams) {
+        String signedToken = createSignedRequestToken(oidcClientConfiguration.getResourceName(), oidcClientConfiguration.getTokenUrl());
+        formParams.put(CLIENT_ASSERTION_TYPE, CLIENT_ASSERTION_TYPE_JWT);
+        formParams.put(CLIENT_ASSERTION, signedToken);
     }
 
     public String createSignedRequestToken(String clientId, String realmInfoUrl) {
-        JsonWebToken jwt = createRequestToken(clientId, realmInfoUrl);
-        return new JWSBuilder()
-                .kid(publicKeyJwk.getKeyId())
-                .jsonContent(jwt)
-                .rsa256(keyPair.getPrivate());
+        JwtClaims jwtClaims = createRequestToken(clientId, realmInfoUrl);
+        JsonWebSignature jws = new JsonWebSignature();
+        jws.setKeyIdHeaderValue(publicKeyJwk.getKeyId());
+        jws.setKey(keyPair.getPrivate());
+        jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+        jws.setPayload(jwtClaims.toJson());
+        try {
+            return jws.getCompactSerialization();
+        } catch (JoseException e) {
+            throw log.unableToCreateSignedToken();
+        }
     }
 
-    protected JsonWebToken createRequestToken(String clientId, String realmInfoUrl) {
+    protected JwtClaims createRequestToken(String clientId, String tokenUrl) {
+        JwtClaims jwtClaims = new JwtClaims();
+        jwtClaims.setJwtId(Oidc.generateId());
+        jwtClaims.setIssuer(clientId);
+        jwtClaims.setSubject(clientId);
+        jwtClaims.setAudience(tokenUrl);
+        NumericDate now = NumericDate.now();
+        jwtClaims.setIssuedAt(now);
+        jwtClaims.setNotBefore(now);
+        NumericDate exp = NumericDate.fromSeconds(now.getValue() + tokenTimeout);
+        jwtClaims.setExpirationTime(exp);
+        return jwtClaims;
+    }
 
-        JsonWebToken reqToken = new JsonWebToken();
-        reqToken.id(Oidc.generateId());
-        reqToken.issuer(clientId);
-        reqToken.subject(clientId);
-        reqToken.audience(realmInfoUrl);
+    private static KeyPair loadKeyPairFromKeyStore(String keyStoreFile, String storePassword, String keyPassword, String keyAlias, String keyStoreType) {
+        InputStream stream = findFile(keyStoreFile);
+        try {
+            KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+            keyStore.load(stream, storePassword.toCharArray());
+            PrivateKey privateKey = (PrivateKey) keyStore.getKey(keyAlias, keyPassword.toCharArray());
+            if (privateKey == null) {
+                log.unableToLoadKeyWithAlias(keyAlias);
+            }
+            PublicKey publicKey = keyStore.getCertificate(keyAlias).getPublicKey();
+            return new KeyPair(publicKey, privateKey);
+        } catch (Exception e) {
+            throw log.unableToLoadPrivateKey(e);
+        }
+    }
 
-        int now = Time.currentTime();
-        reqToken.issuedAt(now);
-        reqToken.expiration(now + this.tokenTimeout);
-        reqToken.notBefore(now);
-
-        return reqToken;
+    private static InputStream findFile(String keystoreFile) {
+        if (keystoreFile.startsWith(PROTOCOL_CLASSPATH)) {
+            String classPathLocation = keystoreFile.replace(PROTOCOL_CLASSPATH, "");
+            // try current class classloader first
+            InputStream is = JWTClientCredentialsProvider.class.getClassLoader().getResourceAsStream(classPathLocation);
+            if (is == null) {
+                is = Thread.currentThread().getContextClassLoader().getResourceAsStream(classPathLocation);
+            }
+            if (is != null) {
+                return is;
+            } else {
+                throw log.unableToFindKeystoreFile(keystoreFile);
+            }
+        } else {
+            try {
+                // fallback to file
+                return new FileInputStream(keystoreFile);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

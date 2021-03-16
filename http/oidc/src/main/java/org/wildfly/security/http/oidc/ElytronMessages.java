@@ -60,7 +60,7 @@ interface ElytronMessages extends BasicLogger {
     IllegalArgumentException issuerUrlOrAuthServerUrlNeedsToBeConfigured();
 
     @LogMessage
-    @Message(id = 19004, value = "Loaded OpenID provider metadata from %s")
+    @Message(id = 19004, value = "Loaded OpenID provider metadata from '%s'")
     void loadedOpenIdProviderMetadata(String discoveryUrl);
 
     @LogMessage(level = WARN)
@@ -129,15 +129,51 @@ interface ElytronMessages extends BasicLogger {
     @Message(id = 19023, value = "Must set 'resource' in config")
     RuntimeException resourceMissing();
 
-    @Message(id = 19024, value = "For bearer auth, you must set the realm-public-key or one of auth-server-url and issuer-url")
+    @Message(id = 19024, value = "For bearer auth, you must set the 'realm-public-key' or one of 'auth-server-url' and 'issuer-url'")
     IllegalArgumentException invalidConfigurationForBearerAuth();
 
     @Message(id = 19023, value = "Must set 'auth-server-url' or 'issuer-url'")
     RuntimeException authServerUrlOrIssuerUrlMustBeSet();
 
     @LogMessage(level = WARN)
-    @Message(id = 19024, value = "Client %s does not have a secret configured")
+    @Message(id = 19024, value = "Client '%s' does not have a secret configured")
     void noClientSecretConfigured(String clientId);
+
+    @Message(id = 19025, value = "Unsupported public key")
+    IllegalArgumentException unsupportedPublicKey();
+
+    @Message(id = 19026, value = "Unable to create signed token")
+    IllegalArgumentException unableToCreateSignedToken();
+
+    @Message(id = 19027, value = "Configuration of jwt credentials is missing or incorrect for client '%s'")
+    RuntimeException invalidJwtClientCredentialsConfig(String clientId);
+
+    @Message(id = 19028, value = "Missing parameter '%s' in jwt credentials for client %s")
+    RuntimeException missingParameterInJwtClientCredentialsConfig(String parameter, String clientId);
+
+    @Message(id = 19029, value = "Unable to parse key '%s' with value '%s'")
+    IllegalArgumentException unableToParseKeyWithValue(String key, Object value);
+
+    @Message(id = 19030, value = "Unable to load key with alias '%s' from keystore")
+    RuntimeException unableToLoadKeyWithAlias(String alias);
+
+    @Message(id = 19031, value = "Unable to load private key from keystore")
+    RuntimeException unableToLoadPrivateKey(@Cause Throwable cause);
+
+    @Message(id = 19032, value = "Unable to find keystore file '%s'")
+    RuntimeException unableToFindKeystoreFile(String keystoreFile);
+
+    @Message(id = 19033, value = "Configuration of secret jwt client credentials is missing or incorrect for client '%s'")
+    RuntimeException invalidJwtClientCredentialsUsingSecretConfig(String clientId);
+
+    @Message(id = 19034, value = "Invalid value for 'algorithm' in secret jwt client credentials configuration for client '%s'")
+    RuntimeException invalidAlgorithmInJwtClientCredentialsConfig(String clientId);
+
+    @Message(id = 19035, value = "Unable to determine client credentials provider type for client '%s'")
+    RuntimeException unableToDetermineClientCredentialsProviderType(String clientId);
+
+    @Message(id = 19036, value = "Unable to find client credentials provider '%s'")
+    RuntimeException unableToFindClientCredentialsProvider(String provider);
 
 }
 
