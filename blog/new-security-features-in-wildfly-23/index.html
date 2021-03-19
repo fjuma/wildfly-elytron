@@ -46,7 +46,7 @@
                 
                     
                     
-                         <a class="mdl-navigation__link Docs-menuitem" href="https://docs.wildfly.org/22/WildFly_Elytron_Security.html">Docs</a>
+                         <a class="mdl-navigation__link Docs-menuitem" href="https://docs.wildfly.org/23/WildFly_Elytron_Security.html">Docs</a>
                     
                 
                     
@@ -78,7 +78,7 @@
             
             
             
-                <a class="mdl-navigation__link Docs-menuitem" href="https://docs.wildfly.org/22/WildFly_Elytron_Security.html">Docs</a>
+                <a class="mdl-navigation__link Docs-menuitem" href="https://docs.wildfly.org/23/WildFly_Elytron_Security.html">Docs</a>
             
             
             
@@ -112,7 +112,7 @@
         
           <img class="headshot" src="https://www.gravatar.com/avatar/e07a676199f6ad0af96a61a691b114b3">
         
-        <p class="byline">By <a href="https://github.com/fjuma">Farah Juma</a> | March 10, 2021</p>
+        <p class="byline">By <a href="https://github.com/fjuma">Farah Juma</a> | March 19, 2021</p>
       </div>
       
       <div class="grid__item width-4-12 width-12-12-m"><div class="share-page">
@@ -142,10 +142,10 @@ on the new security features that the Elytron team has been working on.</p>
 <h2 id="new-features-in-wildfly-23"><a class="anchor" href="#new-features-in-wildfly-23"></a>New Features in WildFly 23</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="expression-resolution"><a class="anchor" href="#expression-resolution"></a>Expression Resolution</h3>
+<h3 id="encrypted-expression-support"><a class="anchor" href="#encrypted-expression-support"></a>Encrypted Expression Support</h3>
 <div class="paragraph">
-<p>WildFly 23 adds support for expressions in the management model to be encrypted using AES encryption and these expressions
-are dynamically decrypted at runtime using a <code>SecretKey</code> from a credential store.</p>
+<p>WildFly 23 now adds support for encrypted expressions within the management model. For details on how to
+quickly get started with this new feature, check out this <a href="https://wildfly-security.github.io/wildfly-elytron/blog/wildfly-encrypted-expressions/">blog post</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -181,8 +181,9 @@ Here&#8217;s a quick update on these features.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>This feature is almost complete. It looks at making use of the host and port information of the peer that we are
-connecting to in order to dynamically select which SSL context to use. More information can be found <a href="https://github.com/wildfly/wildfly-proposals/pull/328">here</a>.</p>
+<p>This feature looks at making use of the host and port information of the peer that we are
+connecting to in order to dynamically select which SSL context to use. More information about how this
+new feature will be configured can be found in this <a href="https://wildfly-security.github.io/wildfly-elytron/blog/sslcontext-delegation-to-alternate-instances-based-on-peer/">blog post</a>.</p>
 </li>
 </ul>
 </div>
@@ -193,7 +194,7 @@ connecting to in order to dynamically select which SSL context to use. More info
 <ul>
 <li>
 <p>This feature will make it possible to register a JVM wide default SSL context for libraries that make use of Elytron
-client configuration. Additional information can be found <a href="https://github.com/wildfly/wildfly-proposals/pull/336">here</a>.</p>
+client configuration. Additional information on the plans for this feature can be found <a href="https://wildfly-security.github.io/wildfly-elytron/blog/automatic-registration-of-client-side-jvm-wide-default-sslcontext/">here</a>.</p>
 </li>
 </ul>
 </div>
@@ -203,7 +204,7 @@ client configuration. Additional information can be found <a href="https://githu
 <div class="ulist">
 <ul>
 <li>
-<p>This feature is almost ready to be merged. It will make it possible to configure multiple certificate revocation lists (e.g., for the case where more
+<p>This feature will make it possible to configure multiple certificate revocation lists (e.g., for the case where more
 than one certificate authority is being used). An introduction to this feature can be found in this <a href="https://wildfly-security.github.io/wildfly-elytron/blog/new-ssl-features/">blog post</a>.</p>
 </li>
 </ul>
@@ -228,7 +229,7 @@ parity with legacy security. More information can be found in this <a href="http
 <div class="ulist">
 <ul>
 <li>
-<p>This feature is almost ready to be merged. This feature will make it possible for security realms to store hashed passwords in hex format, in addition to
+<p>This feature will make it possible for security realms to store hashed passwords in hex format, in addition to
 Base64 format. It will also make it possible to configure the character set to use when processing a user&#8217;s
 password. An introduction to this new feature can be found in this <a href="https://wildfly-security.github.io/wildfly-elytron/blog/upcoming-hash-encodings/">blog post</a>.</p>
 </li>
