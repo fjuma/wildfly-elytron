@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description>WildFly Elytron: Security, Authentication, and Authorization SPIs for the WildFly project</description>
-        <lastBuildDate>Fri, 19 Mar 2021 17:35:28 +0000</lastBuildDate>
+        <lastBuildDate>Fri, 19 Mar 2021 17:45:35 +0000</lastBuildDate>
         
         <item>
             <title>WildFly Encrypted Expression Support</title>
