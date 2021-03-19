@@ -5,21 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description>WildFly Elytron: Security, Authentication, and Authorization SPIs for the WildFly project</description>
-        <lastBuildDate>Fri, 19 Mar 2021 16:38:12 +0000</lastBuildDate>
-        
-        <item>
-            <title></title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/2021-03-19-new-ssl-features/
-            </link>
-            <description>
-                Two of the new features regarding SSL that we have been working on include adding support for configuring multiple certificate revocation lists and SSLv2Hello support. These features did not make it into WildFly 23 but we have plans for them to be included in WildFly 24. An Overview of Certificate...
-            </description>
-            <pubDate>Fri, 19 Mar 2021 16:38:12 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/2021-03-19-new-ssl-features/
-            </guid>
-        </item>
+        <lastBuildDate>Fri, 19 Mar 2021 17:35:28 +0000</lastBuildDate>
         
         <item>
             <title>WildFly Encrypted Expression Support</title>
@@ -74,6 +60,20 @@
             <pubDate>Fri, 19 Mar 2021 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/normalization-of-EJB-principal-propagation/
+            </guid>
+        </item>
+        
+        <item>
+            <title>New Ssl Features</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/new-ssl-features/
+            </link>
+            <description>
+                Two of the new features regarding SSL that we have been working on include adding support for configuring multiple certificate revocation lists and SSLv2Hello support. These features did not make it into WildFly 23 but we have plans for them to be included in WildFly 24. An Overview of Certificate...
+            </description>
+            <pubDate>Fri, 19 Mar 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/new-ssl-features/
             </guid>
         </item>
         
