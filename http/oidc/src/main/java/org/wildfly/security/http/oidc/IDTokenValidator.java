@@ -71,7 +71,9 @@ public class IDTokenValidator {
             if (kid != null && clientConfiguration.getPublicKeyLocator() != null) {
                 jwtConsumerBuilder.setVerificationKey(clientConfiguration.getPublicKeyLocator().getPublicKey(kid, clientConfiguration));
             } else {
-                jwtConsumerBuilder.setVerificationKey(); // secret key
+                // secret key
+                ClientSecretCredentialsProvider clientSecretCredentialsProvider = (ClientSecretCredentialsProvider) clientConfiguration.getClientAuthenticator();
+                jwtConsumerBuilder.setVerificationKey(clientSecretCredentialsProvider.getClientSecret());
             }
 
             // second pass to validate
@@ -136,6 +138,10 @@ public class IDTokenValidator {
                 throw log.noExpectedJwsAlgorithmGiven();
             }
             publicKeyLocator = clientConfiguration.getPublicKeyLocator();
+            if (clientConfiguration.getClientAuthenticator() instanceof ClientSecretCredentialsProvider) {
+                ClientSecretCredentialsProvider clientSecretCredentialsProvider = (ClientSecretCredentialsProvider) clientConfiguration.getClientAuthenticator();
+                clientSecretKey = clientSecretCredentialsProvider.getClientSecret();
+            }
             if (publicKeyLocator == null && clientSecretKey == null) {
                 throw log.noJwksPublicKeyOrClientSecretKeyGiven();
             }

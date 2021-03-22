@@ -43,7 +43,7 @@ import org.jose4j.lang.JoseException;
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-public class JWTClientSecretCredentialsProvider implements ClientCredentialsProvider {
+public class JWTClientSecretCredentialsProvider implements ClientSecretCredentialsProvider {
 
     private SecretKey clientSecret;
     private String clientSecretJwtAlg;
@@ -99,6 +99,11 @@ public class JWTClientSecretCredentialsProvider implements ClientCredentialsProv
         String signedToken = createSignedRequestToken(oidcClientConfiguration.getResourceName(), oidcClientConfiguration.getTokenUrl());
         formParams.put(CLIENT_ASSERTION_TYPE, CLIENT_ASSERTION_TYPE_JWT);
         formParams.put(CLIENT_ASSERTION, signedToken);
+    }
+
+    @Override
+    public SecretKey getClientSecret() {
+        return clientSecret;
     }
 
     public void setClientSecret(String clientSecretString) {

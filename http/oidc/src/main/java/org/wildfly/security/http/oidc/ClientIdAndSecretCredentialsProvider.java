@@ -21,10 +21,15 @@ package org.wildfly.security.http.oidc;
 import static org.wildfly.security.http.oidc.ElytronMessages.log;
 import static org.wildfly.security.http.oidc.Oidc.AUTHORIZATION;
 import static org.wildfly.security.http.oidc.Oidc.CLIENT_ID;
+import static org.wildfly.security.http.oidc.Oidc.getJavaAlgorithm;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.jose4j.jws.AlgorithmIdentifiers;
 import org.wildfly.common.iteration.ByteIterator;
 
 /**
@@ -32,9 +37,10 @@ import org.wildfly.common.iteration.ByteIterator;
  *
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public class ClientIdAndSecretCredentialsProvider implements ClientCredentialsProvider {
+public class ClientIdAndSecretCredentialsProvider implements ClientSecretCredentialsProvider {
 
-    private String clientSecret;
+    private String clientSecretString;
+    private SecretKey clientSecret;
 
     @Override
     public String getId() {
@@ -43,7 +49,8 @@ public class ClientIdAndSecretCredentialsProvider implements ClientCredentialsPr
 
     @Override
     public void init(OidcClientConfiguration oidcClientConfiguration, Object credentialsConfig) {
-        clientSecret = (String) credentialsConfig;
+        clientSecretString = (String) credentialsConfig;
+        clientSecret = new SecretKeySpec(clientSecretString.getBytes(StandardCharsets.UTF_8), getJavaAlgorithm(AlgorithmIdentifiers.HMAC_SHA256));
     }
 
     @Override
@@ -51,8 +58,8 @@ public class ClientIdAndSecretCredentialsProvider implements ClientCredentialsPr
         String clientId = oidcClientConfiguration.getResourceName();
 
         if (! oidcClientConfiguration.isPublicClient()) {
-            if (clientSecret != null) {
-                String authorization = createBasicHeader(clientId, clientSecret);
+            if (clientSecretString != null) {
+                String authorization = createBasicHeader(clientId, clientSecretString);
                 requestHeaders.put(AUTHORIZATION, authorization);
             } else {
                 log.noClientSecretConfigured(clientId);
@@ -60,6 +67,11 @@ public class ClientIdAndSecretCredentialsProvider implements ClientCredentialsPr
         } else {
             formParams.put(CLIENT_ID, clientId);
         }
+    }
+
+    @Override
+    public SecretKey getClientSecret() {
+        return clientSecret;
     }
 
     private static String createBasicHeader(String username, String password) {
