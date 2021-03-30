@@ -30,6 +30,8 @@ import java.security.interfaces.RSAPrivateKey;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.crypto.SecretKey;
 
@@ -85,11 +87,10 @@ public class Oidc {
     static final String ES256 = "SHA256withECDSA";
     static final String ES384 = "SHA384withECDSA";
     static final String ES512 = "SHA512withECDSA";
+    static final String PROTOCOL_CLASSPATH = "classpath:";
 
     // keycloak-specific request parameter used to specify the identifier of the identity provider that should be used to authenticate a user
     public static final String KC_IDP_HINT = "kc_idp_hint";
-
-
 
    static <T> T sendJsonHttpRequest(OidcClientConfiguration oidcClientConfiguration, HttpRequestBase httpRequest, Class<T> clazz) throws OidcException {
         try {
@@ -184,6 +185,40 @@ public class Oidc {
         }
 
     }
+
+    /**
+     * Replaces any ${} strings with their corresponding system property.
+     *
+     * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
+     * @version $Revision: 1 $
+     */
+    public static final class EnvUtil {
+        private static final Pattern p = Pattern.compile("[$][{]([^}]+)[}]");
+
+        private EnvUtil() {
+
+        }
+
+        /**
+         * Replaces any ${} strings with their corresponding system property.
+         *
+         * @param val
+         * @return
+         */
+        public static String replace(String val) {
+            Matcher matcher = p.matcher(val);
+            StringBuffer buf = new StringBuffer();
+            while (matcher.find()) {
+                String envVar = matcher.group(1);
+                String envVal = System.getProperty(envVar);
+                if (envVal == null) envVal = "NOT-SPECIFIED";
+                matcher.appendReplacement(buf, envVal.replace("\\", "\\\\"));
+            }
+            matcher.appendTail(buf);
+            return buf.toString();
+        }
+    }
+
 
     public static String getJavaAlgorithm(String algorithm) {
         switch (algorithm) {

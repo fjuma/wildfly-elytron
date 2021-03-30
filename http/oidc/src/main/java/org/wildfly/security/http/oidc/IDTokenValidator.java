@@ -21,8 +21,6 @@ package org.wildfly.security.http.oidc;
 import static org.wildfly.security.http.oidc.ElytronMessages.log;
 import static org.wildfly.security.http.oidc.Oidc.INVALID_ISSUED_FOR_CLAIM;
 
-import java.security.PrivateKey;
-
 import javax.crypto.SecretKey;
 
 import org.jose4j.jwa.AlgorithmConstraints;
@@ -105,7 +103,6 @@ public class IDTokenValidator {
         private String expectedJwsAlgorithm;
         private PublicKeyLocator publicKeyLocator;
         private SecretKey clientSecretKey;
-        private PrivateKey decryptionKey;
         private JwtConsumerBuilder jwtConsumerBuilder;
 
         /**
@@ -154,9 +151,6 @@ public class IDTokenValidator {
                     .registerValidator(new AzpValidator(clientID))
                     .setRequireExpirationTime();
 
-            if (decryptionKey != null) {
-                jwtConsumerBuilder.setDecryptionKey(decryptionKey);
-            }
             return new IDTokenValidator(this);
         }
     }

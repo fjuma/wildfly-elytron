@@ -22,6 +22,8 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 import static org.jboss.logging.annotations.Message.NONE;
 
+import javax.net.ssl.SSLException;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -175,5 +177,13 @@ interface ElytronMessages extends BasicLogger {
     @Message(id = 19036, value = "Unable to find client credentials provider '%s'")
     RuntimeException unableToFindClientCredentialsProvider(String provider);
 
+    @Message(id = 19037, value = "Unable to load keystore")
+    RuntimeException unableToLoadKeyStore(@Cause Throwable cause);
+
+    @Message(id = 19037, value = "Unable to load truststore")
+    RuntimeException unableToLoadTrustStore(@Cause Throwable cause);
+
+    @Message(id = 19038, value = "Unable to find truststore file '%s'")
+    RuntimeException unableToFindTrustStoreFile(String trustStoreFile);
 }
 

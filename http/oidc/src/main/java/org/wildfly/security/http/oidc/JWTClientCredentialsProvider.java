@@ -22,6 +22,7 @@ import static org.wildfly.security.http.oidc.ElytronMessages.log;
 import static org.wildfly.security.http.oidc.Oidc.CLIENT_ASSERTION;
 import static org.wildfly.security.http.oidc.Oidc.CLIENT_ASSERTION_TYPE;
 import static org.wildfly.security.http.oidc.Oidc.CLIENT_ASSERTION_TYPE_JWT;
+import static org.wildfly.security.http.oidc.Oidc.PROTOCOL_CLASSPATH;
 import static org.wildfly.security.http.oidc.Oidc.asInt;
 
 import java.io.FileInputStream;
@@ -51,8 +52,6 @@ import org.wildfly.security.jose.jwk.RSAPublicJWK;
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
 public class JWTClientCredentialsProvider implements ClientCredentialsProvider {
-
-    private static final String PROTOCOL_CLASSPATH = "classpath:";
 
     private KeyPair keyPair;
     private PublicJsonWebKey publicKeyJwk;
