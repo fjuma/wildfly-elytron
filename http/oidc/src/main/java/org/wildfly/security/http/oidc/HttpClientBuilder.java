@@ -32,6 +32,7 @@ import java.net.UnknownHostException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPrivateKey;
@@ -49,6 +50,7 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -166,8 +168,8 @@ public class HttpClientBuilder {
             SSLConnectionSocketFactory sslSocketFactory = null;
             SSLContext theContext = sslContext;
             if (disableTrustManager) {
-                theContext = SSLContext.getInstance("SSL");
-                theContext.init(null, new TrustManager[]{new PassthroughTrustManager()},
+                theContext = SSLContext.getInstance("TLS");
+                theContext.init(null, new TrustManager[]{ new PassthroughTrustManager() },
                         new SecureRandom());
                 verifier = new NoopHostnameVerifier();
                 sslSocketFactory = new SSLConnectionSocketFactory(theContext, verifier);
@@ -342,6 +344,20 @@ public class HttpClientBuilder {
         @Override
         public boolean verify(String s, SSLSession sslSession) {
             return verifier.verify(s, sslSession);
+        }
+    }
+
+    private static class PassthroughTrustManager implements X509TrustManager {
+        public void checkClientTrusted(X509Certificate[] chain,
+                                       String authType) throws CertificateException {
+        }
+
+        public void checkServerTrusted(X509Certificate[] chain,
+                                       String authType) throws CertificateException {
+        }
+
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
         }
     }
 }
