@@ -70,6 +70,7 @@ public class Oidc {
     public static final String RESPONSE_TYPE = "response_type";
     public static final String STATE = "state";
     public static final int INVALID_ISSUED_FOR_CLAIM = -1;
+    public static final int INVALID_AT_HASH_CLAIM = -2;
     static final String OIDC_CLIENT_CONFIG_RESOLVER = "oidc.config.resolver";
     static final String OIDC_CONFIG_FILE_LOCATION = "oidc.config.file";
     static final String OIDC_JSON_FILE = "/WEB-INF/oidc.json";
@@ -87,6 +88,9 @@ public class Oidc {
     static final String ES256 = "SHA256withECDSA";
     static final String ES384 = "SHA384withECDSA";
     static final String ES512 = "SHA512withECDSA";
+    public static final String SHA256 = "SHA-256";
+    public static final String SHA384 = "SHA-384";
+    public static final String SHA512 = "SHA-512";
     static final String PROTOCOL_CLASSPATH = "classpath:";
 
     // keycloak-specific request parameter used to specify the identifier of the identity provider that should be used to authenticate a user
@@ -241,7 +245,32 @@ public class Oidc {
             case AlgorithmIdentifiers.ECDSA_USING_P521_CURVE_AND_SHA512:
                 return ES512;
             default:
-                throw new IllegalArgumentException("Unknown algorithm " + algorithm);
+                throw log.unknownAlgorithm(algorithm);
+        }
+    }
+
+    public static String getJavaAlgorithmForHash(String algorithm) {
+        switch (algorithm) {
+            case RS256:
+                return SHA256;
+            case RS384:
+                return SHA384;
+            case RS512:
+                return SHA512;
+            case HS256:
+                return SHA256;
+            case HS384:
+                return SHA384;
+            case HS512:
+                return SHA512;
+            case ES256:
+                return SHA256;
+            case ES384:
+                return SHA384;
+            case ES512:
+                return SHA512;
+            default:
+                throw log.unknownAlgorithm(algorithm);
         }
     }
 

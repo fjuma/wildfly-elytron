@@ -19,7 +19,16 @@
 package org.wildfly.security.http.oidc;
 
 import static org.wildfly.security.http.oidc.ElytronMessages.log;
+import static org.wildfly.security.http.oidc.IDToken.AT_HASH;
+import static org.wildfly.security.http.oidc.Oidc.INVALID_AT_HASH_CLAIM;
 import static org.wildfly.security.http.oidc.Oidc.INVALID_ISSUED_FOR_CLAIM;
+import static org.wildfly.security.http.oidc.Oidc.getJavaAlgorithmForHash;
+import static org.wildfly.security.jose.jwk.JWKUtil.BASE64_URL;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import javax.crypto.SecretKey;
 
@@ -32,6 +41,7 @@ import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.jwt.consumer.JwtContext;
 import org.wildfly.common.Assert;
+import org.wildfly.common.iteration.ByteIterator;
 
 /**
  * Validator for an ID token, as per <a href="https://openid.net/specs/openid-connect-core-1_0.html">OpenID Connect Core 1.0</a>.
@@ -92,8 +102,8 @@ public class IDTokenValidator {
      * @param clientConfiguration the OIDC client configuration
      * @return the new builder instance
      */
-    public static Builder builder(OidcClientConfiguration clientConfiguration) {
-        return new Builder(clientConfiguration);
+    public static Builder builder(OidcClientConfiguration clientConfiguration, String accessTokenString) {
+        return new Builder(clientConfiguration, accessTokenString);
     }
 
     public static class Builder {
@@ -104,15 +114,19 @@ public class IDTokenValidator {
         private PublicKeyLocator publicKeyLocator;
         private SecretKey clientSecretKey;
         private JwtConsumerBuilder jwtConsumerBuilder;
+        private String accessTokenString;
 
         /**
          * Construct a new uninitialized instance.
          *
          * @param clientConfiguration the OIDC client configuration
+         * @param accessTokenString the access token string, used for verifying the {@code at_hash} claim if provided
          */
-        Builder(OidcClientConfiguration clientConfiguration) {
+        Builder(OidcClientConfiguration clientConfiguration, String accessTokenString) {
             Assert.checkNotNullParam("clientConfiguration", clientConfiguration);
+            Assert.checkNotNullParam("accessTokenString", accessTokenString);
             this.clientConfiguration = clientConfiguration;
+            this.accessTokenString = accessTokenString;
         }
 
         /**
@@ -149,6 +163,7 @@ public class IDTokenValidator {
                     .setJwsAlgorithmConstraints(
                             new AlgorithmConstraints(AlgorithmConstraints.ConstraintType.PERMIT, expectedJwsAlgorithm))
                     .registerValidator(new AzpValidator(clientID))
+                    .registerValidator(new AtHashValidator(accessTokenString, expectedJwsAlgorithm))
                     .setRequireExpirationTime();
 
             return new IDTokenValidator(this);
@@ -182,6 +197,45 @@ public class IDTokenValidator {
         }
     }
 
+    private static class AtHashValidator implements ErrorCodeValidator {
+        private final String accessTokenString;
+        private final String jwsAlgorithm;
+
+        public AtHashValidator(String accessTokenString, String jwsAlgorithm) {
+            this.accessTokenString = accessTokenString;
+            this.jwsAlgorithm = jwsAlgorithm;
+        }
+
+        public ErrorCodeValidator.Error validate(JwtContext jwtContext) throws MalformedClaimException {
+            JwtClaims jwtClaims = jwtContext.getJwtClaims();
+            boolean valid = true;
+            if (jwtClaims.hasClaim(AT_HASH)) {
+                String atHash = jwtClaims.getStringClaimValue(AT_HASH);
+                String actualHash;
+                try {
+                    actualHash = getAccessTokenHash(accessTokenString, jwsAlgorithm);
+                    valid = atHash.equals(actualHash);
+                } catch (Exception e) {
+                    valid = false;
+                }
+            }
+            if (! valid) {
+                return new ErrorCodeValidator.Error(INVALID_AT_HASH_CLAIM, log.unexpectedValueForAtHashClaim());
+            }
+            return null;
+        }
+    }
+
+    private static String getAccessTokenHash(String accessTokenString, String jwsAlgorithm) throws NoSuchAlgorithmException {
+        byte[] inputBytes = accessTokenString.getBytes(StandardCharsets.UTF_8);
+        String javaAlgName = getJavaAlgorithmForHash(jwsAlgorithm);
+        MessageDigest md = MessageDigest.getInstance(javaAlgName);
+        md.update(inputBytes);
+        byte[] hash = md.digest();
+        int hashLength = hash.length / 2;
+        byte[] hashInput = Arrays.copyOf(hash, hashLength); // leftmost half of the hash
+        return ByteIterator.ofBytes(hashInput).base64Encode(BASE64_URL, false).drainToString();
+    }
 }
 
 

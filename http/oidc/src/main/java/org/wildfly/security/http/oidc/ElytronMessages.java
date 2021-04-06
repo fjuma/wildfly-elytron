@@ -185,5 +185,14 @@ interface ElytronMessages extends BasicLogger {
 
     @Message(id = 19038, value = "Unable to find truststore file '%s'")
     RuntimeException unableToFindTrustStoreFile(String trustStoreFile);
+
+    @Message(id = 19039, value = "Unexpected value for at_hash claim")
+    String unexpectedValueForAtHashClaim();
+
+    @Message(id = 19040, value = "Uknown algorithm: '%s'")
+    IllegalArgumentException unknownAlgorithm(String algorithm);
+
+    @Message(id = 19040, value = "Uknown algorithm: '%s'")
+    IllegalArgumentException unknownAlgorithm(String algorithm);
 }
 

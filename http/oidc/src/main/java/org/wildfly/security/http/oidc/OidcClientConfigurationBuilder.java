@@ -206,6 +206,4 @@ public class OidcClientConfigurationBuilder {
     public static OidcClientConfiguration build(OidcJsonConfiguration oidcJsonConfiguration) {
         return new OidcClientConfigurationBuilder().internalBuild(oidcJsonConfiguration);
     }
-
-
 }

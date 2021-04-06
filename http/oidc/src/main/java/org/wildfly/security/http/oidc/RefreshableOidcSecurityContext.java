@@ -150,7 +150,7 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
                 AdapterTokenVerifier.VerifiedTokens tokens = AdapterTokenVerifier.verifyTokens(accessTokenString, response.getIDToken(), clientConfiguration);
                 accessToken = tokens.getAccessToken();
 
-                IDTokenValidator idTokenValidator = IDTokenValidator.builder(clientConfiguration).build();
+                IDTokenValidator idTokenValidator = IDTokenValidator.builder(clientConfiguration, accessTokenString).build();
                 idToken = idTokenValidator.parseAndVerifyToken(idTokenString);
                 log.debug("Token Verification succeeded!");
             } catch (OidcException e) {

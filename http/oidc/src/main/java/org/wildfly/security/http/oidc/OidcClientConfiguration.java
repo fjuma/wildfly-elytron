@@ -629,4 +629,5 @@ public class OidcClientConfiguration {
     public String getJwsSignatureAlgorithm() {
         return jwsSignatureAlgorithm;
     }
+
 }
