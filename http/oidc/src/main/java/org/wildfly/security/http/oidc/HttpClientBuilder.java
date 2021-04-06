@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020 Red Hat, Inc., and individual contributors
+ * Copyright 2021 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,67 +22,40 @@ import static org.wildfly.security.http.oidc.ElytronMessages.log;
 import static org.wildfly.security.http.oidc.Oidc.EnvUtil;
 import static org.wildfly.security.http.oidc.Oidc.PROTOCOL_CLASSPATH;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
-import java.security.Key;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.ECPrivateKey;
-import java.security.interfaces.RSAPrivateKey;
 import java.util.Collections;
 import java.util.Date;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
-import javax.crypto.SecretKey;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.params.ClientPNames;
-import org.apache.http.client.params.CookiePolicy;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
-import org.apache.http.conn.ssl.BrowserCompatHostnameVerifier;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.conn.ssl.StrictHostnameVerifier;
-import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.SingleClientConnManager;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
-import org.jose4j.jws.AlgorithmIdentifiers;
-import org.wildfly.security.json.util.JsonSerialization;
 
 /**
  * Abstraction for creating HttpClients. Allows SSL configuration.
@@ -109,10 +82,17 @@ public class HttpClientBuilder {
     private KeyStore clientKeyStore;
     private String clientPrivateKeyPassword;
     private int connectionPoolSize = 100;
+    protected int maxPooledPerRoute = 0;
     private HostnameVerificationPolicy policy = HostnameVerificationPolicy.WILDCARD;
     private HttpHost proxyHost;
     private HostnameVerifier verifier = null;
     private SSLContext sslContext;
+    private long connectionTimeToLive = -1;
+    private TimeUnit connectionTimeToLiveUnit = TimeUnit.MILLISECONDS;
+    private long socketTimeout = -1;
+    private TimeUnit socketTimeoutUnits = TimeUnit.MILLISECONDS;
+    private long establishConnectionTimeout = -1;
+    private TimeUnit establishConnectionTimeoutUnits = TimeUnit.MILLISECONDS;
 
     /**
      * This should only be set if you cannot or do not want to verify the identity of the
@@ -148,6 +128,29 @@ public class HttpClientBuilder {
 
     public HttpClientBuilder setTrustStore(KeyStore truststore) {
         this.truststore = truststore;
+        return this;
+    }
+
+    public HttpClientBuilder setConnectionTimeToLive(long timeToLive, TimeUnit timeToLiveUnit) {
+        this.connectionTimeToLive = timeToLive;
+        this.connectionTimeToLiveUnit = timeToLiveUnit;
+        return this;
+    }
+
+    public HttpClientBuilder setMaxPooledPerRoute(int maxPooledPerRoute) {
+        this.maxPooledPerRoute = maxPooledPerRoute;
+        return this;
+    }
+
+    public HttpClientBuilder setSocketTimeout(long timeout, TimeUnit unit) {
+        this.socketTimeout = timeout;
+        this.socketTimeoutUnits = unit;
+        return this;
+    }
+
+    public HttpClientBuilder setEstablishConnectionTimeout(long timeout, TimeUnit unit) {
+        this.establishConnectionTimeout = timeout;
+        this.establishConnectionTimeoutUnits = unit;
         return this;
     }
 
@@ -187,43 +190,40 @@ public class HttpClientBuilder {
                 tlsContext.init(null, null, null);
                 sslSocketFactory = new SSLConnectionSocketFactory(tlsContext, verifier);
             }
-            SchemeRegistry registry = new SchemeRegistry();
-            registry.register(
-                    new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
-            Scheme httpsScheme = new Scheme("https", 443, sslSocketFactory);
-            registry.register(httpsScheme);
-            ClientConnectionManager cm = null;
+            Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                    .register("https", sslSocketFactory)
+                    .build();
+            HttpClientConnectionManager connectionManager;
             if (connectionPoolSize > 0) {
-                ThreadSafeClientConnManager tcm = new ThreadSafeClientConnManager(registry, connectionTTL, connectionTTLUnit);
-                tcm.setMaxTotal(connectionPoolSize);
+                PoolingHttpClientConnectionManager pcm = new PoolingHttpClientConnectionManager(registry, null, null, null, connectionTimeToLive, connectionTimeToLiveUnit);
+                pcm.setMaxTotal(connectionPoolSize);
                 if (maxPooledPerRoute == 0) maxPooledPerRoute = connectionPoolSize;
-                tcm.setDefaultMaxPerRoute(maxPooledPerRoute);
-                cm = tcm;
+                pcm.setDefaultMaxPerRoute(maxPooledPerRoute);
+                connectionManager = pcm;
 
             } else {
-                cm = new SingleClientConnManager(registry);
+                connectionManager = new BasicHttpClientConnectionManager(registry);
             }
-            BasicHttpParams params = new BasicHttpParams();
-            params.setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
 
+            org.apache.http.impl.client.HttpClientBuilder clientBuilder = org.apache.http.impl.client.HttpClientBuilder.create();
+            clientBuilder.setConnectionManager(connectionManager);
+
+            RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
             if (proxyHost != null) {
-                params.setParameter(ConnRoutePNames.DEFAULT_PROXY, proxyHost);
+                requestConfigBuilder.setProxy(proxyHost);
             }
-
             if (socketTimeout > -1) {
-                HttpConnectionParams.setSoTimeout(params, (int) socketTimeoutUnits.toMillis(socketTimeout));
-
+                requestConfigBuilder.setSocketTimeout((int) socketTimeoutUnits.toMillis(socketTimeout));
             }
             if (establishConnectionTimeout > -1) {
-                HttpConnectionParams.setConnectionTimeout(params, (int) establishConnectionTimeoutUnits.toMillis(establishConnectionTimeout));
+                requestConfigBuilder.setConnectTimeout((int) establishConnectionTimeoutUnits.toMillis(establishConnectionTimeout));
             }
-            DefaultHttpClient client = new DefaultHttpClient(cm, params);
-
+            clientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
             if (disableCookieCache) {
-                client.setCookieStore(new CookieStore() {
+                clientBuilder.setDefaultCookieStore(new CookieStore() {
                     @Override
                     public void addCookie(Cookie cookie) {
-                        //To change body of implemented methods use File | Settings | File Templates.
                     }
 
                     @Override
@@ -233,17 +233,15 @@ public class HttpClientBuilder {
 
                     @Override
                     public boolean clearExpired(Date date) {
-                        return false;  //To change body of implemented methods use File | Settings | File Templates.
+                        return false;
                     }
 
                     @Override
                     public void clear() {
-                        //To change body of implemented methods use File | Settings | File Templates.
                     }
                 });
-
             }
-            return client;
+            return clientBuilder.build();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -290,7 +288,6 @@ public class HttpClientBuilder {
         }
 
         configureProxyForAuthServerIfProvided(oidcClientConfig);
-
         return build();
     }
 
@@ -326,7 +323,7 @@ public class HttpClientBuilder {
                 throw log.unableToFindTrustStoreFile(filename);
             }
         } else {
-            trustStream = new FileInputStream(new File(filename));
+            trustStream = new FileInputStream(filename);
         }
         try (InputStream is = trustStream) {
             trustStore.load(is, password.toCharArray());
