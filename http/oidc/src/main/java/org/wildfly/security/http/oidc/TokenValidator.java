@@ -48,13 +48,13 @@ import org.wildfly.common.iteration.ByteIterator;
  *
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-public class IDTokenValidator {
+public class TokenValidator {
 
     private static final int HEADER_INDEX = 0;
     private JwtConsumerBuilder jwtConsumerBuilder;
     private OidcClientConfiguration clientConfiguration;
 
-    private IDTokenValidator(Builder builder) {
+    private TokenValidator(Builder builder) {
         this.jwtConsumerBuilder = builder.jwtConsumerBuilder;
         this.clientConfiguration = builder.clientConfiguration;
     }
@@ -66,7 +66,7 @@ public class IDTokenValidator {
      * @return the {@code JwtContext} if the ID token was valid
      * @throws OidcException if the ID token is invalid
      */
-    public IDToken parseAndVerifyToken(final String idToken) throws OidcException {
+    public VerifiedTokens parseAndVerifyToken(final String idToken, final String accessToken) throws OidcException {
         try {
             // first pass to determine the kid, if present
             JwtConsumer firstPassJwtConsumer = new JwtConsumerBuilder()
@@ -74,8 +74,8 @@ public class IDTokenValidator {
                     .setDisableRequireSignature()
                     .setSkipSignatureVerification()
                     .build();
-            JwtContext jwtContext = firstPassJwtConsumer.process(idToken);
-            String kid =  jwtContext.getJoseObjects().get(HEADER_INDEX).getKeyIdHeaderValue();
+            JwtContext idJwtContext = firstPassJwtConsumer.process(idToken);
+            String kid =  idJwtContext.getJoseObjects().get(HEADER_INDEX).getKeyIdHeaderValue();
             if (kid != null && clientConfiguration.getPublicKeyLocator() != null) {
                 jwtConsumerBuilder.setVerificationKey(clientConfiguration.getPublicKeyLocator().getPublicKey(kid, clientConfiguration));
             } else {
@@ -83,14 +83,15 @@ public class IDTokenValidator {
                 ClientSecretCredentialsProvider clientSecretCredentialsProvider = (ClientSecretCredentialsProvider) clientConfiguration.getClientAuthenticator();
                 jwtConsumerBuilder.setVerificationKey(clientSecretCredentialsProvider.getClientSecret());
             }
-
+            jwtConsumerBuilder.registerValidator(new AtHashValidator(accessToken, clientConfiguration.getJwsSignatureAlgorithm()));
             // second pass to validate
-            jwtConsumerBuilder.build().processContext(jwtContext);
-            JwtClaims jwtClaims = jwtContext.getJwtClaims();
-            if (jwtClaims == null) {
+            jwtConsumerBuilder.build().processContext(idJwtContext);
+            JwtClaims idJwtClaims = idJwtContext.getJwtClaims();
+            if (idJwtClaims == null) {
                 throw log.invalidIDTokenClaims();
             }
-            return new IDToken(jwtClaims);
+            JwtClaims jwtClaims = new JwtConsumerBuilder().build().processToClaims(accessToken);
+            return new VerifiedTokens(new IDToken(idJwtClaims), new AccessToken(jwtClaims));
         } catch (InvalidJwtException e) {
             throw log.invalidIDToken(e);
         }
@@ -102,8 +103,8 @@ public class IDTokenValidator {
      * @param clientConfiguration the OIDC client configuration
      * @return the new builder instance
      */
-    public static Builder builder(OidcClientConfiguration clientConfiguration, String accessTokenString) {
-        return new Builder(clientConfiguration, accessTokenString);
+    public static Builder builder(OidcClientConfiguration clientConfiguration) {
+        return new Builder(clientConfiguration);
     }
 
     public static class Builder {
@@ -114,19 +115,15 @@ public class IDTokenValidator {
         private PublicKeyLocator publicKeyLocator;
         private SecretKey clientSecretKey;
         private JwtConsumerBuilder jwtConsumerBuilder;
-        private String accessTokenString;
 
         /**
          * Construct a new uninitialized instance.
          *
          * @param clientConfiguration the OIDC client configuration
-         * @param accessTokenString the access token string, used for verifying the {@code at_hash} claim if provided
          */
-        Builder(OidcClientConfiguration clientConfiguration, String accessTokenString) {
+        Builder(OidcClientConfiguration clientConfiguration) {
             Assert.checkNotNullParam("clientConfiguration", clientConfiguration);
-            Assert.checkNotNullParam("accessTokenString", accessTokenString);
             this.clientConfiguration = clientConfiguration;
-            this.accessTokenString = accessTokenString;
         }
 
         /**
@@ -135,7 +132,7 @@ public class IDTokenValidator {
          * @return the newly created ID token validator
          * @throws IllegalArgumentException if a required builder parameter is missing or invalid
          */
-        public IDTokenValidator build() throws IllegalArgumentException {
+        public TokenValidator build() throws IllegalArgumentException {
             expectedIssuer = clientConfiguration.getIssuerUrl();
             if (expectedIssuer == null || expectedIssuer.length() == 0) {
                 throw log.noExpectedIssuerGiven();
@@ -163,10 +160,9 @@ public class IDTokenValidator {
                     .setJwsAlgorithmConstraints(
                             new AlgorithmConstraints(AlgorithmConstraints.ConstraintType.PERMIT, expectedJwsAlgorithm))
                     .registerValidator(new AzpValidator(clientID))
-                    .registerValidator(new AtHashValidator(accessTokenString, expectedJwsAlgorithm))
                     .setRequireExpirationTime();
 
-            return new IDTokenValidator(this);
+            return new TokenValidator(this);
         }
     }
 
@@ -235,6 +231,25 @@ public class IDTokenValidator {
         int hashLength = hash.length / 2;
         byte[] hashInput = Arrays.copyOf(hash, hashLength); // leftmost half of the hash
         return ByteIterator.ofBytes(hashInput).base64Encode(BASE64_URL, false).drainToString();
+    }
+
+    public static class VerifiedTokens {
+
+        private final AccessToken accessToken;
+        private final IDToken idToken;
+
+        public VerifiedTokens(final IDToken idToken, final AccessToken accessToken) {
+            this.idToken = idToken;
+            this.accessToken = accessToken;
+        }
+
+        public AccessToken getAccessToken() {
+            return accessToken;
+        }
+
+        public IDToken getIdToken() {
+            return idToken;
+        }
     }
 }
 

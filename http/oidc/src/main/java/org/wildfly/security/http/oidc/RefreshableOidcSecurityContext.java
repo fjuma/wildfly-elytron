@@ -22,7 +22,6 @@ import static org.wildfly.security.http.oidc.ElytronMessages.log;
 import static org.wildfly.security.http.oidc.Oidc.getCurrentTimeInSeconds;
 
 import java.io.IOException;
-import java.security.PublicKey;
 
 
 /**
@@ -142,16 +141,13 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
             }
             String accessTokenString = response.getAccessToken();
             String idTokenString = response.getIDToken();
-            AccessToken accessToken = null;
-            IDToken idToken = null;
+            AccessToken accessToken;
+            IDToken idToken;
             try {
-                TokenVerifier.VerifiedTokens tokens = TokenVerifier.verifyTokens(clientConfiguration)
-
-                AdapterTokenVerifier.VerifiedTokens tokens = AdapterTokenVerifier.verifyTokens(accessTokenString, response.getIDToken(), clientConfiguration);
-                accessToken = tokens.getAccessToken();
-
-                IDTokenValidator idTokenValidator = IDTokenValidator.builder(clientConfiguration, accessTokenString).build();
-                idToken = idTokenValidator.parseAndVerifyToken(idTokenString);
+                TokenValidator tokenValidator = TokenValidator.builder(clientConfiguration).build();
+                TokenValidator.VerifiedTokens verifiedTokens = tokenValidator.parseAndVerifyToken(idTokenString, accessTokenString);
+                idToken = verifiedTokens.getIdToken();
+                accessToken = verifiedTokens.getAccessToken();
                 log.debug("Token Verification succeeded!");
             } catch (OidcException e) {
                 log.failedVerificationOfToken();
