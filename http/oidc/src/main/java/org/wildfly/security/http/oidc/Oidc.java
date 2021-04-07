@@ -60,6 +60,7 @@ public class Oidc {
     public static final String CLIENT_ID = "client_id";
     public static final String CODE = "code";
     public static final String ERROR = "error";
+    public static final String GRANT_TYPE = "grant_type";
     public static final String LOGIN_HINT = "login_hint";
     public static final String MAX_AGE = "max_age";
     public static final String PROMPT = "prompt";
@@ -67,6 +68,7 @@ public class Oidc {
     public static final String UI_LOCALES = "ui_locales";
     public static final String OIDC_SCOPE = "openid";
     public static final String REDIRECT_URI = "redirect_uri";
+    public static final String REFRESH_TOKEN = "refresh_token";
     public static final String RESPONSE_TYPE = "response_type";
     public static final String STATE = "state";
     public static final int INVALID_ISSUED_FOR_CLAIM = -1;

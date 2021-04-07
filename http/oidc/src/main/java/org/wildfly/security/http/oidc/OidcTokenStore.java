@@ -33,7 +33,7 @@ public interface OidcTokenStore {
     void checkCurrentToken();
 
     /**
-     * Check if we are already loggeed in (i.e., check if we have a valid and successfully refreshed access token). If so,
+     * Check if we are already logged in (i.e., check if we have a valid and successfully refreshed access token). If so,
      * establish the security context.
      *
      * @param authenticator used for actual request authentication

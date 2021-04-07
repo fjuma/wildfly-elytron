@@ -131,7 +131,7 @@ public class OidcClientContext {
         }
 
         @Override
-        public KeycloakUriBuilder getLogoutUrl() {
+        public String getLogoutUrl() {
             return (this.logoutUrl != null) ? this.logoutUrl : delegate.getLogoutUrl();
         }
 

@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
- * @since 1.15.0
+ * @since 1.16.0
  */
 public class RefreshableOidcSecurityContext extends OidcSecurityContext {
 
@@ -48,25 +48,25 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
 
     @Override
     public AccessToken getToken() {
-        refreshExpiredToken(true);
+        refreshToken(true);
         return super.getToken();
     }
 
     @Override
     public String getTokenString() {
-        refreshExpiredToken(true);
+        refreshToken(true);
         return super.getTokenString();
     }
 
     @Override
     public IDToken getIDToken() {
-        refreshExpiredToken(true);
+        refreshToken(true);
         return super.getIDToken();
     }
 
     @Override
     public String getIDTokenString() {
-        refreshExpiredToken(true);
+        refreshToken(true);
         return super.getIDTokenString();
     }
 
@@ -100,10 +100,12 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
     }
 
     /**
+     * Refresh a token if needed.
+     *
      * @param checkActive if true, then we won't send refresh request if current accessToken is still active.
      * @return true if accessToken is active or was successfully refreshed
      */
-    public boolean refreshExpiredToken(boolean checkActive) {
+    public boolean refreshToken(boolean checkActive) {
         if (checkActive) {
             if (log.isTraceEnabled()) {
                 log.trace("checking whether to refresh.");
@@ -111,7 +113,7 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
             if (isActive() && isTokenTimeToLiveSufficient(this.token)) return true;
         }
 
-        if (this.clientConfiguration == null || refreshToken == null) return false; // Might be serialized in HttpSession?
+        if (this.clientConfiguration == null || refreshToken == null) return false;
 
         if (log.isTraceEnabled()) {
             log.trace("Doing refresh");

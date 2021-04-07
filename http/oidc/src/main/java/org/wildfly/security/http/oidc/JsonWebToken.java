@@ -153,7 +153,7 @@ public class JsonWebToken {
      * @return {@code true} if the token is active and {@code false} otherwise
      */
     public boolean isActive() {
-        return !isExpired() && isNotBefore();
+        return ! isExpired() && isNotBefore();
     }
 
     /**

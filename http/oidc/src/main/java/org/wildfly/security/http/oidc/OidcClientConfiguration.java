@@ -74,7 +74,7 @@ public class OidcClientConfiguration {
     protected String issuerUrl;
     protected String authUrl;
     protected String tokenUrl;
-    protected URIBuilder logoutUrl;
+    protected String logoutUrl;
     protected String registerNodeUrl;
     protected String unregisterNodeUrl;
     protected String jwksUrl;
@@ -285,7 +285,7 @@ public class OidcClientConfiguration {
         return tokenUrl;
     }
 
-    public URIBuilder getLogoutUrl() {
+    public String getLogoutUrl() {
         resolveUrls();
         return logoutUrl;
     }

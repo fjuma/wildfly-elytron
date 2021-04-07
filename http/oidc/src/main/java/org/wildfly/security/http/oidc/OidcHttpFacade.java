@@ -61,7 +61,7 @@ class OidcHttpFacade {
 
     private final HttpServerRequest request;
     private final CallbackHandler callbackHandler;
-    private final AdapterTokenStore tokenStore;
+    private final OidcTokenStore tokenStore;
     private final OidcClientContext oidcClientContext;
     private Consumer<HttpServerResponse> responseConsumer;
     private ElytronAccount account;
@@ -82,8 +82,8 @@ class OidcHttpFacade {
 
         if (securityIdentity != null) {
             this.account = account;
-            RefreshableKeycloakSecurityContext keycloakSecurityContext = account.getKeycloakSecurityContext();
-            account.setCurrentRequestInfo(keycloakSecurityContext.getDeployment(), this.tokenStore);
+            RefreshableOidcSecurityContext securityContext = account.getKeycloakSecurityContext();
+            account.setCurrentRequestInfo(securityContext.getDeployment(), this.tokenStore);
             if (storeToken) {
                 this.tokenStore.saveAccountInfo(account);
             }
@@ -93,15 +93,15 @@ class OidcHttpFacade {
     void authenticationComplete() {
         if (securityIdentity != null) {
             HttpScope requestScope = request.getScope(Scope.EXCHANGE);
-            RefreshableKeycloakSecurityContext keycloakSecurityContext = account.getKeycloakSecurityContext();
+            RefreshableOidcSecurityContext securityContext = account.getKeycloakSecurityContext();
 
-            requestScope.setAttachment(KeycloakSecurityContext.class.getName(), keycloakSecurityContext);
+            requestScope.setAttachment(OidcSecurityContext.class.getName(), securityContext);
 
             this.request.authenticationComplete(response -> {
                 if (!restored) {
                     responseConsumer.accept(response);
                 }
-            }, () -> ((ElytronTokeStore) tokenStore).logout(true));
+            }, () -> tokenStore.logout(true));
         }
     }
 
@@ -136,7 +136,7 @@ class OidcHttpFacade {
         return request.getScopeIds(scope);
     }
 
-    AdapterTokenStore getTokenStore() {
+    OidcTokenStore getTokenStore() {
         return this.tokenStore;
     }
 
@@ -144,13 +144,13 @@ class OidcHttpFacade {
         return oidcClientContext.resolveDeployment(this);
     }
 
-    private AdapterTokenStore createTokenStore() {
-        KeycloakDeployment deployment = getOidcClientConfiguration();
+    private OidcTokenStore createTokenStore() {
+        OidcClientConfiguration deployment = getOidcClientConfiguration();
 
-        if (TokenStore.SESSION.equals(deployment.getTokenStore())) {
-            return new ElytronSessionTokenStore(this, this.callbackHandler);
+        if (Oidc.TokenStore.SESSION.equals(deployment.getTokenStore())) {
+            return new OidcSessionTokenStore(this, this.callbackHandler);
         } else {
-            return new ElytronCookieTokenStore(this, this.callbackHandler);
+            return new OidcCookieTokenStore(this, this.callbackHandler);
         }
     }
 
