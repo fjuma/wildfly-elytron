@@ -64,12 +64,12 @@ class OidcHttpFacade {
     private final OidcTokenStore tokenStore;
     private final OidcClientContext oidcClientContext;
     private Consumer<HttpServerResponse> responseConsumer;
-    private ElytronAccount account;
+    private OidcAccount account;
     private SecurityIdentity securityIdentity;
     private boolean restored;
     private final Map<String, String> headers = new HashMap<>();
 
-    public ElytronHttpFacade(HttpServerRequest request, OidcClientContext oidcClientContext, CallbackHandler handler) {
+    public OidcHttpFacade(HttpServerRequest request, OidcClientContext oidcClientContext, CallbackHandler handler) {
         this.request = request;
         this.oidcClientContext = oidcClientContext;
         this.callbackHandler = handler;
@@ -77,13 +77,13 @@ class OidcHttpFacade {
         this.responseConsumer = response -> {};
     }
 
-    void authenticationComplete(ElytronAccount account, boolean storeToken) {
+    void authenticationComplete(OidcAccount account, boolean storeToken) {
         this.securityIdentity = SecurityIdentityUtil.authorize(this.callbackHandler, account.getPrincipal());
 
         if (securityIdentity != null) {
             this.account = account;
-            RefreshableOidcSecurityContext securityContext = account.getKeycloakSecurityContext();
-            account.setCurrentRequestInfo(securityContext.getDeployment(), this.tokenStore);
+            RefreshableOidcSecurityContext securityContext = account.getOidcSecurityContext();
+            account.setCurrentRequestInfo(securityContext.getOidcClientConfiguration(), this.tokenStore);
             if (storeToken) {
                 this.tokenStore.saveAccountInfo(account);
             }
@@ -93,7 +93,7 @@ class OidcHttpFacade {
     void authenticationComplete() {
         if (securityIdentity != null) {
             HttpScope requestScope = request.getScope(Scope.EXCHANGE);
-            RefreshableOidcSecurityContext securityContext = account.getKeycloakSecurityContext();
+            RefreshableOidcSecurityContext securityContext = account.getOidcSecurityContext();
 
             requestScope.setAttachment(OidcSecurityContext.class.getName(), securityContext);
 

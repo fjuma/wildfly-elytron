@@ -48,14 +48,16 @@ public class OidcSessionTokenStore implements OidcTokenStore {
     @Override
     public void checkCurrentToken() {
         HttpScope session = httpFacade.getScope(Scope.SESSION);
-        if (session == null || !session.exists()) return;
+        if (session == null || ! session.exists()) return;
         RefreshableOidcSecurityContext securityContext = (RefreshableOidcSecurityContext) session.getAttachment(OidcSecurityContext.class.getName());
         if (securityContext == null) return;
 
         // just in case session got serialized
-        if (securityContext.getOidcClientConfiguration() == null) securityContext.setCurrentRequestInfo(httpFacade.getOidcClientConfiguration(), this);
+        if (securityContext.getOidcClientConfiguration() == null) {
+            securityContext.setCurrentRequestInfo(httpFacade.getOidcClientConfiguration(), this);
+        }
 
-        if (securityContext.isActive() && !securityContext.getOidcClientConfiguration().isAlwaysRefreshToken()) return;
+        if (securityContext.isActive() && ! securityContext.getOidcClientConfiguration().isAlwaysRefreshToken()) return;
 
         // FYI: A refresh requires same scope, so same roles will be set.  Otherwise, refresh will fail and token will
         // not be updated
@@ -76,10 +78,10 @@ public class OidcSessionTokenStore implements OidcTokenStore {
             return false;
         }
 
-        ElytronAccount account;
+        OidcAccount account;
 
         try {
-            account = (ElytronAccount) session.getAttachment(ElytronAccount.class.getName());
+            account = (OidcAccount) session.getAttachment(OidcAccount.class.getName());
         } catch (IllegalStateException e) {
             log.debug("session was invalidated.  Return false.");
             return false;
@@ -91,14 +93,14 @@ public class OidcSessionTokenStore implements OidcTokenStore {
 
         OidcClientConfiguration deployment = httpFacade.getOidcClientConfiguration();
 
-        if (!deployment.getRealm().equals(account.getKeycloakSecurityContext().getRealm())) {
+        if (deployment.getRealm() != null && ! deployment.getRealm().equals(account.getOidcSecurityContext().getRealm())) {
             log.debug("Account in session belongs to a different realm than for this request.");
             return false;
         }
 
         boolean active = account.checkActive();
 
-        if (!active) {
+        if (! active) {
             active = account.tryRefresh();
         }
 
@@ -111,7 +113,7 @@ public class OidcSessionTokenStore implements OidcTokenStore {
             log.debug("Refresh failed. Account was not active. Returning null and invalidating Http session");
             try {
                 session.setAttachment(OidcSecurityContext.class.getName(), null);
-                session.setAttachment(ElytronAccount.class.getName(), null);
+                session.setAttachment(OidcAccount.class.getName(), null);
                 session.invalidate();
             } catch (Exception e) {
                 log.debug("Failed to invalidate session, might already be invalidated");
@@ -121,7 +123,7 @@ public class OidcSessionTokenStore implements OidcTokenStore {
     }
 
     @Override
-    public void saveAccountInfo(OidcKeycloakAccount account) {
+    public void saveAccountInfo(OidcAccount account) {
         HttpScope session = this.httpFacade.getScope(Scope.SESSION);
         if (! session.exists()) {
             session.create();
@@ -129,19 +131,19 @@ public class OidcSessionTokenStore implements OidcTokenStore {
                 if (! httpScopeNotification.isOfType(HttpScopeNotification.SessionNotificationType.UNDEPLOY)) {
                     HttpScope invalidated = httpScopeNotification.getScope(Scope.SESSION);
                     if (invalidated != null) {
-                        invalidated.setAttachment(ElytronAccount.class.getName(), null);
+                        invalidated.setAttachment(OidcAccount.class.getName(), null);
                         invalidated.setAttachment(OidcSecurityContext.class.getName(), null);
                     }
                 }
             });
         }
 
-        session.setAttachment(ElytronAccount.class.getName(), account);
-        session.setAttachment(OidcSecurityContext.class.getName(), account.getKeycloakSecurityContext());
+        session.setAttachment(OidcAccount.class.getName(), account);
+        session.setAttachment(OidcSecurityContext.class.getName(), account.getOidcSecurityContext());
 
         HttpScope scope = this.httpFacade.getScope(Scope.EXCHANGE);
 
-        scope.setAttachment(OidcSecurityContext.class.getName(), account.getKeycloakSecurityContext());
+        scope.setAttachment(OidcSecurityContext.class.getName(), account.getOidcSecurityContext());
     }
 
     @Override
@@ -151,8 +153,8 @@ public class OidcSessionTokenStore implements OidcTokenStore {
 
     @Override
     public void refreshCallback(RefreshableOidcSecurityContext securityContext) {
-        KeycloakPrincipal<RefreshableOidcSecurityContext> principal = new KeycloakPrincipal<RefreshableKeycloakSecurityContext>(AdapterUtils.getPrincipalName(this.httpFacade.getDeployment(), securityContext.getToken()), securityContext);
-        saveAccountInfo(new ElytronAccount(principal));
+        OidcPrincipal<RefreshableOidcSecurityContext> principal = new OidcPrincipal<RefreshableOidcSecurityContext>(AdapterUtils.getPrincipalName(this.httpFacade.getOidcClientConfiguration(), securityContext.getToken()), securityContext);
+        saveAccountInfo(new OidcAccount(principal));
     }
 
     @Override
@@ -169,7 +171,7 @@ public class OidcSessionTokenStore implements OidcTokenStore {
     public void logout(boolean glo) {
         HttpScope session = this.httpFacade.getScope(Scope.SESSION);
 
-        if (!session.exists()) {
+        if (! session.exists()) {
             return;
         }
 
@@ -178,14 +180,12 @@ public class OidcSessionTokenStore implements OidcTokenStore {
         try {
             if (glo && securityContext != null) {
                 OidcClientConfiguration deployment = httpFacade.getOidcClientConfiguration();
-
                 session.invalidate();
-
-                if (!deployment.isBearerOnly() && securityContext != null && securityContext instanceof RefreshableOidcSecurityContext) {
+                if (! deployment.isBearerOnly() && securityContext != null && securityContext instanceof RefreshableOidcSecurityContext) {
                     ((RefreshableOidcSecurityContext) securityContext).logout(deployment);
                 }
             } else {
-                session.setAttachment(ElytronAccount.class.getName(), null);
+                session.setAttachment(OidcAccount.class.getName(), null);
                 session.setAttachment(OidcSecurityContext.class.getName(), null);
             }
         } catch (IllegalStateException ise) {

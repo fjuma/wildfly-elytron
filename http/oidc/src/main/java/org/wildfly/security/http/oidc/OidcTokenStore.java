@@ -18,6 +18,8 @@
 
 package org.wildfly.security.http.oidc;
 
+import java.util.List;
+
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -46,12 +48,16 @@ public interface OidcTokenStore {
      *
      * @param account the validated account
      */
-    void saveAccountInfo(OidcKeycloakAccount account);
+    void saveAccountInfo(OidcAccount account);
 
     /**
      * Handle logout on store side and possibly propagate logout call to the OIDC provider.
      */
     void logout();
+
+    void logoutAll();
+
+    void logoutHttpSessions(List<String> ids);
 
     /**
      * Callback invoked after a successful token refresh.
@@ -59,4 +65,15 @@ public interface OidcTokenStore {
      * @param securityContext context where refresh was performed
      */
     void refreshCallback(RefreshableOidcSecurityContext securityContext);
+
+    /**
+     * Save the request.
+     */
+    void saveRequest();
+
+    /**
+     * Restore the request.
+     * @return {@code true} if the request was successfully restored; {@code false} otherwise
+     */
+    boolean restoreRequest();
 }
