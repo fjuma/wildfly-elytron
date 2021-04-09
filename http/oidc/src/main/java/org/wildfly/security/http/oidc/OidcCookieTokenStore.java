@@ -48,7 +48,7 @@ public class OidcCookieTokenStore implements OidcTokenStore {
             return;
         }
         RefreshableOidcSecurityContext securityContext = principal.getOidcSecurityContext();
-        if (securityContext.isActive() && !securityContext.getOidcClientConfiguration().isAlwaysRefreshToken()) return;
+        if (securityContext.isActive() && ! securityContext.getOidcClientConfiguration().isAlwaysRefreshToken()) return;
         // FYI: A refresh requires same scope, so same roles will be set.  Otherwise, refresh will fail and token will
         // not be updated
         boolean success = securityContext.refreshToken(false);
@@ -59,7 +59,7 @@ public class OidcCookieTokenStore implements OidcTokenStore {
     @Override
     public boolean isCached(RequestAuthenticator authenticator) {
         OidcClientConfiguration deployment = httpFacade.getOidcClientConfiguration();
-        OidcPrincipal<RefreshableOidcSecurityContext> principal = OidcCookieTokenStore.getPrincipalFromCookie(deployment, httpFacade, this);
+        OidcPrincipal<RefreshableOidcSecurityContext> principal = OidcCookieTokenStore.getPrincipalFromCookie(deployment, httpFacade);
         if (principal == null) {
             log.debug("Account was not in cookie or was invalid, returning null");
             return false;
@@ -120,7 +120,7 @@ public class OidcCookieTokenStore implements OidcTokenStore {
 
     @Override
     public void logout(boolean glo) {
-        OidcPrincipal<RefreshableOidcSecurityContext> principal = OidcCookieTokenStore.getPrincipalFromCookie(this.httpFacade.getOidcClientConfiguration(), this.httpFacade, this);
+        OidcPrincipal<RefreshableOidcSecurityContext> principal = OidcCookieTokenStore.getPrincipalFromCookie(this.httpFacade.getOidcClientConfiguration(), this.httpFacade);
         if (principal == null) {
             return;
         }
