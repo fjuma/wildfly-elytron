@@ -95,7 +95,7 @@ public class OidcClientConfigurationBuilder {
             oidcClientConfiguration.setTokenStore(TokenStore.SESSION);
         }
         if (oidcJsonConfiguration.getTokenCookiePath() != null) {
-            oidcClientConfiguration.setAdapterStateCookiePath(oidcJsonConfiguration.getTokenCookiePath());
+            oidcClientConfiguration.setOidcStateCookiePath(oidcJsonConfiguration.getTokenCookiePath());
         }
         if (oidcJsonConfiguration.getPrincipalAttribute() != null) oidcClientConfiguration.setPrincipalAttribute(oidcJsonConfiguration.getPrincipalAttribute());
 

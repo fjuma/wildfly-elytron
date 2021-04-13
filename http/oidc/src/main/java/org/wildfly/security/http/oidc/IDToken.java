@@ -58,6 +58,7 @@ public class IDToken extends JsonWebToken {
     public static final String CLAIMS_LOCALES = "claims_locales";
     public static final String ACR = "acr";
     public static final String S_HASH = "s_hash";
+    public static final String SUB = "sub";
 
     /**
      * Construct a new instance.
@@ -289,5 +290,31 @@ public class IDToken extends JsonWebToken {
     public String getAcr() {
         return getClaimValueAsString(ACR);
     }
+
+    public String getPrincipalName(OidcClientConfiguration deployment) {
+        String attr = SUB;
+        if (deployment.getPrincipalAttribute() != null) {
+            attr = deployment.getPrincipalAttribute();
+        }
+        switch (attr) {
+            case SUB:
+                return getSubject();
+            case EMAIL:
+                return getEmail();
+            case PREFERRED_USERNAME:
+                return getPreferredUsername();
+            case NAME:
+                return getName();
+            case GIVEN_NAME:
+                return getGivenName();
+            case FAMILY_NAME:
+                return getFamilyName();
+            case NICKNAME:
+                return getNickName();
+            default:
+                return getSubject();
+        }
+    }
+
 
 }

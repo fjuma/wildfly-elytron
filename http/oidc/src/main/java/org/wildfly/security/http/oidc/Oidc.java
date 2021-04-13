@@ -19,6 +19,7 @@
 package org.wildfly.security.http.oidc;
 
 import static org.wildfly.security.http.oidc.ElytronMessages.log;
+import static org.wildfly.security.http.oidc.IDToken.EMAIL;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -94,6 +95,8 @@ public class Oidc {
     public static final String SHA384 = "SHA-384";
     public static final String SHA512 = "SHA-512";
     static final String PROTOCOL_CLASSPATH = "classpath:";
+    static final String OIDC_STATE_COOKIE = "OIDC_STATE";
+
 
     // keycloak-specific request parameter used to specify the identifier of the identity provider that should be used to authenticate a user
     public static final String KC_IDP_HINT = "kc_idp_hint";

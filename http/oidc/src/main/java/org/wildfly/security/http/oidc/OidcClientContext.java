@@ -18,12 +18,10 @@
 
 package org.wildfly.security.http.oidc;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 
 /**
@@ -296,13 +294,13 @@ public class OidcClientContext {
         }
 
         @Override
-        public String getAdapterStateCookiePath() {
-            return delegate.getAdapterStateCookiePath();
+        public String getOidcStateCookiePath() {
+            return delegate.getOidcStateCookiePath();
         }
 
         @Override
-        public void setAdapterStateCookiePath(String adapterStateCookiePath) {
-            delegate.setAdapterStateCookiePath(adapterStateCookiePath);
+        public void setOidcStateCookiePath(String oidcStateCookiePath) {
+            delegate.setOidcStateCookiePath(oidcStateCookiePath);
         }
 
         @Override

@@ -153,7 +153,7 @@ public class OidcSessionTokenStore implements OidcTokenStore {
 
     @Override
     public void refreshCallback(RefreshableOidcSecurityContext securityContext) {
-        OidcPrincipal<RefreshableOidcSecurityContext> principal = new OidcPrincipal<RefreshableOidcSecurityContext>(AdapterUtils.getPrincipalName(this.httpFacade.getOidcClientConfiguration(), securityContext.getToken()), securityContext);
+        OidcPrincipal<RefreshableOidcSecurityContext> principal = new OidcPrincipal<>(securityContext.getIDToken().getPrincipalName(this.httpFacade.getOidcClientConfiguration()), securityContext);
         saveAccountInfo(new OidcAccount(principal));
     }
 

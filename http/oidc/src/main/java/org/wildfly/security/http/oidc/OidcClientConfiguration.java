@@ -93,7 +93,7 @@ public class OidcClientConfiguration {
     protected SSLRequired sslRequired = SSLRequired.ALL;
     protected int confidentialPort = -1;
     protected TokenStore tokenStore = TokenStore.SESSION;
-    protected String adapterStateCookiePath = "";
+    protected String oidcStateCookiePath = "";
     protected String stateCookieName = "OAuth_Token_Request_State";
     protected boolean useResourceRoleMappings;
     protected boolean cors;
@@ -413,12 +413,12 @@ public class OidcClientConfiguration {
         this.tokenStore = tokenStore;
     }
 
-    public String getAdapterStateCookiePath() {
-        return adapterStateCookiePath;
+    public String getOidcStateCookiePath() {
+        return oidcStateCookiePath;
     }
 
-    public void setAdapterStateCookiePath(String adapterStateCookiePath) {
-        this.adapterStateCookiePath = adapterStateCookiePath;
+    public void setOidcStateCookiePath(String oidcStateCookiePath) {
+        this.oidcStateCookiePath = oidcStateCookiePath;
     }
 
     public String getStateCookieName() {

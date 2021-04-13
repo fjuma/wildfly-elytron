@@ -192,7 +192,10 @@ interface ElytronMessages extends BasicLogger {
     @Message(id = 19040, value = "Uknown algorithm: '%s'")
     IllegalArgumentException unknownAlgorithm(String algorithm);
 
-    @Message(id = 19040, value = "Uknown algorithm: '%s'")
-    IllegalArgumentException unknownAlgorithm(String algorithm);
+    @LogMessage(level = WARN)
+    @Message(id = 19041, value = "Failed to parse token from cookie")
+    void failedToParseTokenFromCookie(@Cause Throwable cause);
+
+
 }
 

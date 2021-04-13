@@ -19,11 +19,14 @@
 package org.wildfly.security.http.oidc;
 
 import static org.wildfly.security.http.oidc.ElytronMessages.log;
+import static org.wildfly.security.http.oidc.Oidc.OIDC_STATE_COOKIE;
 
 import java.util.List;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import org.jose4j.jwt.consumer.InvalidJwtException;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.wildfly.security.http.HttpScope;
 import org.wildfly.security.http.Scope;
 
@@ -34,6 +37,11 @@ public class OidcCookieTokenStore implements OidcTokenStore {
 
     private final OidcHttpFacade httpFacade;
     private final CallbackHandler callbackHandler;
+    private static final String DELIM = "___";
+    private static final int EXPECTED_NUM_TOKENS = 3;
+    private static final int ACCESS_TOKEN_INDEX = 0;
+    private static final int ID_TOKEN_INDEX = 1;
+    private static final int REFRESH_TOKEN_INDEX = 2;
 
     public OidcCookieTokenStore(OidcHttpFacade httpFacade, CallbackHandler callbackHandler) {
         this.httpFacade = httpFacade;
@@ -43,7 +51,7 @@ public class OidcCookieTokenStore implements OidcTokenStore {
     @Override
     public void checkCurrentToken() {
         OidcClientConfiguration deployment = httpFacade.getOidcClientConfiguration();
-        OidcPrincipal<RefreshableOidcSecurityContext> principal = OidcCookieTokenStore.getPrincipalFromCookie(deployment, httpFacade);
+        OidcPrincipal<RefreshableOidcSecurityContext> principal = OidcCookieTokenStore.getPrincipalFromCookie(deployment, httpFacade, this);
         if (principal == null) {
             return;
         }
@@ -59,13 +67,12 @@ public class OidcCookieTokenStore implements OidcTokenStore {
     @Override
     public boolean isCached(RequestAuthenticator authenticator) {
         OidcClientConfiguration deployment = httpFacade.getOidcClientConfiguration();
-        OidcPrincipal<RefreshableOidcSecurityContext> principal = OidcCookieTokenStore.getPrincipalFromCookie(deployment, httpFacade);
+        OidcPrincipal<RefreshableOidcSecurityContext> principal = OidcCookieTokenStore.getPrincipalFromCookie(deployment, httpFacade, this);
         if (principal == null) {
             log.debug("Account was not in cookie or was invalid, returning null");
             return false;
         }
         OidcAccount account = new OidcAccount(principal);
-
         if (deployment.getRealm() != null && ! deployment.getRealm().equals(account.getOidcSecurityContext().getRealm())) {
             log.debug("Account in session belongs to a different realm than for this request.");
             return false;
@@ -82,7 +89,7 @@ public class OidcCookieTokenStore implements OidcTokenStore {
             return true;
         } else {
             log.debug("Account was not active, removing cookie and returning false");
-            OidcCookieTokenStore.removeCookie(deployment, httpFacade);
+            removeCookie(deployment, httpFacade);
             return false;
         }
     }
@@ -120,11 +127,11 @@ public class OidcCookieTokenStore implements OidcTokenStore {
 
     @Override
     public void logout(boolean glo) {
-        OidcPrincipal<RefreshableOidcSecurityContext> principal = OidcCookieTokenStore.getPrincipalFromCookie(this.httpFacade.getOidcClientConfiguration(), this.httpFacade);
+        OidcPrincipal<RefreshableOidcSecurityContext> principal = OidcCookieTokenStore.getPrincipalFromCookie(httpFacade.getOidcClientConfiguration(), httpFacade, this;
         if (principal == null) {
             return;
         }
-        OidcCookieTokenStore.removeCookie(this.httpFacade.getOidcClientConfiguration(), this.httpFacade);
+        OidcCookieTokenStore.removeCookie(httpFacade.getOidcClientConfiguration(), httpFacade);
         if (glo) {
             OidcSecurityContext securityContext = principal.getOidcSecurityContext();
             if (securityContext == null) {
@@ -147,49 +154,73 @@ public class OidcCookieTokenStore implements OidcTokenStore {
         //no-op
     }
 
-    public static OidcPrincipal<RefreshableOidcSecurityContext> getPrincipalFromCookie(OidcClientConfiguration deployment, OidcHttpFacade facade) {
-        OidcHttpFacade.Cookie cookie = facade.getRequest().getCookie(AdapterConstants.KEYCLOAK_ADAPTER_STATE_COOKIE);
+    public static void removeCookie(OidcClientConfiguration deployment, OidcHttpFacade facade) {
+        String cookiePath = getCookiePath(deployment, facade);
+        facade.getResponse().resetCookie(OIDC_STATE_COOKIE, cookiePath);
+    }
+
+    public static void setTokenCookie(OidcClientConfiguration deployment, OidcHttpFacade facade, RefreshableOidcSecurityContext session) {
+        log.debugf("Set new %s cookie now", OIDC_STATE_COOKIE);
+        String accessToken = session.getTokenString();
+        String idToken = session.getIDTokenString();
+        String refreshToken = session.getRefreshToken();
+        String cookie = new StringBuilder(accessToken).append(DELIM)
+                .append(idToken).append(DELIM)
+                .append(refreshToken).toString();
+        String cookiePath = getCookiePath(deployment, facade);
+        facade.getResponse().setCookie(OIDC_STATE_COOKIE, cookie, cookiePath, null, -1, deployment.getSSLRequired().isRequired(facade.getRequest().getRemoteAddr()), true);
+    }
+
+    static String getCookiePath(OidcClientConfiguration deployment, OidcHttpFacade facade) {
+        String path = deployment.getOidcStateCookiePath() == null ? "" : deployment.getOidcStateCookiePath().trim();
+        if (path.startsWith("/")) {
+            return path;
+        }
+        String contextPath = getContextPath(facade);
+        StringBuilder cookiePath = new StringBuilder(contextPath);
+        if (!contextPath.endsWith("/") && !path.isEmpty()) {
+            cookiePath.append("/");
+        }
+        return cookiePath.append(path).toString();
+    }
+
+    static String getContextPath(OidcHttpFacade facade) {
+        String uri = facade.getRequest().getURI();
+        String path = KeycloakUriBuilder.fromUri(uri).getPath();
+        if (path == null || path.isEmpty()) {
+            return "/";
+        }
+        int index = path.indexOf("/", 1);
+        return index == -1 ? path : path.substring(0, index);
+    }
+
+    public static OidcPrincipal<RefreshableOidcSecurityContext> getPrincipalFromCookie(OidcClientConfiguration deployment, OidcHttpFacade facade, OidcCookieTokenStore tokenStore) {
+        OidcHttpFacade.Cookie cookie = facade.getRequest().getCookie(OIDC_STATE_COOKIE);
         if (cookie == null) {
-            log.debug("Not found adapter state cookie in current request");
+            log.debug("OIDC state cookie not found in current request");
             return null;
         }
-
         String cookieVal = cookie.getValue();
-
         String[] tokens = cookieVal.split(DELIM);
-        if (tokens.length != 3) {
-            log.warnf("Invalid format of %s cookie. Count of tokens: %s, expected 3", AdapterConstants.KEYCLOAK_ADAPTER_STATE_COOKIE, tokens.length);
+        if (tokens.length != EXPECTED_NUM_TOKENS) {
+            log.warnf("Invalid format of %s cookie. Count of tokens: %s, expected 3", OIDC_STATE_COOKIE, tokens.length);
             return null;
         }
-
-        String accessTokenString = tokens[0];
-        String idTokenString = tokens[1];
-        String refreshTokenString = tokens[2];
+        String accessTokenString = tokens[ACCESS_TOKEN_INDEX];
+        String idTokenString = tokens[ID_TOKEN_INDEX];
+        String refreshTokenString = tokens[REFRESH_TOKEN_INDEX];
 
         try {
-            // Skip check if token is active now. It's supposed to be done later by the caller
-            TokenVerifier<AccessToken> tokenVerifier = AdapterTokenVerifier.createVerifier(accessTokenString, deployment, true, AccessToken.class)
-                    .checkActive(false)
-                    .verify();
-            AccessToken accessToken = tokenVerifier.getToken();
-
-            IDToken idToken;
+            AccessToken accessToken = new AccessToken(new JwtConsumerBuilder().setSkipAllValidators().build().processToClaims(accessTokenString));
+            IDToken idToken = null;
             if (idTokenString != null && idTokenString.length() > 0) {
-                try {
-                    JWSInput input = new JWSInput(idTokenString);
-                    idToken = input.readJsonContent(IDToken.class);
-                } catch (JWSInputException e) {
-                    throw new VerificationException(e);
-                }
-            } else {
-                idToken = null;
+                idToken = new IDToken(new JwtConsumerBuilder().setSkipAllValidators().build().processToClaims(idTokenString));
             }
-
-            log.debug("Token Verification succeeded!");
-            RefreshableOidcSecurityContext secContext = new RefreshableOidcSecurityContext(deployment, this, accessTokenString, accessToken, idTokenString, idToken, refreshTokenString);
-            return new OidcPrincipal<>(AdapterUtils.getPrincipalName(deployment, accessToken), secContext);
-        } catch (VerificationException ve) {
-            log.warn("Failed verify token", ve);
+            log.debug("Token obtained from cookie");
+            RefreshableOidcSecurityContext secContext = new RefreshableOidcSecurityContext(deployment, tokenStore, accessTokenString, accessToken, idTokenString, idToken, refreshTokenString);
+            return new OidcPrincipal<>(idToken.getPrincipalName(deployment), secContext);
+        } catch (InvalidJwtException e) {
+            log.failedToParseTokenFromCookie(e);
             return null;
         }
     }
