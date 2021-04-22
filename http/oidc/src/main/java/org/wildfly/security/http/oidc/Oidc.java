@@ -79,6 +79,7 @@ public class Oidc {
     static final String OIDC_JSON_FILE = "/WEB-INF/oidc.json";
     static final String JSON_CONFIG_CONTEXT_PARAM = "org.wildfly.security.http.oidc.json.config";
     static final String AUTHORIZATION = "authorization";
+    static final String AUTHORIZATION_CODE = "authorization_code";
     static final String CLIENT_ASSERTION_TYPE = "client_assertion_type";
     static final String CLIENT_ASSERTION = "client_assertion";
     static final String CLIENT_ASSERTION_TYPE_JWT = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
@@ -279,6 +280,10 @@ public class Oidc {
         }
     }
 
+    public enum AuthOutcome {
+        NOT_ATTEMPTED, FAILED, AUTHENTICATED, NOT_AUTHENTICATED, LOGGED_OUT
+    }
+
     public static String generateId() {
         return UUID.randomUUID().toString();
     }
@@ -301,7 +306,13 @@ public class Oidc {
         }
     }
 
+    public static String getQueryParamValue(OidcHttpFacade facade, String paramName) {
+        return facade.getRequest().getQueryParamValue(paramName);
+    }
 
+    protected static String stripQueryParam(String url, String name){
+        return url.replaceFirst("[\\?&]" + name + "=[^&]*$|" + name + "=[^&]*&", "");
+    }
 
 
 

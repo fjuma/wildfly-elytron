@@ -96,7 +96,7 @@ public class OidcCookieTokenStore implements OidcTokenStore {
 
     @Override
     public void saveAccountInfo(OidcAccount account) {
-        RefreshableOidcSecurityContext secContext = (RefreshableOidcSecurityContext)account.getOidcSecurityContext();
+        RefreshableOidcSecurityContext secContext = account.getOidcSecurityContext();
         OidcCookieTokenStore.setTokenCookie(this.httpFacade.getOidcClientConfiguration(), this.httpFacade, secContext);
         HttpScope exchange = this.httpFacade.getScope(Scope.EXCHANGE);
         exchange.registerForNotification(httpServerScopes -> logout());

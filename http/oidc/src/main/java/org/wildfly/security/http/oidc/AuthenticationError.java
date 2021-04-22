@@ -19,12 +19,46 @@
 package org.wildfly.security.http.oidc;
 
 /**
- * Common marker interface when there is an OIDC related authentication error. For servlets, you'll be able
- * to extract this error from the HttpServletRequest.getAttribute(AuthenticationError.class.getName()).
+ * Indicates an OIDC related authentication error. For servlets, you'll be able to extract
+ * this error from the HttpServletRequest.getAttribute(AuthenticationError.class.getName()).
  *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  * @since 1.15.0
  */
-public interface AuthenticationError {
+public class AuthenticationError {
+    public static enum Reason {
+        NO_BEARER_TOKEN,
+        NO_REDIRECT_URI,
+        INVALID_STATE_COOKIE,
+        OAUTH_ERROR,
+        SSL_REQUIRED,
+        CODE_TO_TOKEN_FAILURE,
+        INVALID_TOKEN,
+        STALE_TOKEN,
+        NO_AUTHORIZATION_HEADER,
+        NO_QUERY_PARAMETER_ACCESS_TOKEN
+    }
+
+    private Reason reason;
+    private String description;
+
+    public AuthenticationError(Reason reason, String description) {
+        this.reason = reason;
+        this.description = description;
+    }
+
+    public Reason getReason() {
+        return reason;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public String toString() {
+        return "AuthenticationError [reason=" + reason + ", description=" + description + "]";
+    }
+
 }

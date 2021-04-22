@@ -108,7 +108,7 @@ public class ClientCredentialsProviderUtils {
     }
 
     /**
-     * Don't use directly from your JEE apps to avoid HttpClient linkage errors! Instead use the method {@link #setClientCredentials(OidcClientConfiguration, Map, Map)}
+     * Don't use directly from your apps to avoid HttpClient linkage errors! Instead use the method {@link #setClientCredentials(OidcClientConfiguration, Map, Map)}
      */
     public static void setClientCredentials(OidcClientConfiguration oidcClientConfiguration, HttpPost post, List<NameValuePair> formparams) {
         Map<String, String> reqHeaders = new HashMap<>();

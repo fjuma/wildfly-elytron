@@ -152,7 +152,7 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
                 accessToken = verifiedTokens.getAccessToken();
                 log.debug("Token Verification succeeded!");
             } catch (OidcException e) {
-                log.failedVerificationOfToken();
+                log.failedVerificationOfToken(e.getMessage());
                 return false;
             }
             // If the TTL is greater-or-equal to the expire time on the refreshed accessToken, have to abort or go into an infinite refresh loop

@@ -94,8 +94,8 @@ interface ElytronMessages extends BasicLogger {
     void refreshTokenFailureStatus(int status, String error);
 
     @LogMessage(level = ERROR)
-    @Message(id = 19013, value = "Failed verification of token")
-    void failedVerificationOfToken();
+    @Message(id = 19013, value = "Failed verification of token: %s")
+    void failedVerificationOfToken(String error);
 
     @LogMessage(level = ERROR)
     @Message(id = 19014, value = "Failed to refresh the token with a longer time-to-live than the minimum")
@@ -195,6 +195,9 @@ interface ElytronMessages extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 19041, value = "Failed to parse token from cookie")
     void failedToParseTokenFromCookie(@Cause Throwable cause);
+
+    @Message(id = 19042, value = "Unable to create redirect response")
+    IllegalArgumentException unableToCreateRedirectResponse(@Cause Throwable cause);
 
 
 }

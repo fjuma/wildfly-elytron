@@ -222,8 +222,6 @@ public class RequestAuthenticator {
         return true;
     }
 
-    protected abstract OAuthRequestAuthenticator createOAuthAuthenticator();
-
     protected BearerTokenRequestAuthenticator createBearerTokenAuthenticator() {
         return new BearerTokenRequestAuthenticator(deployment);
     }
@@ -249,4 +247,5 @@ public class RequestAuthenticator {
         completeBearerAuthentication(principal, method);
         log.debugv("User ''{0}'' invoking ''{1}'' on client ''{2}''", principal.getName(), facade.getRequest().getURI(), deployment.getResourceName());
     }
+
 }

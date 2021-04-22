@@ -18,6 +18,11 @@
 
 package org.wildfly.security.http.oidc;
 
+import static org.wildfly.security.http.oidc.Oidc.AUTHORIZATION_CODE;
+import static org.wildfly.security.http.oidc.Oidc.CODE;
+import static org.wildfly.security.http.oidc.Oidc.GRANT_TYPE;
+import static org.wildfly.security.http.oidc.Oidc.REDIRECT_URI;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -50,7 +55,7 @@ public class ServerRequest {
 
     public static AccessAndIDTokenResponse invokeRefresh(OidcClientConfiguration deployment, String refreshToken) throws IOException, HttpFailure {
         List<NameValuePair> formparams = new ArrayList<NameValuePair>();
-        formparams.add(new BasicNameValuePair(Oidc.GRANT_TYPE, Oidc.REFRESH_TOKEN));
+        formparams.add(new BasicNameValuePair(GRANT_TYPE, Oidc.REFRESH_TOKEN));
         formparams.add(new BasicNameValuePair(Oidc.REFRESH_TOKEN, refreshToken));
 
         HttpPost post = new HttpPost(deployment.getTokenUrl());
@@ -111,6 +116,54 @@ public class ServerRequest {
         }
         InputStream is = entity.getContent();
         if (is != null) is.close();
+    }
+
+    public static AccessAndIDTokenResponse invokeAccessCodeToToken(OidcClientConfiguration deployment, String code, String redirectUri, String sessionId) throws IOException, HttpFailure {
+        List<NameValuePair> formparams = new ArrayList<>();
+        redirectUri = stripOauthParametersFromRedirect(redirectUri);
+        formparams.add(new BasicNameValuePair(GRANT_TYPE, AUTHORIZATION_CODE));
+        formparams.add(new BasicNameValuePair(CODE, code));
+        formparams.add(new BasicNameValuePair(REDIRECT_URI, redirectUri));
+        if (sessionId != null) { // FJ THESE ONLY APPLY IF KEYCLOAK IS BEING USED
+            formparams.add(new BasicNameValuePair(AdapterConstants.CLIENT_SESSION_STATE, sessionId));
+            formparams.add(new BasicNameValuePair(AdapterConstants.CLIENT_SESSION_HOST, HostUtils.getHostName()));
+        }
+
+        HttpPost post = new HttpPost(deployment.getTokenUrl());
+        ClientCredentialsProviderUtils.setClientCredentials(deployment, post, formparams);
+
+        UrlEncodedFormEntity form = new UrlEncodedFormEntity(formparams, "UTF-8");
+        post.setEntity(form);
+        HttpResponse response = deployment.getClient().execute(post);
+        int status = response.getStatusLine().getStatusCode();
+        HttpEntity entity = response.getEntity();
+        if (status != 200) {
+            error(status, entity);
+        }
+        if (entity == null) {
+            throw new HttpFailure(status, null);
+        }
+        InputStream is = entity.getContent();
+        try {
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            int c;
+            while ((c = is.read()) != -1) {
+                os.write(c);
+            }
+            byte[] bytes = os.toByteArray();
+            String json = new String(bytes);
+            try {
+                return JsonSerialization.readValue(json, AccessAndIDTokenResponse.class);
+            } catch (IOException e) {
+                throw new IOException(json, e);
+            }
+        } finally {
+            try {
+                is.close();
+            } catch (IOException ignored) {
+
+            }
+        }
     }
 
     public static void error(int status, HttpEntity entity) throws HttpFailure, IOException {

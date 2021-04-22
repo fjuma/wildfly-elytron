@@ -194,7 +194,7 @@ public class OidcClientConfiguration {
                     authUrl = config.getAuthorizationEndpoint();
                     issuerUrl = config.getIssuer();
                     tokenUrl = config.getTokenEndpoint();
-                    logoutUrl = new URIBuilder(config.getLogoutEndpoint());
+                    logoutUrl = config.getLogoutEndpoint();
                     jwksUrl = config.getJwksUri();
                     if (authServerBaseUrl != null) {
                         // keycloak-specific properties
