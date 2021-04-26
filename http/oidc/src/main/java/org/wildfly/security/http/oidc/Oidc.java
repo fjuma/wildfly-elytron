@@ -71,6 +71,7 @@ public class Oidc {
     public static final String REDIRECT_URI = "redirect_uri";
     public static final String REFRESH_TOKEN = "refresh_token";
     public static final String RESPONSE_TYPE = "response_type";
+    public static final String SESSION_STATE = "session_state";
     public static final String STATE = "state";
     public static final int INVALID_ISSUED_FOR_CLAIM = -1;
     public static final int INVALID_AT_HASH_CLAIM = -2;
@@ -310,8 +311,8 @@ public class Oidc {
         return facade.getRequest().getQueryParamValue(paramName);
     }
 
-    protected static String stripQueryParam(String url, String name){
-        return url.replaceFirst("[\\?&]" + name + "=[^&]*$|" + name + "=[^&]*&", "");
+    protected static String stripQueryParam(String url, String paramName){
+        return url.replaceFirst("[\\?&]" + paramName + "=[^&]*$|" + paramName + "=[^&]*&", "");
     }
 
 

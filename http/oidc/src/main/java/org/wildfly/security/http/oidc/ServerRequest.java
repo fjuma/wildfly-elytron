@@ -22,6 +22,9 @@ import static org.wildfly.security.http.oidc.Oidc.AUTHORIZATION_CODE;
 import static org.wildfly.security.http.oidc.Oidc.CODE;
 import static org.wildfly.security.http.oidc.Oidc.GRANT_TYPE;
 import static org.wildfly.security.http.oidc.Oidc.REDIRECT_URI;
+import static org.wildfly.security.http.oidc.Oidc.SESSION_STATE;
+import static org.wildfly.security.http.oidc.Oidc.STATE;
+import static org.wildfly.security.http.oidc.Oidc.stripQueryParam;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -36,6 +39,7 @@ import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -118,26 +122,21 @@ public class ServerRequest {
         if (is != null) is.close();
     }
 
-    public static AccessAndIDTokenResponse invokeAccessCodeToToken(OidcClientConfiguration deployment, String code, String redirectUri, String sessionId) throws IOException, HttpFailure {
+    public static AccessAndIDTokenResponse invokeAccessCodeToToken(OidcClientConfiguration deployment, String code, String redirectUri) throws IOException, HttpFailure {
         List<NameValuePair> formparams = new ArrayList<>();
-        redirectUri = stripOauthParametersFromRedirect(redirectUri);
         formparams.add(new BasicNameValuePair(GRANT_TYPE, AUTHORIZATION_CODE));
         formparams.add(new BasicNameValuePair(CODE, code));
         formparams.add(new BasicNameValuePair(REDIRECT_URI, redirectUri));
-        if (sessionId != null) { // FJ THESE ONLY APPLY IF KEYCLOAK IS BEING USED
-            formparams.add(new BasicNameValuePair(AdapterConstants.CLIENT_SESSION_STATE, sessionId));
-            formparams.add(new BasicNameValuePair(AdapterConstants.CLIENT_SESSION_HOST, HostUtils.getHostName()));
-        }
 
         HttpPost post = new HttpPost(deployment.getTokenUrl());
         ClientCredentialsProviderUtils.setClientCredentials(deployment, post, formparams);
 
-        UrlEncodedFormEntity form = new UrlEncodedFormEntity(formparams, "UTF-8");
+        UrlEncodedFormEntity form = new UrlEncodedFormEntity(formparams, StandardCharsets.UTF_8);
         post.setEntity(form);
         HttpResponse response = deployment.getClient().execute(post);
         int status = response.getStatusLine().getStatusCode();
         HttpEntity entity = response.getEntity();
-        if (status != 200) {
+        if (status != HttpStatus.SC_OK) {
             error(status, entity);
         }
         if (entity == null) {
@@ -161,7 +160,6 @@ public class ServerRequest {
             try {
                 is.close();
             } catch (IOException ignored) {
-
             }
         }
     }

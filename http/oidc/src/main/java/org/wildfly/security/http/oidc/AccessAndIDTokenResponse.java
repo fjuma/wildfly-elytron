@@ -26,8 +26,8 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * A representation of an OpenID Connect accessToken response that contains both an access accessToken
- * and an ID accessToken as per the <a href="https://openid.net/specs/openid-connect-core-1_0.html#TokenResponse">OpenID Connect Core 1.0</a>
+ * A representation of an OpenID Connect token response that contains both an access token
+ * and an ID token as per the <a href="https://openid.net/specs/openid-connect-core-1_0.html#TokenResponse">OpenID Connect Core 1.0</a>
  * specification.
  *
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -55,6 +55,10 @@ public class AccessAndIDTokenResponse {
     // OIDC Financial API Read Only Profile : scope MUST be returned in the response from Token Endpoint
     @JsonProperty("scope")
     protected String scope;
+
+    // Keycloak-specific property
+    @JsonProperty("not-before-policy")
+    protected int notBeforePolicy;
 
     public String getAccessToken() {
         return accessToken;
@@ -103,6 +107,15 @@ public class AccessAndIDTokenResponse {
     public void setIDToken(String idToken) {
         this.idToken = idToken;
     }
+
+    public int getNotBeforePolicy() {
+        return notBeforePolicy;
+    }
+
+    public void setNotBeforePolicy(int notBeforePolicy) {
+        this.notBeforePolicy = notBeforePolicy;
+    }
+
 
     @JsonAnyGetter
     public Map<String, Object> getOtherClaims() {

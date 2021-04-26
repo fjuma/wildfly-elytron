@@ -143,7 +143,7 @@ public class RequestAuthenticator {
             return AuthOutcome.NOT_ATTEMPTED;
         }
 
-        if (isAutodetectedBearerOnly(facade.getRequest())) {
+        if (isAutodetectedBearerOnly()) {
             challenge = bearer.getChallenge();
             log.debug("NOT_ATTEMPTED: Treating as bearer only");
             return AuthOutcome.NOT_ATTEMPTED;

@@ -30,6 +30,7 @@ import static org.wildfly.security.http.oidc.Oidc.PROMPT;
 import static org.wildfly.security.http.oidc.Oidc.REDIRECT_URI;
 import static org.wildfly.security.http.oidc.Oidc.RESPONSE_TYPE;
 import static org.wildfly.security.http.oidc.Oidc.SCOPE;
+import static org.wildfly.security.http.oidc.Oidc.SESSION_STATE;
 import static org.wildfly.security.http.oidc.Oidc.STATE;
 import static org.wildfly.security.http.oidc.Oidc.UI_LOCALES;
 import static org.wildfly.security.http.oidc.Oidc.generateId;
@@ -42,6 +43,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 
+import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
 
 /**
@@ -147,8 +149,7 @@ public class OAuthRequestAuthenticator {
                     // disabled?
                     return null;
                 }
-                URIBuilder uriBuilder = new URIBuilder(url)
-                        .setScheme("https");
+                URIBuilder uriBuilder = new URIBuilder(url).setScheme("https");
                 if (port != 443) {
                     uriBuilder.setPort(port);
                 }
@@ -211,7 +212,7 @@ public class OAuthRequestAuthenticator {
         final String state = getStateCode();
         final String redirect =  getRedirectUri(state);
         if (redirect == null) {
-            return challenge(403, AuthenticationError.Reason.NO_REDIRECT_URI, null);
+            return challenge(HttpStatus.SC_FORBIDDEN, AuthenticationError.Reason.NO_REDIRECT_URI, null);
         }
         return new AuthChallenge() {
 
@@ -224,7 +225,7 @@ public class OAuthRequestAuthenticator {
             public boolean challenge(OidcHttpFacade exchange) {
                 tokenStore.saveRequest();
                 log.debug("Sending redirect to login page: " + redirect);
-                exchange.getResponse().setStatus(302);
+                exchange.getResponse().setStatus(HttpStatus.SC_MOVED_TEMPORARILY);
                 exchange.getResponse().setCookie(deployment.getStateCookieName(), state, "/", null, -1, deployment.getSSLRequired().isRequired(facade.getRequest().getRemoteAddr()), true);
                 exchange.getResponse().setHeader("Location", redirect);
                 return true;
@@ -237,23 +238,23 @@ public class OAuthRequestAuthenticator {
 
         if (stateCookie == null) {
             log.warn("No state cookie");
-            return challenge(400, AuthenticationError.Reason.INVALID_STATE_COOKIE, null);
+            return challenge(HttpStatus.SC_BAD_REQUEST, AuthenticationError.Reason.INVALID_STATE_COOKIE, null);
         }
         // reset the cookie
         log.debug("** reseting application state cookie");
         facade.getResponse().resetCookie(deployment.getStateCookieName(), stateCookie.getPath());
         String stateCookieValue = getCookieValue(deployment.getStateCookieName());
 
-        String state = getQueryParamValue(STATE);
+        String state = getQueryParamValue(facade, STATE);
         if (state == null) {
             log.warn("state parameter was null");
-            return challenge(400, AuthenticationError.Reason.INVALID_STATE_COOKIE, null);
+            return challenge(HttpStatus.SC_BAD_REQUEST, AuthenticationError.Reason.INVALID_STATE_COOKIE, null);
         }
         if (!state.equals(stateCookieValue)) {
             log.warn("state parameter invalid");
             log.warn("cookie: " + stateCookieValue);
             log.warn("queryParam: " + state);
-            return challenge(400, AuthenticationError.Reason.INVALID_STATE_COOKIE, null);
+            return challenge(HttpStatus.SC_BAD_REQUEST, AuthenticationError.Reason.INVALID_STATE_COOKIE, null);
         }
         return null;
 
@@ -266,7 +267,7 @@ public class OAuthRequestAuthenticator {
             String error = getError();
             if (error != null) {
                 log.warn("There was an error: " + error);
-                challenge = challenge(400, AuthenticationError.Reason.OAUTH_ERROR, error);
+                challenge = challenge(HttpStatus.SC_BAD_REQUEST, AuthenticationError.Reason.OAUTH_ERROR, error);
                 return Oidc.AuthOutcome.FAILED;
             } else {
                 log.debug("redirecting to auth server");
@@ -304,7 +305,7 @@ public class OAuthRequestAuthenticator {
     /**
      * Start or continue the oauth login process.
      * <p/>
-     * if code query parameter is not present, then browser is redirected to authUrl.  The redirect URL will be
+     * If code query parameter is not present, then browser is redirected to authUrl. The redirect URL will be
      * the URL of the current request.
      * <p/>
      * If code query parameter is present, then an access token is obtained by invoking a secure request to the codeUrl.
@@ -315,33 +316,31 @@ public class OAuthRequestAuthenticator {
      */
     protected AuthChallenge resolveCode(String code) {
         // abort if not HTTPS
-        if (!isRequestSecure() && deployment.getSSLRequired().isRequired(facade.getRequest().getRemoteAddr())) {
-            log.error("Adapter requires SSL. Request: " + facade.getRequest().getURI());
-            return challenge(403, AuthenticationError.Reason.SSL_REQUIRED, null);
+        if (! isRequestSecure() && deployment.getSSLRequired().isRequired(facade.getRequest().getRemoteAddr())) {
+            log.error("SSL required. Request: " + facade.getRequest().getURI());
+            return challenge(HttpStatus.SC_FORBIDDEN, AuthenticationError.Reason.SSL_REQUIRED, null);
         }
 
         log.debug("checking state cookie for after code");
         AuthChallenge challenge = checkStateCookie();
         if (challenge != null) return challenge;
 
-        AccessAndIDTokenResponse tokenResponse = null;
-        strippedOauthParametersRequestUri = rewrittenRedirectUri(stripOauthParametersFromRedirect());
+        AccessAndIDTokenResponse tokenResponse;
+        strippedOauthParametersRequestUri = rewrittenRedirectUri(stripOauthParametersFromRedirect(facade.getRequest().getURI()));
 
         try {
-            // For COOKIE store we don't have httpSessionId and single sign-out won't be available
-            String httpSessionId = deployment.getTokenStore() == Oidc.TokenStore.SESSION ? reqAuthenticator.changeHttpSessionId(true) : null;
-            tokenResponse = ServerRequest.invokeAccessCodeToToken(deployment, code, strippedOauthParametersRequestUri, httpSessionId);
+            tokenResponse = ServerRequest.invokeAccessCodeToToken(deployment, code, strippedOauthParametersRequestUri);
         } catch (ServerRequest.HttpFailure failure) {
             log.error("failed to turn code into token");
             log.error("status from server: " + failure.getStatus());
             if (failure.getError() != null && !failure.getError().trim().isEmpty()) {
                 log.error("   " + failure.getError());
             }
-            return challenge(403, AuthenticationError.Reason.CODE_TO_TOKEN_FAILURE, null);
+            return challenge(HttpStatus.SC_FORBIDDEN, AuthenticationError.Reason.CODE_TO_TOKEN_FAILURE, null);
 
         } catch (IOException e) {
             log.error("failed to turn code into token", e);
-            return challenge(403, AuthenticationError.Reason.CODE_TO_TOKEN_FAILURE, null);
+            return challenge(HttpStatus.SC_FORBIDDEN, AuthenticationError.Reason.CODE_TO_TOKEN_FAILURE, null);
         }
 
         tokenString = tokenResponse.getAccessToken();
@@ -356,43 +355,35 @@ public class OAuthRequestAuthenticator {
         }
 
         try {
-            AdapterTokenVerifier.VerifiedTokens tokens = AdapterTokenVerifier.verifyTokens(tokenString, idTokenString, deployment);
-            token = tokens.getAccessToken();
-            idToken = tokens.getIdToken();
-            TokenValidator tokenValidator = TokenValidator.builder(clientConfiguration).build();
+            TokenValidator tokenValidator = TokenValidator.builder(deployment).build();
             TokenValidator.VerifiedTokens verifiedTokens = tokenValidator.parseAndVerifyToken(idTokenString, tokenString);
             idToken = verifiedTokens.getIdToken();
             token = verifiedTokens.getAccessToken();
             log.debug("Token Verification succeeded!");
         } catch (OidcException e) {
             log.failedVerificationOfToken(e.getMessage());
-            return challenge(403, AuthenticationError.Reason.INVALID_TOKEN, null);
+            return challenge(HttpStatus.SC_FORBIDDEN, AuthenticationError.Reason.INVALID_TOKEN, null);
         }
-        if (tokenResponse.getNotBeforePolicy() > deployment.getNotBefore()) {
+        if (tokenResponse.getNotBeforePolicy() > deployment.getNotBefore()) { // Keycloak specific
             deployment.updateNotBefore(tokenResponse.getNotBeforePolicy());
         }
         if (token.getIssuedAt() < deployment.getNotBefore()) {
             log.error("Stale token");
-            return challenge(403, AuthenticationError.Reason.STALE_TOKEN, null);
+            return challenge(HttpStatus.SC_FORBIDDEN, AuthenticationError.Reason.STALE_TOKEN, null);
         }
-        log.debug("successful authenticated");
+        log.debug("successfully authenticated");
         return null;
     }
 
-    /**
-     * strip out unwanted query parameters and redirect so bookmarks don't retain oauth protocol bits
-     */
-    protected String stripOauthParametersFromRedirect() {
-        KeycloakUriBuilder builder = KeycloakUriBuilder.fromUri(facade.getRequest().getURI())
-                .replaceQueryParam(OAuth2Constants.CODE, null)
-                .replaceQueryParam(OAuth2Constants.STATE, null)
-                .replaceQueryParam(OAuth2Constants.SESSION_STATE, null);
-        return builder.build().toString();
+    private static String stripOauthParametersFromRedirect(String uri) {
+        uri = stripQueryParam(uri, CODE);
+        uri = stripQueryParam(uri, STATE);
+        return stripQueryParam(uri, SESSION_STATE);
     }
 
     private String rewrittenRedirectUri(String originalUri) {
         Map<String, String> rewriteRules = deployment.getRedirectRewriteRules();
-        if(rewriteRules != null && !rewriteRules.isEmpty()) {
+        if (rewriteRules != null && ! rewriteRules.isEmpty()) {
             try {
                 URL url = new URL(originalUri);
                 Map.Entry<String, String> rule =  rewriteRules.entrySet().iterator().next();
@@ -409,13 +400,7 @@ public class OAuthRequestAuthenticator {
     }
 
     private void logToken(String name, String token) {
-        try {
-            JWSInput jwsInput = new JWSInput(token);
-            String wireString = jwsInput.getWireString();
-            log.tracef("\t%s: %s", name, wireString.substring(0, wireString.lastIndexOf(".")) + ".signature");
-        } catch (JWSInputException e) {
-            log.errorf(e, "Failed to parse %s: %s", name, token);
-        }
+        log.tracef("\t%s: %s", name, token.substring(0, token.lastIndexOf(".")) + ".signature");
     }
 
     private static String addOidcScopeIfNeeded(String scope) {
@@ -432,7 +417,6 @@ public class OAuthRequestAuthenticator {
         if (scopeParam == null || targetScope == null) {
             return false;
         }
-
         String[] scopes = scopeParam.split(" ");
         for (String scope : scopes) {
             if (targetScope.equals(scope)) {
@@ -441,5 +425,4 @@ public class OAuthRequestAuthenticator {
         }
         return false;
     }
-
 }
