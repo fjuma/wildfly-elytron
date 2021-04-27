@@ -21,9 +21,6 @@ package org.wildfly.security.http.oidc;
 import static org.wildfly.security.http.oidc.ElytronMessages.log;
 import static org.wildfly.security.http.oidc.Oidc.AuthOutcome;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.wildfly.security.http.HttpScope;
 import org.wildfly.security.http.Scope;
 
@@ -53,16 +50,12 @@ public class RequestAuthenticator {
         return authenticate;
     }
 
-    protected OAuthRequestAuthenticator createOAuthAuthenticator() {
-        return new OAuthRequestAuthenticator(this, facade, deployment, sslRedirectPort, facade.getTokenStore());
+    protected OidcRequestAuthenticator createOidcAuthenticator() {
+        return new OidcRequestAuthenticator(this, facade, deployment, sslRedirectPort, facade.getTokenStore());
     }
 
-    protected void completeOAuthAuthentication(final OidcPrincipal<RefreshableOidcSecurityContext> principal) {
+    protected void completeOidcAuthentication(final OidcPrincipal<RefreshableOidcSecurityContext> principal) {
         facade.authenticationComplete(new OidcAccount(principal), true);
-    }
-
-    protected void completeBearerAuthentication(OidcPrincipal<RefreshableOidcSecurityContext> principal, String method) {
-        facade.authenticationComplete(new OidcAccount(principal), false);
     }
 
     protected String changeHttpSessionId(boolean create) {
@@ -84,73 +77,10 @@ public class RequestAuthenticator {
             log.trace("--> authenticate()");
         }
 
-        BearerTokenRequestAuthenticator bearer = createBearerTokenAuthenticator();
-        if (log.isTraceEnabled()) {
-            log.trace("try bearer");
-        }
-
-        AuthOutcome outcome = bearer.authenticate(facade);
-        if (outcome == AuthOutcome.FAILED) {
-            challenge = bearer.getChallenge();
-            log.debug("Bearer FAILED");
-            return AuthOutcome.FAILED;
-        } else if (outcome == AuthOutcome.AUTHENTICATED) {
-            if (verifySSL()) return AuthOutcome.FAILED;
-            completeAuthentication(bearer, "KEYCLOAK");
-            log.debug("Bearer AUTHENTICATED");
-            return AuthOutcome.AUTHENTICATED;
-        }
-
-        QueryParameterTokenRequestAuthenticator queryParamAuth = createQueryParameterTokenRequestAuthenticator();
-        if (log.isTraceEnabled()) {
-            log.trace("try query parameter auth");
-        }
-
-        outcome = queryParamAuth.authenticate(facade);
-        if (outcome == AuthOutcome.FAILED) {
-            challenge = queryParamAuth.getChallenge();
-            log.debug("QueryParamAuth auth FAILED");
-            return AuthOutcome.FAILED;
-        } else if (outcome == AuthOutcome.AUTHENTICATED) {
-            if (verifySSL()) return AuthOutcome.FAILED;
-            log.debug("QueryParamAuth AUTHENTICATED");
-            completeAuthentication(queryParamAuth, "KEYCLOAK");
-            return AuthOutcome.AUTHENTICATED;
-        }
-
-        if (deployment.isEnableBasicAuth()) {
-            BasicAuthRequestAuthenticator basicAuth = createBasicAuthAuthenticator();
-            if (log.isTraceEnabled()) {
-                log.trace("try basic auth");
-            }
-
-            outcome = basicAuth.authenticate(facade);
-            if (outcome == AuthOutcome.FAILED) {
-                challenge = basicAuth.getChallenge();
-                log.debug("BasicAuth FAILED");
-                return AuthOutcome.FAILED;
-            } else if (outcome == AuthOutcome.AUTHENTICATED) {
-                if (verifySSL()) return AuthOutcome.FAILED;
-                log.debug("BasicAuth AUTHENTICATED");
-                completeAuthentication(basicAuth, "BASIC");
-                return AuthOutcome.AUTHENTICATED;
-            }
-        }
-
-        if (deployment.isBearerOnly()) {
-            challenge = bearer.getChallenge();
-            log.debug("NOT_ATTEMPTED: bearer only");
-            return AuthOutcome.NOT_ATTEMPTED;
-        }
-
-        if (isAutodetectedBearerOnly()) {
-            challenge = bearer.getChallenge();
-            log.debug("NOT_ATTEMPTED: Treating as bearer only");
-            return AuthOutcome.NOT_ATTEMPTED;
-        }
+        // TODO: Will need to attempt bearer auth here later on to handle the bearer only case
 
         if (log.isTraceEnabled()) {
-            log.trace("try oauth");
+            log.trace("try oidc");
         }
 
         if (facade.getTokenStore().isCached(this)) {
@@ -159,28 +89,28 @@ public class RequestAuthenticator {
             return AuthOutcome.AUTHENTICATED;
         }
 
-        OAuthRequestAuthenticator oauth = createOAuthAuthenticator();
-        outcome = oauth.authenticate();
+        OidcRequestAuthenticator oidc = createOidcAuthenticator();
+        AuthOutcome outcome = oidc.authenticate();
         if (outcome == AuthOutcome.FAILED) {
-            challenge = oauth.getChallenge();
+            challenge = oidc.getChallenge();
             return AuthOutcome.FAILED;
         } else if (outcome == AuthOutcome.NOT_ATTEMPTED) {
-            challenge = oauth.getChallenge();
+            challenge = oidc.getChallenge();
             return AuthOutcome.NOT_ATTEMPTED;
 
         }
 
         if (verifySSL()) return AuthOutcome.FAILED;
 
-        completeAuthentication(oauth);
+        completeAuthentication(oidc);
 
         // redirect to strip out access code and state query parameters
-        facade.getResponse().setHeader("Location", oauth.getStrippedOauthParametersRequestUri());
+        facade.getResponse().setHeader("Location", oidc.getStrippedOauthParametersRequestUri());
         facade.getResponse().setStatus(302);
         facade.getResponse().end();
 
         log.debug("AUTHENTICATED");
-        outcome = AuthOutcome.AUTHENTICATED;
+        return AuthOutcome.AUTHENTICATED;
     }
 
     protected boolean verifySSL() {
@@ -192,60 +122,10 @@ public class RequestAuthenticator {
         return false;
     }
 
-    protected boolean isAutodetectedBearerOnly() {
-        if (!deployment.isAutodetectBearerOnly()) return false;
-
-        String headerValue = facade.getRequest().getHeader("X-Requested-With");
-        if (headerValue != null && headerValue.equalsIgnoreCase("XMLHttpRequest")) {
-            return true;
-        }
-
-        headerValue = facade.getRequest().getHeader("Faces-Request");
-        if (headerValue != null && headerValue.startsWith("partial/")) {
-            return true;
-        }
-
-        headerValue = facade.getRequest().getHeader("SOAPAction");
-        if (headerValue != null) {
-            return true;
-        }
-
-        List<String> accepts = facade.getRequest().getHeaders("Accept");
-        if (accepts == null) accepts = Collections.emptyList();
-
-        for (String accept : accepts) {
-            if (accept.contains("text/html") || accept.contains("text/*") || accept.contains("*/*")) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    protected BearerTokenRequestAuthenticator createBearerTokenAuthenticator() {
-        return new BearerTokenRequestAuthenticator(deployment);
-    }
-
-    protected BasicAuthRequestAuthenticator createBasicAuthAuthenticator() {
-        return new BasicAuthRequestAuthenticator(deployment);
-    }
-
-    protected QueryParameterTokenRequestAuthenticator createQueryParameterTokenRequestAuthenticator() {
-        return new QueryParameterTokenRequestAuthenticator(deployment);
-    }
-
-    protected void completeAuthentication(OAuthRequestAuthenticator oauth) {
-        RefreshableOidcSecurityContext session = new RefreshableOidcSecurityContext(deployment, facade.getTokenStore(), oauth.getTokenString(), oauth.getToken(), oauth.getIDTokenString(), oauth.getIDToken(), oauth.getRefreshToken());
-        final OidcPrincipal<RefreshableOidcSecurityContext> principal = new OidcPrincipal<>(oauth.getIDToken().getPrincipalName(deployment), session);
-        completeOAuthAuthentication(principal);
+    protected void completeAuthentication(OidcRequestAuthenticator oidc) {
+        RefreshableOidcSecurityContext session = new RefreshableOidcSecurityContext(deployment, facade.getTokenStore(), oidc.getTokenString(), oidc.getToken(), oidc.getIDTokenString(), oidc.getIDToken(), oidc.getRefreshToken());
+        final OidcPrincipal<RefreshableOidcSecurityContext> principal = new OidcPrincipal<>(oidc.getIDToken().getPrincipalName(deployment), session);
+        completeOidcAuthentication(principal);
         log.debugv("User ''{0}'' invoking ''{1}'' on client ''{2}''", principal.getName(), facade.getRequest().getURI(), deployment.getResourceName());
     }
-
-    protected void completeAuthentication(BearerTokenRequestAuthenticator bearer, String method) {
-        RefreshableOidcSecurityContext session = new RefreshableOidcSecurityContext(deployment, null, bearer.getTokenString(), bearer.getToken(), null, null, null);
-        final OidcPrincipal<RefreshableOidcSecurityContext> principal = new OidcPrincipal<>(AdapterUtils.getPrincipalName(deployment, bearer.getToken()), session);
-        completeBearerAuthentication(principal, method);
-        log.debugv("User ''{0}'' invoking ''{1}'' on client ''{2}''", principal.getName(), facade.getRequest().getURI(), deployment.getResourceName());
-    }
-
 }

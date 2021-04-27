@@ -315,6 +315,10 @@ public class Oidc {
         return url.replaceFirst("[\\?&]" + paramName + "=[^&]*$|" + paramName + "=[^&]*&", "");
     }
 
+    public static void logToken(String name, String token) {
+        log.tracef("\t%s: %s", name, token.substring(0, token.lastIndexOf(".")) + ".signature");
+    }
+
 
 
 }

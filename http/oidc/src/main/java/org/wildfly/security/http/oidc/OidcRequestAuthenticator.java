@@ -35,6 +35,7 @@ import static org.wildfly.security.http.oidc.Oidc.STATE;
 import static org.wildfly.security.http.oidc.Oidc.UI_LOCALES;
 import static org.wildfly.security.http.oidc.Oidc.generateId;
 import static org.wildfly.security.http.oidc.Oidc.getQueryParamValue;
+import static org.wildfly.security.http.oidc.Oidc.logToken;
 import static org.wildfly.security.http.oidc.Oidc.stripQueryParam;
 
 import java.io.IOException;
@@ -50,7 +51,7 @@ import org.apache.http.client.utils.URIBuilder;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-public class OAuthRequestAuthenticator {
+public class OidcRequestAuthenticator {
     protected OidcClientConfiguration deployment;
     protected RequestAuthenticator reqAuthenticator;
     protected int sslRedirectPort;
@@ -64,7 +65,7 @@ public class OAuthRequestAuthenticator {
     protected String refreshToken;
     protected String strippedOauthParametersRequestUri;
 
-    public OAuthRequestAuthenticator(RequestAuthenticator requestAuthenticator, OidcHttpFacade facade, OidcClientConfiguration deployment, int sslRedirectPort, OidcTokenStore tokenStore) {
+    public OidcRequestAuthenticator(RequestAuthenticator requestAuthenticator, OidcHttpFacade facade, OidcClientConfiguration deployment, int sslRedirectPort, OidcTokenStore tokenStore) {
         this.reqAuthenticator = requestAuthenticator;
         this.facade = facade;
         this.deployment = deployment;
@@ -397,10 +398,6 @@ public class OAuthRequestAuthenticator {
             }
         }
         return originalUri;
-    }
-
-    private void logToken(String name, String token) {
-        log.tracef("\t%s: %s", name, token.substring(0, token.lastIndexOf(".")) + ".signature");
     }
 
     private static String addOidcScopeIfNeeded(String scope) {
