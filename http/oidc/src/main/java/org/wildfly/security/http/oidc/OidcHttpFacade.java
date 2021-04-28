@@ -31,6 +31,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URLDecoder;
+
 import java.security.Principal;
 import java.util.Collection;
 import java.util.HashMap;
@@ -122,7 +123,7 @@ public class OidcHttpFacade {
                 callbackHandler.handle(new Callback[]{credentialCallback, AuthenticationCompleteCallback.SUCCEEDED, securityIdentityCallback});
                 SecurityIdentity securityIdentity = securityIdentityCallback.getSecurityIdentity();
                 return securityIdentity;
-            }
+           }
         } catch (UnsupportedCallbackException | IOException e) {
             throw new RuntimeException(e);
         }
