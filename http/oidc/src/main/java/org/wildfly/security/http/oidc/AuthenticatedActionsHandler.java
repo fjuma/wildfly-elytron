@@ -100,7 +100,7 @@ public class AuthenticatedActionsHandler {
         origin = "null".equals(origin) ? null : origin;
         String exposeHeaders = deployment.getCorsExposedHeaders();
 
-        if (deployment.getPolicyEnforcer() != null) {
+        /*if (deployment.getPolicyEnforcer() != null) {
             if (exposeHeaders != null) {
                 exposeHeaders += ",";
             } else {
@@ -108,7 +108,7 @@ public class AuthenticatedActionsHandler {
             }
 
             exposeHeaders += "WWW-Authenticate";
-        }
+        }*/
 
         String requestOrigin = getOrigin(facade.getRequest().getURI());
         log.debugv("Origin: {0} uri: {1}", origin, facade.getRequest().getURI());
@@ -142,7 +142,7 @@ public class AuthenticatedActionsHandler {
     }
 
     private boolean isAuthorized() {
-        PolicyEnforcer policyEnforcer = this.deployment.getPolicyEnforcer();
+        /*PolicyEnforcer policyEnforcer = this.deployment.getPolicyEnforcer();
 
         if (policyEnforcer == null) {
             log.debugv("Policy enforcement is disabled.");
@@ -158,7 +158,9 @@ public class AuthenticatedActionsHandler {
             return authorizationContext.isGranted();
         } catch (Exception e) {
             throw new RuntimeException("Failed to enforce policy decisions.", e);
-        }
+        }*/
+        // remove this line
+        return false;
     }
 
     private static String getOrigin(String uri) {
