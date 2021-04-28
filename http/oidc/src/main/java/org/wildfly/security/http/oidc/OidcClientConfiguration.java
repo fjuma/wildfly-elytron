@@ -158,9 +158,6 @@ public class OidcClientConfiguration {
     public void setAuthServerBaseUrl(OidcJsonConfiguration config) {
         this.authServerBaseUrl = config.getAuthServerUrl();
         if (authServerBaseUrl == null) return;
-
-        authServerBaseUrl = KeycloakUriBuilder.fromUri(authServerBaseUrl).build().toString();
-
         authUrl = null;
         issuerUrl = null;
         tokenUrl = null;
@@ -208,22 +205,6 @@ public class OidcClientConfiguration {
             }
         }
     }
-
-    /*protected void resolveUrls(KeycloakUriBuilder authUrlBuilder) {
-        if (log.isDebugEnabled()) {
-            log.debug("resolveUrls");
-        }
-
-        String login = authUrlBuilder.clone().path(ServiceUrlConstants.AUTH_PATH).build(getRealm()).toString();
-        authUrl = KeycloakUriBuilder.fromUri(login);
-        issuerUrl = authUrlBuilder.clone().path(ServiceUrlConstants.REALM_INFO_PATH).build(getRealm()).toString();
-
-        tokenUrl = authUrlBuilder.clone().path(ServiceUrlConstants.TOKEN_PATH).build(getRealm()).toString();
-        logoutUrl = KeycloakUriBuilder.fromUri(authUrlBuilder.clone().path(ServiceUrlConstants.TOKEN_SERVICE_LOGOUT_PATH).build(getRealm()).toString());
-        registerNodeUrl = authUrlBuilder.clone().path(ServiceUrlConstants.CLIENTS_MANAGEMENT_REGISTER_NODE_PATH).build(getRealm()).toString();
-        unregisterNodeUrl = authUrlBuilder.clone().path(ServiceUrlConstants.CLIENTS_MANAGEMENT_UNREGISTER_NODE_PATH).build(getRealm()).toString();
-        jwksUrl = authUrlBuilder.clone().path(ServiceUrlConstants.JWKS_URL).build(getRealm()).toString();
-    }*/
 
     protected OidcProviderMetadata getOidcProviderMetadata(String discoveryUrl) throws Exception {
         HttpGet request = new HttpGet(discoveryUrl);
