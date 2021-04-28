@@ -449,7 +449,7 @@ public class OidcClientContext {
             delegate.setTokenMinimumTimeToLive(tokenMinimumTimeToLive);
         }
 
-        @Override
+        /*@Override
         public PolicyEnforcer getPolicyEnforcer() {
             return delegate.getPolicyEnforcer();
         }
@@ -457,7 +457,7 @@ public class OidcClientContext {
         @Override
         public void setPolicyEnforcer(Callable<PolicyEnforcer> policyEnforcer) {
             delegate.setPolicyEnforcer(policyEnforcer);
-        }
+        }*/
 
         @Override
         public void setMinTimeBetweenJwksRequests(int minTimeBetweenJwksRequests) {

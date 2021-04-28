@@ -111,7 +111,7 @@ public class OidcClientConfiguration {
     protected int tokenMinimumTimeToLive;
     protected int minTimeBetweenJwksRequests;
     protected int publicKeyCacheTtl;
-    protected Callable<PolicyEnforcer> policyEnforcer;
+    //protected Callable<PolicyEnforcer> policyEnforcer;
 
     // https://tools.ietf.org/html/rfc7636
     protected boolean pkce = false;
@@ -543,7 +543,7 @@ public class OidcClientConfiguration {
         this.publicKeyCacheTtl = publicKeyCacheTtl;
     }
 
-    public void setPolicyEnforcer(Callable<PolicyEnforcer> policyEnforcer) {
+    /*public void setPolicyEnforcer(Callable<PolicyEnforcer> policyEnforcer) {
         this.policyEnforcer = policyEnforcer;
     }
 
@@ -556,7 +556,7 @@ public class OidcClientConfiguration {
         } catch (Exception cause) {
             throw new RuntimeException("Failed to obtain policy enforcer", cause);
         }
-    }
+    }*/
 
     // https://tools.ietf.org/html/rfc7636
     public boolean isPkce() {
