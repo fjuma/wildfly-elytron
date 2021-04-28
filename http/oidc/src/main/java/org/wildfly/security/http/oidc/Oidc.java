@@ -54,6 +54,7 @@ public class Oidc {
     public static final String HTML_CONTEXT_TYPE = "text/html";
     public static final String DISCOVERY_PATH = ".well-known/openid-configuration";
     public static final String KEYCLOAK_REALMS_PATH = "realms/";
+    static final String ACCOUNT_PATH = "account";
     public static final String CLIENTS_MANAGEMENT_REGISTER_NODE_PATH = "clients-managements/register-node";
     public static final String CLIENTS_MANAGEMENT_UNREGISTER_NODE_PATH = "clients-managements/unregister-node";
     public static final String SLASH = "/";

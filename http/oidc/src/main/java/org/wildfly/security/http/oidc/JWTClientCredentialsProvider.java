@@ -127,8 +127,8 @@ public class JWTClientCredentialsProvider implements ClientCredentialsProvider {
         formParams.put(CLIENT_ASSERTION, signedToken);
     }
 
-    public String createSignedRequestToken(String clientId, String realmInfoUrl) {
-        JwtClaims jwtClaims = createRequestToken(clientId, realmInfoUrl);
+    public String createSignedRequestToken(String clientId, String tokenUrl) {
+        JwtClaims jwtClaims = createRequestToken(clientId, tokenUrl);
         JsonWebSignature jws = new JsonWebSignature();
         jws.setKeyIdHeaderValue(publicKeyJwk.getKeyId());
         jws.setKey(keyPair.getPrivate());

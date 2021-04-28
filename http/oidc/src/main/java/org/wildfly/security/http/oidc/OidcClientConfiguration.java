@@ -20,6 +20,7 @@ package org.wildfly.security.http.oidc;
 
 import static org.apache.http.HttpHeaders.ACCEPT;
 import static org.wildfly.security.http.oidc.ElytronMessages.log;
+import static org.wildfly.security.http.oidc.Oidc.ACCOUNT_PATH;
 import static org.wildfly.security.http.oidc.Oidc.CLIENTS_MANAGEMENT_REGISTER_NODE_PATH;
 import static org.wildfly.security.http.oidc.Oidc.CLIENTS_MANAGEMENT_UNREGISTER_NODE_PATH;
 import static org.wildfly.security.http.oidc.Oidc.DISCOVERY_PATH;
@@ -75,6 +76,7 @@ public class OidcClientConfiguration {
     protected String authUrl;
     protected String tokenUrl;
     protected String logoutUrl;
+    protected String accountUrl;
     protected String registerNodeUrl;
     protected String unregisterNodeUrl;
     protected String jwksUrl;
@@ -162,6 +164,7 @@ public class OidcClientConfiguration {
         issuerUrl = null;
         tokenUrl = null;
         logoutUrl = null;
+        accountUrl = null;
         registerNodeUrl = null;
         unregisterNodeUrl = null;
         jwksUrl = null;
@@ -195,6 +198,7 @@ public class OidcClientConfiguration {
                     jwksUrl = config.getJwksUri();
                     if (authServerBaseUrl != null) {
                         // keycloak-specific properties
+                        accountUrl = getUrl(issuerUrl, ACCOUNT_PATH);
                         registerNodeUrl = getUrl(authServerBaseUrl, KEYCLOAK_REALMS_PATH + getRealm(), CLIENTS_MANAGEMENT_REGISTER_NODE_PATH);
                         unregisterNodeUrl = getUrl(authServerBaseUrl, KEYCLOAK_REALMS_PATH + getRealm(), CLIENTS_MANAGEMENT_UNREGISTER_NODE_PATH);
                     }
@@ -269,6 +273,11 @@ public class OidcClientConfiguration {
     public String getLogoutUrl() {
         resolveUrls();
         return logoutUrl;
+    }
+
+    public String getAccountUrl() {
+        resolveUrls();
+        return accountUrl;
     }
 
     public String getRegisterNodeUrl() {

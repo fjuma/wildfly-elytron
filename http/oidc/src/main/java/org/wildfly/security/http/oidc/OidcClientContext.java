@@ -18,9 +18,11 @@
 
 package org.wildfly.security.http.oidc;
 
+import static org.wildfly.security.http.oidc.Oidc.SSLRequired;
+import static org.wildfly.security.http.oidc.Oidc.TokenStore;
+
 import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import org.apache.http.client.HttpClient;
 
@@ -85,14 +87,14 @@ public class OidcClientContext {
 
     protected OidcClientConfiguration resolveUrls(OidcClientConfiguration deployment, OidcHttpFacade facade) {
         return deployment;
-        /*if (deployment.relativeUrls == RelativeUrlsUsed.NEVER) {
+        if (deployment.relativeUrls == OidcClientConfiguration.RelativeUrlsUsed.NEVER) {
             // Absolute URI are already set to everything
             return deployment;
         } else {
             OidcClientConfigurationDelegate delegate = new OidcClientConfigurationDelegate(this.oidcClientConfig);
             delegate.setAuthServerBaseUrl(getBaseBuilder(facade, this.oidcClientConfig.getAuthServerBaseUrl()).build().toString());
             return delegate;
-        }*/
+        }
     }
 
     /**
@@ -109,18 +111,12 @@ public class OidcClientContext {
 
         public void setAuthServerBaseUrl(String authServerBaseUrl) {
             this.authServerBaseUrl = authServerBaseUrl;
-            KeycloakUriBuilder serverBuilder = KeycloakUriBuilder.fromUri(authServerBaseUrl);
-            resolveUrls(serverBuilder);
+            resolveUrls();
         }
 
         @Override
         public RelativeUrlsUsed getRelativeUrls() {
             return delegate.getRelativeUrls();
-        }
-
-        @Override
-        public String getRealmInfoUrl() {
-            return (this.realmInfoUrl != null) ? this.realmInfoUrl : delegate.getRealmInfoUrl();
         }
 
         @Override
@@ -264,13 +260,13 @@ public class OidcClientContext {
         }
 
         @Override
-        public SslRequired getSslRequired() {
-            return delegate.getSslRequired();
+        public SSLRequired getSSLRequired() {
+            return delegate.getSSLRequired();
         }
 
         @Override
-        public void setSslRequired(SslRequired sslRequired) {
-            delegate.setSslRequired(sslRequired);
+        public void setSSLRequired(SSLRequired sslRequired) {
+            delegate.setSSLRequired(sslRequired);
         }
 
         @Override
@@ -490,11 +486,11 @@ public class OidcClientContext {
         }
     }
 
-    protected KeycloakUriBuilder getBaseBuilder(HttpFacade facade, String base) {
+    protected KeycloakUriBuilder getBaseBuilder(OidcHttpFacade facade, String base) {
         KeycloakUriBuilder builder = KeycloakUriBuilder.fromUri(base);
         URI request = URI.create(facade.getRequest().getURI());
         String scheme = request.getScheme();
-        if (oidcClientConfig.getSslRequired().isRequired(facade.getRequest().getRemoteAddr())) {
+        if (oidcClientConfig.getSSLRequired().isRequired(facade.getRequest().getRemoteAddr())) {
             scheme = "https";
             if (!request.getScheme().equals(scheme) && request.getPort() != -1) {
                 log.error("request scheme: " + request.getScheme() + " ssl required");
