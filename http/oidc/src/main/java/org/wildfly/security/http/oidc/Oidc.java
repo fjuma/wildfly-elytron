@@ -98,6 +98,8 @@ public class Oidc {
     public static final String SHA512 = "SHA-512";
     static final String PROTOCOL_CLASSPATH = "classpath:";
     static final String OIDC_STATE_COOKIE = "OIDC_STATE";
+    static final String KEYCLOAK_CLIENT_CLUSTER_HOST = "client_cluster_host";
+    static final String KEYCLOAK_QUERY_BEARER_TOKEN = "k_query_bearer_token";
 
 
     // keycloak-specific request parameter used to specify the identifier of the identity provider that should be used to authenticate a user

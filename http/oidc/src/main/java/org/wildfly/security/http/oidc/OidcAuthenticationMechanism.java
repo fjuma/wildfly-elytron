@@ -59,7 +59,6 @@ final class OidcAuthenticationMechanism implements HttpServerAuthenticationMecha
     @Override
     public void evaluateRequest(HttpServerRequest request) throws HttpAuthenticationException {
         OidcClientContext oidcClientContext = getOidcClientContext(request);
-
         if (oidcClientContext == null) {
             log.debugf("Ignoring request for path [%s] from mechanism [%s]. No client configuration context found.", request.getRequestURI(), getMechanismName());
             request.noAuthenticationInProgress();
@@ -68,7 +67,6 @@ final class OidcAuthenticationMechanism implements HttpServerAuthenticationMecha
 
         OidcHttpFacade httpFacade = new OidcHttpFacade(request, oidcClientContext, callbackHandler);
         OidcClientConfiguration oidcClientConfiguration = httpFacade.getOidcClientConfiguration();
-
         if (! oidcClientConfiguration.isConfigured()) {
             request.noAuthenticationInProgress();
             return;
@@ -76,7 +74,7 @@ final class OidcAuthenticationMechanism implements HttpServerAuthenticationMecha
 
         RequestAuthenticator authenticator = createRequestAuthenticator(httpFacade, oidcClientConfiguration);
         httpFacade.getTokenStore().checkCurrentToken();
-        if (preActions(httpFacade, oidcClientContext)) {
+        if (oidcClientConfiguration.getAuthServerBaseUrl() != null && keycloakPreActions(httpFacade, oidcClientContext)) {
             log.debugf("Pre-actions has aborted the evaluation of [%s]", request.getRequestURI());
             httpFacade.authenticationInProgress();
             return;
@@ -118,6 +116,15 @@ final class OidcAuthenticationMechanism implements HttpServerAuthenticationMecha
 
     private int getConfidentialPort() {
         return 8443;
+    }
+
+    private boolean keycloakPreActions(OidcHttpFacade httpFacade, OidcClientContext deploymentContext) {
+        NodesRegistrationManagement nodesRegistrationManagement = new NodesRegistrationManagement();
+        nodesRegistrationManagement.tryRegister(httpFacade.getOidcClientConfiguration());
+        // TODO: logout
+        //PreAuthActionsHandler preActions = new PreAuthActionsHandler(UserSessionManagement.class.cast(httpFacade.getTokenStore()), deploymentContext, httpFacade);
+        //return preActions.handleRequest();
+        return true;
     }
 
 }

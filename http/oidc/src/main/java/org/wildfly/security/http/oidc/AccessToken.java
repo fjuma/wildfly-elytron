@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,6 +39,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class AccessToken extends JsonWebToken {
 
+    private static final String ALLOWED_ORIGINS = "allowed-origins";
+
     /**
      * Construct a new instance.
      *
@@ -47,6 +50,14 @@ public class AccessToken extends JsonWebToken {
         super(jwtClaims);
     }
 
+    /**
+     * Get the allowed-origins claim.
+     *
+     * @return the allowed-origins claim
+     */
+    public List<String> getAllowedOrigins() {
+        return getStringListClaimValue(ALLOWED_ORIGINS);
+    }
     /*public static class Access implements Serializable {
         @JsonProperty("roles")
         protected Set<String> roles;

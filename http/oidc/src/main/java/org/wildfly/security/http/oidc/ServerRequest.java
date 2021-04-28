@@ -21,6 +21,7 @@ package org.wildfly.security.http.oidc;
 import static org.wildfly.security.http.oidc.Oidc.AUTHORIZATION_CODE;
 import static org.wildfly.security.http.oidc.Oidc.CODE;
 import static org.wildfly.security.http.oidc.Oidc.GRANT_TYPE;
+import static org.wildfly.security.http.oidc.Oidc.KEYCLOAK_CLIENT_CLUSTER_HOST;
 import static org.wildfly.security.http.oidc.Oidc.REDIRECT_URI;
 import static org.wildfly.security.http.oidc.Oidc.SESSION_STATE;
 import static org.wildfly.security.http.oidc.Oidc.STATE;
@@ -161,6 +162,37 @@ public class ServerRequest {
                 is.close();
             } catch (IOException ignored) {
             }
+        }
+    }
+
+    public static void invokeRegisterNodeForKeycloak(OidcClientConfiguration deployment, String host) throws HttpFailure, IOException {
+        String registerNodeUrl = deployment.getRegisterNodeUrl();
+        invokeClientManagementRequestForKeycloak(deployment, host, registerNodeUrl);
+    }
+
+    public static void invokeUnregisterNodeForKeycloak(OidcClientConfiguration deployment, String host) throws HttpFailure, IOException {
+        String unregisterNodeUrl = deployment.getUnregisterNodeUrl();
+        invokeClientManagementRequestForKeycloak(deployment, host, unregisterNodeUrl);
+    }
+
+    public static void invokeClientManagementRequestForKeycloak(OidcClientConfiguration deployment, String host, String endpointUrl) throws HttpFailure, IOException {
+        if (endpointUrl == null) {
+            throw new IOException("You need to configure URI for register/unregister node for application " + deployment.getResourceName());
+        }
+
+        List<NameValuePair> formparams = new ArrayList<>();
+        formparams.add(new BasicNameValuePair(KEYCLOAK_CLIENT_CLUSTER_HOST, host));
+
+        HttpPost post = new HttpPost(endpointUrl);
+        ClientCredentialsProviderUtils.setClientCredentials(deployment, post, formparams);
+
+        UrlEncodedFormEntity form = new UrlEncodedFormEntity(formparams, "UTF-8");
+        post.setEntity(form);
+        HttpResponse response = deployment.getClient().execute(post);
+        int status = response.getStatusLine().getStatusCode();
+        if (status != 204) {
+            HttpEntity entity = response.getEntity();
+            error(status, entity);
         }
     }
 

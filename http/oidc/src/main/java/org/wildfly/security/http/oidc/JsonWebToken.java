@@ -240,6 +240,21 @@ public class JsonWebToken {
         return jwtClaims.getClaimValueAsString(claimName);
     }
 
+    /**
+     * Get the value of the given claim as a string list.
+     *
+     * @param claimName the claim to retrieve
+     * @return the value of the given claim as a string list
+     */
+    public List<String> getStringListClaimValue(String claimName) {
+        Assert.checkNotNullParam("claimName", claimName);
+        try {
+        return jwtClaims.getStringListClaimValue(claimName);
+        } catch (MalformedClaimException e) {
+            throw log.invalidTokenClaimValue();
+        }
+    }
+
     private static int getCurrentTimeInSeconds() {
         return ((int) (System.currentTimeMillis() / 1000));
     }
