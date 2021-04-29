@@ -36,16 +36,14 @@ import org.wildfly.security.http.Scope;
 public class OidcCookieTokenStore implements OidcTokenStore {
 
     private final OidcHttpFacade httpFacade;
-    private final CallbackHandler callbackHandler;
     private static final String DELIM = "___";
     private static final int EXPECTED_NUM_TOKENS = 3;
     private static final int ACCESS_TOKEN_INDEX = 0;
     private static final int ID_TOKEN_INDEX = 1;
     private static final int REFRESH_TOKEN_INDEX = 2;
 
-    public OidcCookieTokenStore(OidcHttpFacade httpFacade, CallbackHandler callbackHandler) {
+    public OidcCookieTokenStore(OidcHttpFacade httpFacade) {
         this.httpFacade = httpFacade;
-        this.callbackHandler = callbackHandler;
     }
 
     @Override

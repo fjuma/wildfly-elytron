@@ -127,13 +127,6 @@ public class OAuth2TokenSecurityRealmTest {
     @Test
     public void testAttributesFromTokenMetadata() throws Exception {
         configureReplayTokenIntrospection();
-        String token = "{\"active\":true,\"username\":\"elytron@jboss.org\",\"attribute1\":\"value1\",\"attribute2\":\"value2\",\"attribute3\":true,\"attribute4\":false,\"attribute5\":10,\"attribute6\":[\n   \"one\",\"two\",\"three\"\n],\"attribute7\":{\"objField1\":\"value1\",\"objectField2\":\"value2\"}}";
-        BearerTokenEvidence evidence = new BearerTokenEvidence(token);
-        TokenSecurityRealm sr = TokenSecurityRealm.builder()
-                .validator(OAuth2IntrospectValidator.builder().clientId("wildfly-elytron").clientSecret("dont_tell_me").tokenIntrospectionUrl(new URL("http://as.test.org/oauth2/token/introspect")).build()).build();
-        RealmIdentity si = sr.getRealmIdentity(evidence);
-
-
 
         TokenSecurityRealm securityRealm = TokenSecurityRealm.builder()
                 .validator(OAuth2IntrospectValidator.builder()
@@ -154,13 +147,12 @@ public class OAuth2TokenSecurityRealmTest {
 
         JsonArrayBuilder jsonArray = Json.createArrayBuilder();
 
-        //jsonArray.add(1).add(2).add(3).add(4);
-        jsonArray.add("one").add("two").add("three").add("four");
+        jsonArray.add(1).add(2).add(3).add(4);
 
         tokenBuilder.add("attribute6", jsonArray.build());
         tokenBuilder.add("attribute7", Json.createObjectBuilder().add("objField1", "value1").add("objectField2", "value2"));
 
-        RealmIdentity realmIdentity = securityRealm.getRealmIdentity(new BearerTokenEvidence(token));//tokenBuilder.build().toString()));
+        RealmIdentity realmIdentity = securityRealm.getRealmIdentity(new BearerTokenEvidence(tokenBuilder.build().toString()));
         AuthorizationIdentity authorizationIdentity = realmIdentity.getAuthorizationIdentity();
         Attributes attributes = authorizationIdentity.getAttributes();
 
@@ -171,7 +163,6 @@ public class OAuth2TokenSecurityRealmTest {
         assertEquals("10", attributes.getFirst("attribute5"));
 
         Attributes.Entry attribute6 = attributes.get("attribute6");
-
 
         assertEquals(4, attribute6.size());
         assertTrue(attribute6.containsAll(Arrays.asList("1","2","3","4")));

@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.security.auth.callback.CallbackHandler;
-
 import org.wildfly.security.http.HttpScope;
 import org.wildfly.security.http.HttpScopeNotification;
 import org.wildfly.security.http.Scope;
@@ -38,11 +36,9 @@ import org.wildfly.security.http.Scope;
 public class OidcSessionTokenStore implements OidcTokenStore {
 
     private final OidcHttpFacade httpFacade;
-    private final CallbackHandler callbackHandler;
 
-    public OidcSessionTokenStore(OidcHttpFacade httpFacade, CallbackHandler callbackHandler) {
+    public OidcSessionTokenStore(OidcHttpFacade httpFacade) {
         this.httpFacade = httpFacade;
-        this.callbackHandler = callbackHandler;
     }
 
     @Override
@@ -202,7 +198,7 @@ public class OidcSessionTokenStore implements OidcTokenStore {
 
     @Override
     public void logoutHttpSessions(List<String> ids) {
-        HttpServerExchange exchange = ProtectedHttpServerExchange.class.cast(httpFacade.getScope(Scope.EXCHANGE).getAttachment(UNDERTOW_EXCHANGE)).getExchange();
+        /*HttpServerExchange exchange = ProtectedHttpServerExchange.class.cast(httpFacade.getScope(Scope.EXCHANGE).getAttachment(UNDERTOW_EXCHANGE)).getExchange();
         ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
         SessionManager sessionManager = servletRequestContext.getDeployment().getSessionManager();
 
@@ -238,7 +234,7 @@ public class OidcSessionTokenStore implements OidcTokenStore {
             if (session != null) {
                 session.invalidate(exchange);
             }
-        }
+        }*/
 
     }
 }

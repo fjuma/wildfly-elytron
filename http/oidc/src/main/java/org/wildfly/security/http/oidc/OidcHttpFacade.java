@@ -31,6 +31,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.security.Principal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -38,12 +39,22 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.cert.X509Certificate;
+import javax.security.sasl.AuthorizeCallback;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 
+import org.wildfly.security.auth.callback.AuthenticationCompleteCallback;
+import org.wildfly.security.auth.callback.EvidenceVerifyCallback;
+import org.wildfly.security.auth.callback.IdentityCredentialCallback;
+import org.wildfly.security.auth.callback.SecurityIdentityCallback;
 import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.credential.BearerTokenCredential;
+import org.wildfly.security.evidence.Evidence;
+import org.wildfly.security.http.HttpAuthenticationException;
 import org.wildfly.security.http.HttpScope;
 import org.wildfly.security.http.HttpServerCookie;
 import org.wildfly.security.http.HttpServerRequest;
@@ -78,8 +89,7 @@ class OidcHttpFacade {
     }
 
     void authenticationComplete(OidcAccount account, boolean storeToken) {
-        this.securityIdentity = SecurityIdentityUtil.authorize(this.callbackHandler, account.getPrincipal());
-
+        this.securityIdentity = authorize(this.callbackHandler, account.getPrincipal());
         if (securityIdentity != null) {
             this.account = account;
             RefreshableOidcSecurityContext securityContext = account.getOidcSecurityContext();
@@ -88,6 +98,36 @@ class OidcHttpFacade {
                 this.tokenStore.saveAccountInfo(account);
             }
         }
+    }
+
+    static final SecurityIdentity authorize(CallbackHandler callbackHandler, Principal principal) {
+        try {
+            EvidenceVerifyCallback evidenceVerifyCallback = new EvidenceVerifyCallback(new Evidence() {
+                @Override
+                public Principal getPrincipal() {
+                    return principal;
+                }
+            });
+
+            callbackHandler.handle(new Callback[]{evidenceVerifyCallback});
+            if (evidenceVerifyCallback.isVerified()) {
+                AuthorizeCallback authorizeCallback = new AuthorizeCallback(null, null);
+                try {
+                    callbackHandler.handle(new Callback[] {authorizeCallback});
+                    authorizeCallback.isAuthorized();
+                } catch (Exception e) {
+                    throw new HttpAuthenticationException(e);
+                }
+                SecurityIdentityCallback securityIdentityCallback = new SecurityIdentityCallback();
+                IdentityCredentialCallback credentialCallback = new IdentityCredentialCallback(new BearerTokenCredential(OidcPrincipal.class.cast(principal).getOidcSecurityContext().getTokenString()), true);
+                callbackHandler.handle(new Callback[]{credentialCallback, AuthenticationCompleteCallback.SUCCEEDED, securityIdentityCallback});
+                SecurityIdentity securityIdentity = securityIdentityCallback.getSecurityIdentity();
+                return securityIdentity;
+            }
+        } catch (UnsupportedCallbackException | IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     void authenticationComplete() {
@@ -148,13 +188,12 @@ class OidcHttpFacade {
         OidcClientConfiguration deployment = getOidcClientConfiguration();
 
         if (Oidc.TokenStore.SESSION.equals(deployment.getTokenStore())) {
-            return new OidcSessionTokenStore(this, this.callbackHandler);
+            return new OidcSessionTokenStore(this);
         } else {
-            return new OidcCookieTokenStore(this, this.callbackHandler);
+            return new OidcCookieTokenStore(this);
         }
     }
 
-    @Override
     public Request getRequest() {
         return new Request() {
             private InputStream inputStream;
@@ -308,7 +347,6 @@ class OidcHttpFacade {
         };
     }
 
-    @Override
     public Response getResponse() {
         return new Response() {
 
@@ -445,12 +483,10 @@ class OidcHttpFacade {
         };
     }
 
-    @Override
     public X509Certificate[] getCertificateChain() {
         return new X509Certificate[0];
     }
 
-    @Override
     public OidcSecurityContext getSecurityContext() {
         if (account == null) {
             return null;
