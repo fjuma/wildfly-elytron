@@ -18,13 +18,16 @@
 
 package org.wildfly.security.http.oidc;
 
+import static org.wildfly.security.http.oidc.ElytronMessages.log;
 import static org.wildfly.security.http.oidc.Oidc.SSLRequired;
 import static org.wildfly.security.http.oidc.Oidc.TokenStore;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.utils.URIBuilder;
 
 /**
  *
@@ -86,13 +89,12 @@ public class OidcClientContext {
     }
 
     protected OidcClientConfiguration resolveUrls(OidcClientConfiguration deployment, OidcHttpFacade facade) {
-        return deployment;
         if (deployment.relativeUrls == OidcClientConfiguration.RelativeUrlsUsed.NEVER) {
             // Absolute URI are already set to everything
             return deployment;
         } else {
             OidcClientConfigurationDelegate delegate = new OidcClientConfigurationDelegate(this.oidcClientConfig);
-            delegate.setAuthServerBaseUrl(getBaseBuilder(facade, this.oidcClientConfig.getAuthServerBaseUrl()).build().toString());
+            delegate.setAuthServerBaseUrl(getAuthServerBaseUrl(facade, this.oidcClientConfig.getAuthServerBaseUrl()));
             return delegate;
         }
     }
@@ -486,22 +488,26 @@ public class OidcClientContext {
         }
     }
 
-    protected KeycloakUriBuilder getBaseBuilder(OidcHttpFacade facade, String base) {
-        KeycloakUriBuilder builder = KeycloakUriBuilder.fromUri(base);
-        URI request = URI.create(facade.getRequest().getURI());
-        String scheme = request.getScheme();
-        if (oidcClientConfig.getSSLRequired().isRequired(facade.getRequest().getRemoteAddr())) {
-            scheme = "https";
-            if (!request.getScheme().equals(scheme) && request.getPort() != -1) {
-                log.error("request scheme: " + request.getScheme() + " ssl required");
-                throw new RuntimeException("Can't resolve relative url from adapter config.");
+    protected String getAuthServerBaseUrl(OidcHttpFacade facade, String base) {
+        try {
+            URIBuilder builder = new URIBuilder(base);
+            URI request = URI.create(facade.getRequest().getURI());
+            String scheme = request.getScheme();
+            if (oidcClientConfig.getSSLRequired().isRequired(facade.getRequest().getRemoteAddr())) {
+                scheme = "https";
+                if (! request.getScheme().equals(scheme) && request.getPort() != -1) {
+                    log.error("request scheme: " + request.getScheme() + " ssl required");
+                    throw log.unableToResolveARelativeUrl();
+                }
             }
+            builder.setScheme(scheme);
+            builder.setHost(request.getHost());
+            if (request.getPort() != -1) {
+                builder.setPort(request.getPort());
+            }
+            return builder.build().toString();
+        } catch (URISyntaxException e) {
+            throw log.unableToSetAuthServerUrl(e);
         }
-        builder.scheme(scheme);
-        builder.host(request.getHost());
-        if (request.getPort() != -1) {
-            builder.port(request.getPort());
-        }
-        return builder;
     }
 }

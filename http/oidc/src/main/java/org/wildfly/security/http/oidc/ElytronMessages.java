@@ -199,6 +199,12 @@ interface ElytronMessages extends BasicLogger {
     @Message(id = 19042, value = "Unable to create redirect response")
     IllegalArgumentException unableToCreateRedirectResponse(@Cause Throwable cause);
 
+    @Message(id = 19043, value = "Unable to set auth server URL")
+    RuntimeException unableToSetAuthServerUrl(@Cause Throwable cause);
+
+    @Message(id = 19044, value = "Unable resolve a relative URL")
+    RuntimeException unableToResolveARelativeUrl();
+
 
 }
 

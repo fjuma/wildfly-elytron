@@ -18,6 +18,7 @@
 
 package org.wildfly.security.http.oidc;
 
+import static org.wildfly.security.http.oidc.ElytronMessages.log;
 import static org.wildfly.security.http.oidc.Oidc.KEYCLOAK_QUERY_BEARER_TOKEN;
 
 import java.io.IOException;
@@ -29,8 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
-import org.jboss.logging.Logger;
 
 /**
  * Pre-installed actions that must be authenticated
@@ -44,7 +43,6 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
 public class AuthenticatedActionsHandler {
-    private static final Logger log = Logger.getLogger(AuthenticatedActionsHandler.class);
     protected OidcClientConfiguration deployment;
     protected OidcHttpFacade facade;
 
