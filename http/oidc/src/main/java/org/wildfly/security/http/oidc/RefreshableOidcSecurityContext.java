@@ -182,7 +182,7 @@ public class RefreshableOidcSecurityContext extends OidcSecurityContext {
         return true;
     }
 
-    public void setAuthorizationContext(AuthorizationContext authorizationContext) {
+    /*public void setAuthorizationContext(AuthorizationContext authorizationContext) {
         this.authorizationContext = authorizationContext;
-    }
+    }*/
 }
