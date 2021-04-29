@@ -125,7 +125,7 @@ public class OidcCookieTokenStore implements OidcTokenStore {
 
     @Override
     public void logout(boolean glo) {
-        OidcPrincipal<RefreshableOidcSecurityContext> principal = OidcCookieTokenStore.getPrincipalFromCookie(httpFacade.getOidcClientConfiguration(), httpFacade, this;
+        OidcPrincipal<RefreshableOidcSecurityContext> principal = OidcCookieTokenStore.getPrincipalFromCookie(httpFacade.getOidcClientConfiguration(), httpFacade, this);
         if (principal == null) {
             return;
         }

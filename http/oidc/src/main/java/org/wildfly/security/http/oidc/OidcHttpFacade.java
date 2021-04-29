@@ -65,10 +65,9 @@ import org.wildfly.security.http.Scope;
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
- * @since 1.14.0
  */
 class OidcHttpFacade {
-    static final String UNDERTOW_EXCHANGE = ElytronHttpFacade.class.getName() + ".undertow.exchange";
+    //static final String UNDERTOW_EXCHANGE = ElytronHttpFacade.class.getName() + ".undertow.exchange";
 
     private final HttpServerRequest request;
     private final CallbackHandler callbackHandler;
@@ -381,7 +380,7 @@ class OidcHttpFacade {
             public void resetCookie(final String name, final String path) {
                 responseConsumer = responseConsumer.andThen(response -> setCookie(name, "", path, null, 0, false, false, response));
                 HttpScope exchangeScope = getScope(Scope.EXCHANGE);
-                ProtectedHttpServerExchange undertowExchange = ProtectedHttpServerExchange.class.cast(exchangeScope.getAttachment(UNDERTOW_EXCHANGE));
+                /*ProtectedHttpServerExchange undertowExchange = ProtectedHttpServerExchange.class.cast(exchangeScope.getAttachment(UNDERTOW_EXCHANGE));
 
                 if (undertowExchange != null) {
                     CookieImpl cookie = new CookieImpl(name, "");
@@ -390,7 +389,7 @@ class OidcHttpFacade {
                     cookie.setPath(path);
 
                     undertowExchange.getExchange().setResponseCookie(cookie);
-                }
+                }*/
             }
 
             @Override

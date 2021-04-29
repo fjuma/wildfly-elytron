@@ -18,7 +18,7 @@
 
 package org.wildfly.security.http.oidc;
 
-import static org.wildfly.security.http.oidc.ElytronMessages.log
+import static org.wildfly.security.http.oidc.ElytronMessages.log;
 
 import java.io.IOException;
 import java.io.ObjectInputFilter;
