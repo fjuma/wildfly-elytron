@@ -134,75 +134,75 @@ interface ElytronMessages extends BasicLogger {
     @Message(id = 19024, value = "For bearer auth, you must set the 'realm-public-key' or one of 'auth-server-url' and 'issuer-url'")
     IllegalArgumentException invalidConfigurationForBearerAuth();
 
-    @Message(id = 19023, value = "Must set 'auth-server-url' or 'issuer-url'")
+    @Message(id = 19025, value = "Must set 'auth-server-url' or 'issuer-url'")
     RuntimeException authServerUrlOrIssuerUrlMustBeSet();
 
     @LogMessage(level = WARN)
-    @Message(id = 19024, value = "Client '%s' does not have a secret configured")
+    @Message(id = 19026, value = "Client '%s' does not have a secret configured")
     void noClientSecretConfigured(String clientId);
 
-    @Message(id = 19025, value = "Unsupported public key")
+    @Message(id = 19027, value = "Unsupported public key")
     IllegalArgumentException unsupportedPublicKey();
 
-    @Message(id = 19026, value = "Unable to create signed token")
+    @Message(id = 19028, value = "Unable to create signed token")
     IllegalArgumentException unableToCreateSignedToken();
 
-    @Message(id = 19027, value = "Configuration of jwt credentials is missing or incorrect for client '%s'")
+    @Message(id = 19029, value = "Configuration of jwt credentials is missing or incorrect for client '%s'")
     RuntimeException invalidJwtClientCredentialsConfig(String clientId);
 
-    @Message(id = 19028, value = "Missing parameter '%s' in jwt credentials for client %s")
+    @Message(id = 19030, value = "Missing parameter '%s' in jwt credentials for client %s")
     RuntimeException missingParameterInJwtClientCredentialsConfig(String parameter, String clientId);
 
-    @Message(id = 19029, value = "Unable to parse key '%s' with value '%s'")
+    @Message(id = 19031, value = "Unable to parse key '%s' with value '%s'")
     IllegalArgumentException unableToParseKeyWithValue(String key, Object value);
 
-    @Message(id = 19030, value = "Unable to load key with alias '%s' from keystore")
+    @Message(id = 19032, value = "Unable to load key with alias '%s' from keystore")
     RuntimeException unableToLoadKeyWithAlias(String alias);
 
-    @Message(id = 19031, value = "Unable to load private key from keystore")
+    @Message(id = 19033, value = "Unable to load private key from keystore")
     RuntimeException unableToLoadPrivateKey(@Cause Throwable cause);
 
-    @Message(id = 19032, value = "Unable to find keystore file '%s'")
+    @Message(id = 19034, value = "Unable to find keystore file '%s'")
     RuntimeException unableToFindKeystoreFile(String keystoreFile);
 
-    @Message(id = 19033, value = "Configuration of secret jwt client credentials is missing or incorrect for client '%s'")
+    @Message(id = 19035, value = "Configuration of secret jwt client credentials is missing or incorrect for client '%s'")
     RuntimeException invalidJwtClientCredentialsUsingSecretConfig(String clientId);
 
-    @Message(id = 19034, value = "Invalid value for 'algorithm' in secret jwt client credentials configuration for client '%s'")
+    @Message(id = 19036, value = "Invalid value for 'algorithm' in secret jwt client credentials configuration for client '%s'")
     RuntimeException invalidAlgorithmInJwtClientCredentialsConfig(String clientId);
 
-    @Message(id = 19035, value = "Unable to determine client credentials provider type for client '%s'")
+    @Message(id = 19037, value = "Unable to determine client credentials provider type for client '%s'")
     RuntimeException unableToDetermineClientCredentialsProviderType(String clientId);
 
-    @Message(id = 19036, value = "Unable to find client credentials provider '%s'")
+    @Message(id = 19038, value = "Unable to find client credentials provider '%s'")
     RuntimeException unableToFindClientCredentialsProvider(String provider);
 
-    @Message(id = 19037, value = "Unable to load keystore")
+    @Message(id = 19039, value = "Unable to load keystore")
     RuntimeException unableToLoadKeyStore(@Cause Throwable cause);
 
-    @Message(id = 19037, value = "Unable to load truststore")
+    @Message(id = 19040, value = "Unable to load truststore")
     RuntimeException unableToLoadTrustStore(@Cause Throwable cause);
 
-    @Message(id = 19038, value = "Unable to find truststore file '%s'")
+    @Message(id = 19041, value = "Unable to find truststore file '%s'")
     RuntimeException unableToFindTrustStoreFile(String trustStoreFile);
 
-    @Message(id = 19039, value = "Unexpected value for at_hash claim")
+    @Message(id = 19042, value = "Unexpected value for at_hash claim")
     String unexpectedValueForAtHashClaim();
 
-    @Message(id = 19040, value = "Uknown algorithm: '%s'")
+    @Message(id = 19043, value = "Uknown algorithm: '%s'")
     IllegalArgumentException unknownAlgorithm(String algorithm);
 
     @LogMessage(level = WARN)
-    @Message(id = 19041, value = "Failed to parse token from cookie")
+    @Message(id = 19044, value = "Failed to parse token from cookie")
     void failedToParseTokenFromCookie(@Cause Throwable cause);
 
-    @Message(id = 19042, value = "Unable to create redirect response")
+    @Message(id = 19045, value = "Unable to create redirect response")
     IllegalArgumentException unableToCreateRedirectResponse(@Cause Throwable cause);
 
-    @Message(id = 19043, value = "Unable to set auth server URL")
+    @Message(id = 19046, value = "Unable to set auth server URL")
     RuntimeException unableToSetAuthServerUrl(@Cause Throwable cause);
 
-    @Message(id = 19044, value = "Unable resolve a relative URL")
+    @Message(id = 19047, value = "Unable resolve a relative URL")
     RuntimeException unableToResolveARelativeUrl();
 
 
