@@ -25,8 +25,6 @@ import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.logging.Logger;
-
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */

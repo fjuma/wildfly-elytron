@@ -19,9 +19,6 @@
 package org.wildfly.security.http.oidc;
 
 import java.io.IOException;
-import java.security.PublicKey;
-
-import org.wildfly.security.http.oidc.OidcClientConfiguration;
 
 /**
  * Exception to indicate a general failure related to the OpenID Connect HTTP mechanism.

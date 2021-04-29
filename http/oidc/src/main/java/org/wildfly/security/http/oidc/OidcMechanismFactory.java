@@ -21,7 +21,6 @@ package org.wildfly.security.http.oidc;
 import static org.wildfly.common.Assert.checkNotNullParam;
 import static org.wildfly.security.http.HttpConstants.OIDC_NAME;
 
-import java.security.Provider;
 import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -36,15 +35,18 @@ import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
  * An {@link HttpServerAuthenticationMechanismFactory} implementation for the OpenID Connect (OIDC) HTTP authentication mechanism.
  *
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
- * @since 1.14.0
  */
 @MetaInfServices(value = HttpServerAuthenticationMechanismFactory.class)
 public class OidcMechanismFactory implements HttpServerAuthenticationMechanismFactory {
 
+    private final OidcClientContext deploymentContext;
+
     public OidcMechanismFactory() {
+        this(null);
     }
 
-    public OidcMechanismFactory(final Provider provider) {
+    public OidcMechanismFactory(final OidcClientContext deploymentContext) {
+        this.deploymentContext = deploymentContext;
     }
 
     /**
@@ -66,9 +68,8 @@ public class OidcMechanismFactory implements HttpServerAuthenticationMechanismFa
         checkNotNullParam("callbackHandler", callbackHandler);
 
         if (OIDC_NAME.equals(mechanismName)) {
-            return new OidcAuthenticationMechanism(callbackHandler);
+            return new OidcAuthenticationMechanism(properties, callbackHandler, this.deploymentContext);
         }
-
         return null;
     }
 

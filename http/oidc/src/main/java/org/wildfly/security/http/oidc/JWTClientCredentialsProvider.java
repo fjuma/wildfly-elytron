@@ -42,7 +42,6 @@ import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.NumericDate;
 import org.jose4j.lang.JoseException;
-import org.wildfly.security.jose.jwk.RSAPublicJWK;
 
 /**
  * Client authentication based on JWT signed by client private key.

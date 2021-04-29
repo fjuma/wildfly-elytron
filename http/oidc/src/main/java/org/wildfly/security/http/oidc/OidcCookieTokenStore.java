@@ -21,10 +21,10 @@ package org.wildfly.security.http.oidc;
 import static org.wildfly.security.http.oidc.ElytronMessages.log;
 import static org.wildfly.security.http.oidc.Oidc.OIDC_STATE_COOKIE;
 
+import java.net.URISyntaxException;
 import java.util.List;
 
-import javax.security.auth.callback.CallbackHandler;
-
+import org.apache.http.client.utils.URIBuilder;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.wildfly.security.http.HttpScope;
@@ -184,7 +184,12 @@ public class OidcCookieTokenStore implements OidcTokenStore {
 
     static String getContextPath(OidcHttpFacade facade) {
         String uri = facade.getRequest().getURI();
-        String path = KeycloakUriBuilder.fromUri(uri).getPath();
+        String path = null;
+        try {
+            new URIBuilder(uri).build().getPath();
+        } catch (URISyntaxException e) {
+            throw log.invalidUri(uri);
+        }
         if (path == null || path.isEmpty()) {
             return "/";
         }

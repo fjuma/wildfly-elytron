@@ -21,16 +21,11 @@ package org.wildfly.security.http.oidc;
 import static org.wildfly.security.http.oidc.ElytronMessages.log;
 
 import java.io.IOException;
-import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
-import org.wildfly.security.json.util.JsonSerialization;
-import org.wildfly.security.jose.jwk.JWKUtil;
 
 /**
  * Available in secured requests under HttpServletRequest.getAttribute().
@@ -80,25 +75,14 @@ public class OidcSecurityContext implements Serializable {
     }
 
     public String getRealm() {
-        // Assumption that issuer contains realm name
+        // assumes that issuer contains realm name
         return token.getIssuer().substring(token.getIssuer().lastIndexOf('/') + 1);
     }
 
     // SERIALIZATION
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
-    }
-
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        DelegatingSerializationFilter.builder()
-                .addAllowedClass(OidcSecurityContext.class)
-                .setFilter(in);
         in.defaultReadObject();
-
-        Object objectFilter = ObjectInputFilter.Config.createFilter(ois, filterPattern);
-        setObjectInputFilterMethod.invoke(ois, objectFilter);
-
         try {
             token = new AccessToken(new JwtConsumerBuilder().setSkipAllValidators().build().processToClaims(tokenString));
             idToken = new IDToken(new JwtConsumerBuilder().setSkipAllValidators().build().processToClaims(idTokenString));

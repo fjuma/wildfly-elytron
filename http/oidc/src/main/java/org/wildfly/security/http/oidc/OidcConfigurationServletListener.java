@@ -67,7 +67,7 @@ public class OidcConfigurationServletListener implements ServletContextListener 
                 if (is == null) {
                     oidcClientConfiguration = new OidcClientConfiguration();
                 } else {
-                    oidcClientConfiguration = KeycloakDeploymentBuilder.build(is);
+                    oidcClientConfiguration = OidcClientConfigurationBuilder.build(is);
                 }
                 clientContext = new OidcClientContext(oidcClientConfiguration);
             }

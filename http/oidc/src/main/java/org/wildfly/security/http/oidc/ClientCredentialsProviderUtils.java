@@ -19,13 +19,7 @@
 package org.wildfly.security.http.oidc;
 
 import static org.wildfly.security.http.oidc.ElytronMessages.log;
-import static org.wildfly.security.http.oidc.Oidc.CLIENT_ASSERTION;
-import static org.wildfly.security.http.oidc.Oidc.CLIENT_ASSERTION_TYPE;
-import static org.wildfly.security.http.oidc.Oidc.CLIENT_ASSERTION_TYPE_JWT;
-import static org.wildfly.security.http.oidc.Oidc.asInt;
-import static org.wildfly.security.http.oidc.Oidc.getJavaAlgorithm;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,18 +27,9 @@ import java.util.Map;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
-import org.jboss.logging.Logger;
-import org.jose4j.jws.AlgorithmIdentifiers;
-import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.jwt.JwtClaims;
-import org.jose4j.jwt.NumericDate;
-import org.jose4j.lang.JoseException;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>

@@ -18,16 +18,7 @@
 
 package org.wildfly.security.http.oidc;
 
-import static org.wildfly.security.http.oidc.ElytronMessages.log;
-import static org.wildfly.security.http.oidc.Oidc.AUTHORIZATION;
-import static org.wildfly.security.http.oidc.Oidc.CLIENT_ID;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-
 import javax.crypto.SecretKey;
-
-import org.wildfly.common.iteration.ByteIterator;
 
 /**
  * A client secret credentials provider.

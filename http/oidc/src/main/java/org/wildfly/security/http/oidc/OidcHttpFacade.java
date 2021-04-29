@@ -66,7 +66,7 @@ import org.wildfly.security.http.Scope;
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-class OidcHttpFacade {
+public class OidcHttpFacade {
     //static final String UNDERTOW_EXCHANGE = ElytronHttpFacade.class.getName() + ".undertow.exchange";
 
     private final HttpServerRequest request;

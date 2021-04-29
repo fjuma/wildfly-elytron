@@ -18,19 +18,9 @@
 
 package org.wildfly.security.http.oidc;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.jose4j.jwt.JwtClaims;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Representation of an access token.

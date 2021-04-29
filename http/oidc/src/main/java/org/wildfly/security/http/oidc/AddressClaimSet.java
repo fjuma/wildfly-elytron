@@ -19,9 +19,7 @@
 package org.wildfly.security.http.oidc;
 
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
-import org.jose4j.jwt.JwtClaims;
 import org.wildfly.common.Assert;
 
 /**

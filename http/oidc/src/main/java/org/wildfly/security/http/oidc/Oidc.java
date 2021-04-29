@@ -19,22 +19,15 @@
 package org.wildfly.security.http.oidc;
 
 import static org.wildfly.security.http.oidc.ElytronMessages.log;
-import static org.wildfly.security.http.oidc.IDToken.EMAIL;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.Key;
-import java.security.interfaces.ECPrivateKey;
-import java.security.interfaces.RSAPrivateKey;
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.crypto.SecretKey;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;

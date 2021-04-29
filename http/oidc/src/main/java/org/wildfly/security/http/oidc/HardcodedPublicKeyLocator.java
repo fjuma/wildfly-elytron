@@ -20,8 +20,6 @@ package org.wildfly.security.http.oidc;
 
 import java.security.PublicKey;
 
-import org.wildfly.security.http.oidc.OidcClientConfiguration;
-
 /**
  * A hardcoded public key locator.
  *

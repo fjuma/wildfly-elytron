@@ -23,16 +23,12 @@ import static org.wildfly.security.http.oidc.Oidc.CODE;
 import static org.wildfly.security.http.oidc.Oidc.GRANT_TYPE;
 import static org.wildfly.security.http.oidc.Oidc.KEYCLOAK_CLIENT_CLUSTER_HOST;
 import static org.wildfly.security.http.oidc.Oidc.REDIRECT_URI;
-import static org.wildfly.security.http.oidc.Oidc.SESSION_STATE;
-import static org.wildfly.security.http.oidc.Oidc.STATE;
-import static org.wildfly.security.http.oidc.Oidc.stripQueryParam;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -46,7 +42,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
-import org.wildfly.common.iteration.ByteIterator;
 import org.wildfly.security.json.util.JsonSerialization;
 
 /**

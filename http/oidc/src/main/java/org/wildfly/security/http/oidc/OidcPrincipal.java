@@ -18,8 +18,6 @@
 
 package org.wildfly.security.http.oidc;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.security.Principal;
 
@@ -67,14 +65,5 @@ public class OidcPrincipal<T extends OidcSecurityContext> implements Principal, 
         return name;
     }
 
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        DelegatingSerializationFilter.builder()
-                .addAllowedClass(OidcPrincipal.class)
-                .addAllowedClass(OidcSecurityContext.class)
-                .addAllowedPattern("org.wildfly.security.http.oidc.RefreshableOidcSecurityContext")
-                .setFilter(in);
-
-        in.defaultReadObject();
-    }
 }
 

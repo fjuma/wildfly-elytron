@@ -22,8 +22,6 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 import static org.jboss.logging.annotations.Message.NONE;
 
-import javax.net.ssl.SSLException;
-
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -32,8 +30,6 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.ValidIdRange;
 import org.jboss.logging.annotations.ValidIdRanges;
-import org.jose4j.jwt.MalformedClaimException;
-
 
 /**
  * Log messages and exceptions for Elytron.
@@ -204,6 +200,9 @@ interface ElytronMessages extends BasicLogger {
 
     @Message(id = 19047, value = "Unable resolve a relative URL")
     RuntimeException unableToResolveARelativeUrl();
+
+    @Message(id = 19048, value = "Invalid URI: '%s'")
+    RuntimeException invalidUri(String uri);
 
 
 }

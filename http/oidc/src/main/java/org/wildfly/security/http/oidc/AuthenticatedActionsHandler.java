@@ -22,14 +22,7 @@ import static org.wildfly.security.http.oidc.ElytronMessages.log;
 import static org.wildfly.security.http.oidc.Oidc.KEYCLOAK_QUERY_BEARER_TOKEN;
 
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * Pre-installed actions that must be authenticated
@@ -43,8 +36,8 @@ import java.util.Set;
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
 public class AuthenticatedActionsHandler {
-    protected OidcClientConfiguration deployment;
-    protected OidcHttpFacade facade;
+    private OidcClientConfiguration deployment;
+    private OidcHttpFacade facade;
 
     public AuthenticatedActionsHandler(OidcClientConfiguration deployment, OidcHttpFacade facade) {
         this.deployment = deployment;
