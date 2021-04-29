@@ -47,7 +47,7 @@ public class OidcSecurityContext implements Serializable {
     // Don't store parsed tokens into HTTP session
     protected transient AccessToken token;
     protected transient IDToken idToken;
-    protected transient AuthorizationContext authorizationContext;
+    //protected transient AuthorizationContext authorizationContext;
 
     public OidcSecurityContext() {
     }
@@ -67,9 +67,9 @@ public class OidcSecurityContext implements Serializable {
         return tokenString;
     }
 
-    public AuthorizationContext getAuthorizationContext() {
+    /*public AuthorizationContext getAuthorizationContext() {
         return authorizationContext;
-    }
+    }*/
 
     public IDToken getIDToken() {
         return idToken;
