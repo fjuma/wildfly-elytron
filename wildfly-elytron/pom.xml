@@ -357,10 +357,6 @@
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-jose-jwk</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron-jose-jws</artifactId>
-        </dependency>
         <!-- Do not include JWT as it defines a CDI Extension -->
         <!--<dependency>
             <groupId>org.wildfly.security</groupId>

@@ -613,12 +613,6 @@
 
             <dependency>
                 <groupId>org.wildfly.security</groupId>
-                <artifactId>wildfly-elytron-jose-jws</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.security</groupId>
                 <artifactId>wildfly-elytron-jwt</artifactId>
                 <version>${project.version}</version>
             </dependency>
