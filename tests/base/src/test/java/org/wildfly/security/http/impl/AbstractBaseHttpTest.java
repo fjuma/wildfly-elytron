@@ -20,6 +20,7 @@ package org.wildfly.security.http.impl;
 
 import static org.wildfly.security.http.HttpConstants.AUTHENTICATION_INFO;
 import static org.wildfly.security.http.HttpConstants.AUTHORIZATION;
+import static org.wildfly.security.http.HttpConstants.LOCATION;
 import static org.wildfly.security.http.HttpConstants.WWW_AUTHENTICATE;
 
 import java.io.InputStream;
@@ -29,6 +30,7 @@ import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -103,17 +105,78 @@ public class AbstractBaseHttpTest {
         FAILED;
     }
 
-    protected class TestingHttpServerRequest implements HttpServerRequest {
+    protected static class TestingHttpServerRequest implements HttpServerRequest {
 
         private String[] authorization;
         private Status result;
         private HttpServerMechanismsResponder responder;
         private String remoteUser;
+        private URI requestURI;
+        private List<HttpServerCookie> cookies;
 
         public TestingHttpServerRequest(String[] authorization) {
             this.authorization = authorization;
             this.remoteUser = null;
         }
+
+        public TestingHttpServerRequest(String[] authorization, URI requestURI) {
+            this.authorization = authorization;
+            this.remoteUser = null;
+            this.requestURI = requestURI;
+        }
+
+        public TestingHttpServerRequest(String[] authorization, URI requestURI, String cookie) {
+            this.authorization = authorization;
+            this.remoteUser = null;
+            this.requestURI = requestURI;
+            if (cookie != null) {
+                final String cookieName = cookie.substring(0, cookie.indexOf('='));
+                final String cookieValue = cookie.substring(cookie.indexOf('=') + 1);
+                cookies = new ArrayList<>();
+                cookies.add(new HttpServerCookie() {
+                    @Override
+                    public String getName() {
+                        return cookieName;
+                    }
+
+                    @Override
+                    public String getValue() {
+                        return cookieValue;
+                    }
+
+                    @Override
+                    public String getDomain() {
+                        return null;
+                    }
+
+                    @Override
+                    public int getMaxAge() {
+                        return -1;
+                    }
+
+                    @Override
+                    public String getPath() {
+                        return "/";
+                    }
+
+                    @Override
+                    public boolean isSecure() {
+                        return false;
+                    }
+
+                    @Override
+                    public int getVersion() {
+                        return 0;
+                    }
+
+                    @Override
+                    public boolean isHttpOnly() {
+                        return true;
+                    }
+                });
+            }
+        }
+
 
         public Status getResult() {
             return result;
@@ -177,7 +240,7 @@ public class AbstractBaseHttpTest {
         }
 
         public URI getRequestURI() {
-            throw new IllegalStateException();
+            return requestURI;
         }
 
         public String getRequestPath() {
@@ -201,7 +264,7 @@ public class AbstractBaseHttpTest {
         }
 
         public List<HttpServerCookie> getCookies() {
-            throw new IllegalStateException();
+            return cookies;
         }
 
         public InputStream getInputStream() {
@@ -209,11 +272,11 @@ public class AbstractBaseHttpTest {
         }
 
         public InetSocketAddress getSourceAddress() {
-            throw new IllegalStateException();
+            return null;
         }
 
         public boolean suspendRequest() {
-            throw new IllegalStateException();
+            return true;
         }
 
         public boolean resumeRequest() {
@@ -221,7 +284,39 @@ public class AbstractBaseHttpTest {
         }
 
         public HttpScope getScope(Scope scope) {
-            throw new IllegalStateException();
+            return new HttpScope() {
+
+                @Override
+                public boolean exists() {
+                    return true;
+                }
+
+                @Override
+                public boolean create() {
+                    return false;
+                }
+
+                @Override
+                public boolean supportsAttachments() {
+                    return true;
+                }
+
+                @Override
+                public boolean supportsInvalidation() {
+                    return false;
+                }
+
+                @Override
+                public void setAttachment(String key, Object value) {
+                    // no-op
+                }
+
+                @Override
+                public Object getAttachment(String key) {
+                    return null;
+                }
+
+            };
         }
 
         public Collection<String> getScopeIds(Scope scope) {
@@ -242,10 +337,12 @@ public class AbstractBaseHttpTest {
         }
     }
 
-    protected class TestingHttpServerResponse implements HttpServerResponse {
+    protected static class TestingHttpServerResponse implements HttpServerResponse {
 
         private int statusCode;
         private String authenticate;
+        private String location;
+        private List<HttpServerCookie> cookies;
 
         public void setStatusCode(int statusCode) {
             this.statusCode = statusCode;
@@ -258,8 +355,8 @@ public class AbstractBaseHttpTest {
         public void addResponseHeader(String headerName, String headerValue) {
             if (WWW_AUTHENTICATE.equals(headerName)) {
                 authenticate = headerValue;
-            } else {
-                throw new IllegalStateException();
+            } else if (LOCATION.equals(headerName)) {
+                location = headerValue;
             }
         }
 
@@ -267,8 +364,19 @@ public class AbstractBaseHttpTest {
             return authenticate;
         }
 
+        public String getLocation() {
+            return location;
+        }
+
+        public List<HttpServerCookie> getCookies() {
+            return cookies;
+        }
+
         public void setResponseCookie(HttpServerCookie cookie) {
-            throw new IllegalStateException();
+            if (cookies == null) {
+                cookies = new ArrayList<>();
+            }
+            cookies.add(cookie);
         }
 
         public OutputStream getOutputStream() {
