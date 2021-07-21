@@ -4,8 +4,106 @@
     <channel>
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
-        <description>WildFly Elytron: Security, Authentication, and Authorization SPIs for the WildFly project</description>
-        <lastBuildDate>Mon, 22 Mar 2021 17:16:39 +0000</lastBuildDate>
+        <description></description>
+        <lastBuildDate>Wed, 21 Jul 2021 15:30:59 +0000</lastBuildDate>
+        
+        <item>
+            <title>Open Source Day Recap</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/open-source-day-recap/
+            </link>
+            <description>
+                Last week, the WildFly Elytron[https://wildfly-security.github.io/wildfly-elytron/] team had the pleasure of participating in Open Source Day[https://anitab-org.github.io/open-source-day/upcoming/#overview], an all-day hackathon hosted by the AnitaB.org[https://anitab.org/] community. It was the very first time that this event, known as the largest female-led movement in open source, was held outside of the Grace Hopper conference. Participants...
+            </description>
+            <pubDate>Wed, 21 Jul 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/open-source-day-recap/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Installing Keycloak OIDC adaptor using the Galleon CLI</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/galleon-cli-keycloak/
+            </link>
+            <description>
+                Traditionally to install WildFly you would download a complete archive of the application server distribution, unzip it locally and run it directly from where it was unzipped. Subsequently to install the Keycloak adaptor for WildFly a second archive would be downloaded and unzipped on top of the WildFly installation and...
+            </description>
+            <pubDate>Thu, 01 Jul 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/galleon-cli-keycloak/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Using hash character sets and encodings in Elytron</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/hash-charsets-encodings/
+            </link>
+            <description>
+                In the legacy security configuration using PicketBox, the UsernamePasswordLoginModule supports storing hashed passwords by specifying the hashing algorithm, encoding and character set to compare the client-supplied password to the password stored in the management system. Previously, Elytron supported specifying the hashing algorithm, but not the string encoding or character set...
+            </description>
+            <pubDate>Thu, 24 Jun 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/hash-charsets-encodings/
+            </guid>
+        </item>
+        
+        <item>
+            <title>SSLv2Hello with WildFly</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/oneway-sslv2hello/
+            </link>
+            <description>
+                It is now possible to use SSLv2Hello with WildFly. This blog post will give an introduction to this new feature, but it will assume previous knowledge on how to configure SSL in Elytron. For more information on how to configure SSL, refer to the elytron documentation. An Overview of SSLv2Hello...
+            </description>
+            <pubDate>Mon, 21 Jun 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/oneway-sslv2hello/
+            </guid>
+        </item>
+        
+        <item>
+            <title>SSL Certificate Revocation Lists with WildFly</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/ssl-certificate-revocation-list/
+            </link>
+            <description>
+                An Overview of Certificate Revocation Lists Configuring CRLs on the Client Side Back Up Your Standalone Server Configuration Pre-requisite Server Configuration Pre-requisite Client Configuration Configure the Server Create the Certificate Revocation Lists Configure a Client that verifies certificates against CRLs Build and Deploy the Application Run the Client and Verify...
+            </description>
+            <pubDate>Fri, 18 Jun 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/ssl-certificate-revocation-list/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Secure WildFly CLI with Keycloak</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/secure-wildfly-cli-with-keycloak/
+            </link>
+            <description>
+                This blog post gives an example of how to secure WildFly CLI using Keycloak and Elytron. Keycloak&#8217;s Wildfly Elytron Adapter Download WildFly server, Keycloak server and the WildFly OpenID Connect client adapter for WildFly from keycloak.org. Make sure your versions are compatible. Then, extract the contents of the client adapter...
+            </description>
+            <pubDate>Tue, 15 Jun 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/secure-wildfly-cli-with-keycloak/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Invoking EJBs over HTTP</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/ejb-over-http/
+            </link>
+            <description>
+                Server Configuration Prerequisite Configuration Configure the HTTP Transport Client Configuration Prerequisite Configuration Performing Invocations Summary The ejb-http quickstart will describe the steps to setting up EJBs using HTTP as the transport. It will also secure it with a FileSystem realm, and use a credential store to access the EJB. This...
+            </description>
+            <pubDate>Mon, 14 Jun 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/ejb-over-http/
+            </guid>
+        </item>
         
         <item>
             <title>WildFly Encrypted Expression Support</title>
@@ -46,104 +144,6 @@
             <pubDate>Fri, 19 Mar 2021 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/sslcontext-delegation-to-alternate-instances-based-on-peer/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Normalize principal propagation/injection across elytron and legacy</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/normalization-of-EJB-principal-propagation/
-            </link>
-            <description>
-                In WildFly 23 there is a new configuration option in the EJB subsystem that allows to switch between legacy and elytron principal propagation. This blog post will provide an explanation about the difference between these propagation modes and where the configuration can be done. Definition of terms Secured EJB refers...
-            </description>
-            <pubDate>Fri, 19 Mar 2021 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/normalization-of-EJB-principal-propagation/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Upcoming SSL features: Multiple certificate revocation lists support and SSLv2Hello support</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/new-ssl-features/
-            </link>
-            <description>
-                Two of the new features regarding SSL that we have been working on include adding support for configuring multiple certificate revocation lists and SSLv2Hello support. These features did not make it into WildFly 23 but we have plans for them to be included in WildFly 24. An Overview of Certificate...
-            </description>
-            <pubDate>Fri, 19 Mar 2021 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/new-ssl-features/
-            </guid>
-        </item>
-        
-        <item>
-            <title>New Security Features in WildFly 23</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-in-wildfly-23/
-            </link>
-            <description>
-                This blog post highlights the new security features that are in WildFly 23 and also gives an update on the new security features that the Elytron team has been working on. New Features in WildFly 23 Encrypted Expression Support WildFly 23 now adds support for encrypted expressions within the management...
-            </description>
-            <pubDate>Fri, 19 Mar 2021 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-in-wildfly-23/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Upcoming automatic registration of client side default SSLContext</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/automatic-registration-of-client-side-jvm-wide-default-sslcontext/
-            </link>
-            <description>
-                One of the features we have been working on for the Elytron subsytem is the ability to automatically register client side JVM wide default SSL context. This SSL context will be available to any library that supports the use of the default context. Details We plan to provide implementation of...
-            </description>
-            <pubDate>Fri, 19 Mar 2021 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/automatic-registration-of-client-side-jvm-wide-default-sslcontext/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Planned Security Features for WildFly</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/planned-security-features-for-wildfly-23/
-            </link>
-            <description>
-                Since the feature development phase for WildFly 23 has now started, we wanted to highlight the security features that we will be working on. As usual, please keep in mind that this blog post is a summary of our general plans and not a guarantee that each of these features...
-            </description>
-            <pubDate>Fri, 22 Jan 2021 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/planned-security-features-for-wildfly-23/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Automatic Self-Signed Certificate Generation with Elytron</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/auto-self-signed-certificate-generation/
-            </link>
-            <description>
-                WildFly 22 adds the ability to automatically generate a self-signed certificate the first time WildFly receives an HTTPS request when WildFly is being secured using Elytron. This is useful for development or testing environments. This blog post gives an introduction to this new feature. Default SSL context Making use of...
-            </description>
-            <pubDate>Thu, 14 Jan 2021 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/auto-self-signed-certificate-generation/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Using case principal transformers in Elytron</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/case-principal-transformer/
-            </link>
-            <description>
-                The case-principal-transformer quickstart demonstrates how to use a case-principal-transformer to adjust a principal to upper case when securing EJBs. Note, the quickstart is building from this post which more closely explains how to configure filesystem realms and SASL authentication to secure EJBs. An Overview of the Case Principal Transformer Principal...
-            </description>
-            <pubDate>Tue, 12 Jan 2021 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/case-principal-transformer/
             </guid>
         </item>
         
