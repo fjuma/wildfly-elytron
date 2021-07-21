@@ -5,19 +5,19 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Wed, 21 Jul 2021 16:04:36 +0000</lastBuildDate>
+        <lastBuildDate>Wed, 21 Jul 2021 17:11:19 +0000</lastBuildDate>
         
         <item>
             <title>Open Source Day Recap</title>
             <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/open-source-day-recap/
+                https://wildfly-security.github.io/wildfly-elytron/blog/open-source-day-summer-recap/
             </link>
             <description>
                 Last week, the WildFly Elytron team had the pleasure of participating in Open Source Day, an all-day hackathon hosted by the AnitaB.org community. It was the very first time that this event, known as the largest female-led movement in open source, was held outside of the Grace Hopper conference. Participants...
             </description>
             <pubDate>Wed, 21 Jul 2021 00:00:00 +0000</pubDate>
             <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/open-source-day-recap/
+                https://wildfly-security.github.io/wildfly-elytron/blog/open-source-day-summer-recap/
             </guid>
         </item>
         
