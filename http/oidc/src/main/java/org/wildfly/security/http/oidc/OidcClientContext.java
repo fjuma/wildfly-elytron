@@ -79,7 +79,7 @@ public class OidcClientContext {
         }
 
         if (oidcClientConfig == null) return null;
-        if (oidcClientConfig.getAuthServerBaseUrl() == null && oidcClientConfig.getIssuerUrl() == null) return oidcClientConfig;
+        if (oidcClientConfig.getAuthServerBaseUrl() == null && oidcClientConfig.getProviderUrl() == null) return oidcClientConfig;
 
         OidcClientConfiguration resolvedDeployment = resolveUrls(oidcClientConfig, facade);
         if (resolvedDeployment.getPublicKeyLocator() == null) {
@@ -97,8 +97,8 @@ public class OidcClientContext {
             if (oidcClientConfig.getAuthServerBaseUrl() != null) {
                 delegate.setAuthServerBaseUrl(getAuthServerBaseUrl(facade, this.oidcClientConfig.getAuthServerBaseUrl()));
             }
-            if (oidcClientConfig.getIssuerUrl() != null) {
-                delegate.setIssuerUrl(oidcClientConfig.getIssuerUrl());
+            if (oidcClientConfig.getProviderUrl() != null) {
+                delegate.setProviderUrl(oidcClientConfig.getProviderUrl());
             }
             return delegate;
         }
@@ -121,8 +121,8 @@ public class OidcClientContext {
             resolveUrls();
         }
 
-        public void setIssuerUrl(String issuerUrl) {
-            this.issuerUrl = issuerUrl;
+        public void setProviderUrl(String providerUrl) {
+            this.providerUrl = providerUrl;
             resolveUrls();
         }
 
@@ -162,6 +162,16 @@ public class OidcClientContext {
         }
 
         @Override
+        public String getResource() {
+            return delegate.getResource();
+        }
+
+        @Override
+        public String getClientId() {
+            return delegate.getClientId();
+        }
+
+        @Override
         public String getResourceName() {
             return delegate.getResourceName();
         }
@@ -187,8 +197,13 @@ public class OidcClientContext {
         }
 
         @Override
-        public void setResourceName(String resourceName) {
-            delegate.setResourceName(resourceName);
+        public void setResource(String resourceName) {
+            delegate.setResource(resourceName);
+        }
+
+        @Override
+        public void setClientId(String clientId) {
+            delegate.setClientId(clientId);
         }
 
         @Override

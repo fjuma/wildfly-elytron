@@ -201,8 +201,8 @@ public class OidcTest extends AbstractBaseHttpTest {
     }
 
     @Test
-    public void testSucessfulAuthenticationWithIssuerUrl() throws Exception {
-        performAuthentication(getOidcConfigurationInputStreamWithIssuerUrl(), KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
+    public void testSucessfulAuthenticationWithProviderUrl() throws Exception {
+        performAuthentication(getOidcConfigurationInputStreamWithProviderUrl(), KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
                 true, HttpStatus.SC_MOVED_TEMPORARILY, getClientUrl(), CLIENT_PAGE_TEXT);
     }
 
@@ -276,11 +276,11 @@ public class OidcTest extends AbstractBaseHttpTest {
         return new ByteArrayInputStream(oidcConfig.getBytes(StandardCharsets.UTF_8));
     }
 
-    private InputStream getOidcConfigurationInputStreamWithIssuerUrl() {
+    private InputStream getOidcConfigurationInputStreamWithProviderUrl() {
         String oidcConfig = "{\n" +
                 "    \"resource\" : \"" + CLIENT_ID + "\",\n" +
                 "    \"public-client\" : \"false\",\n" +
-                "    \"issuer-url\" : \"" + KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "\",\n" +
+                "    \"provider-url\" : \"" + KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "\",\n" +
                 "    \"ssl-required\" : \"EXTERNAL\",\n" +
                 "    \"credentials\" : {\n" +
                 "        \"secret\" : \"" + CLIENT_SECRET + "\"\n" +
@@ -292,7 +292,7 @@ public class OidcTest extends AbstractBaseHttpTest {
     private InputStream getOidcConfigurationMissingRequiredOption() {
         String oidcConfig = "{\n" +
                 "    \"public-client\" : \"false\",\n" +
-                "    \"issuer-url\" : \"" + KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "\",\n" +
+                "    \"provider-url\" : \"" + KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "\",\n" +
                 "    \"ssl-required\" : \"EXTERNAL\",\n" +
                 "    \"credentials\" : {\n" +
                 "        \"secret\" : \"" + CLIENT_SECRET + "\"\n" +
