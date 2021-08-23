@@ -70,7 +70,7 @@ public class OidcClientConfiguration {
     protected String realm;
     protected PublicKeyLocator publicKeyLocator;
     protected String authServerBaseUrl;
-    protected String issuerUrl;
+    protected String providerUrl;
     protected String authUrl;
     protected String tokenUrl;
     protected String logoutUrl;
@@ -80,7 +80,8 @@ public class OidcClientConfiguration {
     protected String jwksUrl;
     protected String principalAttribute = "sub";
 
-    protected String resourceName;
+    protected String resource;
+    protected String clientId;
     protected boolean bearerOnly;
     protected boolean autodetectBearerOnly;
     protected boolean enableBasicAuth;
@@ -128,11 +129,19 @@ public class OidcClientConfiguration {
     }
 
     public boolean isConfigured() {
-        return getResourceName() != null && getPublicKeyLocator() != null && (isBearerOnly() || (getAuthServerBaseUrl() != null || getIssuerUrl() != null));
+        return getResourceName() != null && getPublicKeyLocator() != null && (isBearerOnly() || (getAuthServerBaseUrl() != null || getProviderUrl() != null));
     }
 
     public String getResourceName() {
-        return resourceName;
+        return resource != null ? resource : clientId;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public String getClientId() {
+        return clientId;
     }
 
     public String getRealm() {
@@ -155,8 +164,8 @@ public class OidcClientConfiguration {
         return authServerBaseUrl;
     }
 
-    public void setIssuerUrl(String issuerUrl) {
-        this.issuerUrl = issuerUrl;
+    public void setProviderUrl(String providerUrl) {
+        this.providerUrl = providerUrl;
     }
 
 
@@ -164,7 +173,7 @@ public class OidcClientConfiguration {
         this.authServerBaseUrl = config.getAuthServerUrl();
         if (authServerBaseUrl == null) return;
         authUrl = null;
-        issuerUrl = null;
+        providerUrl = null;
         tokenUrl = null;
         logoutUrl = null;
         accountUrl = null;
@@ -195,15 +204,15 @@ public class OidcClientConfiguration {
                     OidcProviderMetadata config = getOidcProviderMetadata(discoveryUrl);
 
                     authUrl = config.getAuthorizationEndpoint();
-                    if (issuerUrl == null) {
-                        issuerUrl = config.getIssuer();
+                    if (providerUrl == null) {
+                        providerUrl = config.getIssuer();
                     }
                     tokenUrl = config.getTokenEndpoint();
                     logoutUrl = config.getLogoutEndpoint();
                     jwksUrl = config.getJwksUri();
                     if (authServerBaseUrl != null) {
                         // keycloak-specific properties
-                        accountUrl = getUrl(issuerUrl, ACCOUNT_PATH);
+                        accountUrl = getUrl(providerUrl, ACCOUNT_PATH);
                         registerNodeUrl = getUrl(authServerBaseUrl, KEYCLOAK_REALMS_PATH + getRealm(), CLIENTS_MANAGEMENT_REGISTER_NODE_PATH);
                         unregisterNodeUrl = getUrl(authServerBaseUrl, KEYCLOAK_REALMS_PATH + getRealm(), CLIENTS_MANAGEMENT_UNREGISTER_NODE_PATH);
                     }
@@ -231,14 +240,14 @@ public class OidcClientConfiguration {
     }
 
     private String getDiscoveryUrl() {
-        if (issuerUrl != null) {
+        if (providerUrl != null) {
             // generic OpenID provider configuration found
-            return getUrl(issuerUrl, DISCOVERY_PATH);
+            return getUrl(providerUrl, DISCOVERY_PATH);
         } else if (authServerBaseUrl != null) {
             // keycloak-specific OpenID provider configuration found
             return getUrl(authServerBaseUrl, KEYCLOAK_REALMS_PATH + getRealm(), DISCOVERY_PATH);
         } else {
-            throw log.issuerUrlOrAuthServerUrlNeedsToBeConfigured();
+            throw log.providerUrlOrAuthServerUrlNeedsToBeConfigured();
         }
     }
 
@@ -260,11 +269,11 @@ public class OidcClientConfiguration {
         return relativeUrls;
     }
 
-    public String getIssuerUrl() {
-        if (issuerUrl == null) {
+    public String getProviderUrl() {
+        if (providerUrl == null) {
             resolveUrls();
         }
-        return issuerUrl;
+        return providerUrl;
     }
 
     public String getAuthUrl() {
@@ -302,8 +311,12 @@ public class OidcClientConfiguration {
         return jwksUrl;
     }
 
-    public void setResourceName(String resourceName) {
-        this.resourceName = resourceName;
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 
     public boolean isBearerOnly() {
