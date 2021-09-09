@@ -41,7 +41,6 @@ public class OidcSecurityContext implements Serializable {
     // Don't store parsed tokens into HTTP session
     protected transient AccessToken token;
     protected transient IDToken idToken;
-    //protected transient AuthorizationContext authorizationContext;
 
     public OidcSecurityContext() {
     }
@@ -61,10 +60,6 @@ public class OidcSecurityContext implements Serializable {
         return tokenString;
     }
 
-    /*public AuthorizationContext getAuthorizationContext() {
-        return authorizationContext;
-    }*/
-
     public IDToken getIDToken() {
         return idToken;
     }
@@ -77,8 +72,6 @@ public class OidcSecurityContext implements Serializable {
         // assumes that issuer contains realm name
         return token.getIssuer().substring(token.getIssuer().lastIndexOf('/') + 1);
     }
-
-    // SERIALIZATION
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

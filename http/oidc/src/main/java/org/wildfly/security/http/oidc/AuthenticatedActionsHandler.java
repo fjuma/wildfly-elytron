@@ -52,10 +52,6 @@ public class AuthenticatedActionsHandler {
             queryBearerToken();
             return true;
         }
-        // TODO: POLICY ENFORCER
-        /*if (! isAuthorized()) {
-            return true;
-        }*/
         return false;
     }
 
@@ -101,16 +97,6 @@ public class AuthenticatedActionsHandler {
         origin = "null".equals(origin) ? null : origin;
         String exposeHeaders = deployment.getCorsExposedHeaders();
 
-        /*if (deployment.getPolicyEnforcer() != null) {
-            if (exposeHeaders != null) {
-                exposeHeaders += ",";
-            } else {
-                exposeHeaders = "";
-            }
-
-            exposeHeaders += "WWW-Authenticate";
-        }*/
-
         String requestOrigin = getOrigin(facade.getRequest().getURI());
         log.debugv("Origin: {0} uri: {1}", origin, facade.getRequest().getURI());
         if (securityContext != null && origin != null && ! origin.equals(requestOrigin)) {
@@ -141,26 +127,6 @@ public class AuthenticatedActionsHandler {
         }
         return false;
     }
-
-    /*private boolean isAuthorized() {
-        PolicyEnforcer policyEnforcer = this.deployment.getPolicyEnforcer();
-
-        if (policyEnforcer == null) {
-            log.debugv("Policy enforcement is disabled.");
-            return true;
-        }
-        try {
-            OidcHttpFacade facade = (OidcHttpFacade) this.facade;
-            AuthorizationContext authorizationContext = policyEnforcer.enforce(facade);
-            RefreshableOidcSecurityContext session = (RefreshableOidcSecurityContext) facade.getSecurityContext();
-            if (session != null) {
-                session.setAuthorizationContext(authorizationContext);
-            }
-            return authorizationContext.isGranted();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to enforce policy decisions.", e);
-        }
-    }*/
 
     private static String getOrigin(String uri) {
         String u = uri;

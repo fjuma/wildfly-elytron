@@ -44,7 +44,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
         "register-node-at-startup", "register-node-period", "token-store", "adapter-state-cookie-path", "principal-attribute",
         "proxy-url", "turn-off-change-session-id-on-login", "token-minimum-time-to-live",
         "min-time-between-jwks-requests", "public-key-cache-ttl",
-        "policy-enforcer", "ignore-oauth-query-parameter", "verify-token-audience"
+        "ignore-oauth-query-parameter", "verify-token-audience"
 })
 public class OidcJsonConfiguration {
 
@@ -84,8 +84,6 @@ public class OidcJsonConfiguration {
     protected int minTimeBetweenJwksRequests = 10;
     @JsonProperty("public-key-cache-ttl")
     protected int publicKeyCacheTtl = 86400; // 1 day
-    //@JsonProperty("policy-enforcer")
-    //protected PolicyEnforcerConfig policyEnforcerConfig;
     // https://tools.ietf.org/html/rfc7636
     @JsonProperty("enable-pkce")
     protected boolean pkce = false;
@@ -261,14 +259,6 @@ public class OidcJsonConfiguration {
     public void setTurnOffChangeSessionIdOnLogin(Boolean turnOffChangeSessionIdOnLogin) {
         this.turnOffChangeSessionIdOnLogin = turnOffChangeSessionIdOnLogin;
     }
-
-    /*public PolicyEnforcerConfig getPolicyEnforcerConfig() {
-        return policyEnforcerConfig;
-    }
-
-    public void setPolicyEnforcerConfig(PolicyEnforcerConfig policyEnforcerConfig) {
-        this.policyEnforcerConfig = policyEnforcerConfig;
-    }*/
 
     public String getProxyUrl() {
         return proxyUrl;

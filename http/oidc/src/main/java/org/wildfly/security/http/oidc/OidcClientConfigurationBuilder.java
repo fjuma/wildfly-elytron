@@ -150,25 +150,6 @@ public class OidcClientConfigurationBuilder {
             oidcClientConfiguration.setTurnOffChangeSessionIdOnLogin(oidcJsonConfiguration.getTurnOffChangeSessionIdOnLogin());
         }
 
-        /*final PolicyEnforcerConfig policyEnforcerConfig = oidcJsonConfiguration.getPolicyEnforcerConfig();
-
-        if (policyEnforcerConfig != null) {
-            oidcClientConfiguration.setPolicyEnforcer(new Callable<PolicyEnforcer>() {
-                PolicyEnforcer policyEnforcer;
-                @Override
-                public PolicyEnforcer call() {
-                    if (policyEnforcer == null) {
-                        synchronized (oidcClientConfiguration) {
-                            if (policyEnforcer == null) {
-                                policyEnforcer = new PolicyEnforcer(oidcClientConfiguration, oidcJsonConfiguration);
-                            }
-                        }
-                    }
-                    return policyEnforcer;
-                }
-            });
-        }*/
-
         return oidcClientConfiguration;
     }
 

@@ -77,8 +77,6 @@ public class RequestAuthenticator {
             log.trace("--> authenticate()");
         }
 
-        // TODO: Will need to attempt bearer auth here later on to handle the bearer only case
-
         if (log.isTraceEnabled()) {
             log.trace("try oidc");
         }

@@ -120,9 +120,6 @@ final class OidcAuthenticationMechanism implements HttpServerAuthenticationMecha
     private boolean keycloakPreActions(OidcHttpFacade httpFacade, OidcClientContext deploymentContext) {
         NodesRegistrationManagement nodesRegistrationManagement = new NodesRegistrationManagement();
         nodesRegistrationManagement.tryRegister(httpFacade.getOidcClientConfiguration());
-        // TODO: logout
-        //PreAuthActionsHandler preActions = new PreAuthActionsHandler(UserSessionManagement.class.cast(httpFacade.getTokenStore()), deploymentContext, httpFacade);
-        //return preActions.handleRequest();
         return false;
     }
 
