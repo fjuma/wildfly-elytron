@@ -32,8 +32,8 @@ import java.security.Provider;
 import java.security.Security;
 import java.util.Arrays;
 
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslServer;
 

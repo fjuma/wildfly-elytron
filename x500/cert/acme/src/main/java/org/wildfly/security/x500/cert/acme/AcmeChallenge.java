@@ -25,7 +25,7 @@ import static org.wildfly.security.x500.cert.acme.ElytronMessages.acme;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.wildfly.common.Assert;
 import org.wildfly.common.iteration.CodePointIterator;

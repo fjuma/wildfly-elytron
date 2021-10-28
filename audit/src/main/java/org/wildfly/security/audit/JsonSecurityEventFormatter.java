@@ -25,8 +25,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.function.Supplier;
 
-import javax.json.JsonObjectBuilder;
-import javax.json.spi.JsonProvider;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.spi.JsonProvider;
 
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.auth.server.event.SecurityAuthenticationFailedEvent;

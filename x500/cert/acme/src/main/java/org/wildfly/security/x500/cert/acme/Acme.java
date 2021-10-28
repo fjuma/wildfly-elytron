@@ -25,8 +25,8 @@ import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 
-import javax.json.Json;
-import javax.json.JsonObject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 
 import org.wildfly.common.codec.Base64Alphabet;
 import org.wildfly.common.iteration.ByteIterator;
