@@ -5,7 +5,49 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Mon, 18 Oct 2021 17:30:24 +0000</lastBuildDate>
+        <lastBuildDate>Wed, 15 Dec 2021 22:06:56 +0000</lastBuildDate>
+        
+        <item>
+            <title>Securing WildFly Apps with OpenID Connect</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-openid-connect/
+            </link>
+            <description>
+                WildFly 25 added the ability to secure applications using OpenID Connect, without needing to make use of the Keycloak client adapter. This blog post gives an introduction to this feature. OpenID Connect New elytron-oidc-client Subsystem Deployment Configuration Subsystem Configuration Required Configuration Options OpenID Providers Securing an application using OIDC Example...
+            </description>
+            <pubDate>Wed, 15 Dec 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-openid-connect/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Using failover realm in Elytron</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/failover-realm/
+            </link>
+            <description>
+                With a failover realm you can configure an alternative realm that will be used if primary realm is not available. A common use case is to fail over to a local file based realm if an LDAP or database server has gone down allowing administrators to retain access to the...
+            </description>
+            <pubDate>Thu, 21 Oct 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/failover-realm/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Using distributed realm in Elytron</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/distributed-realm/
+            </link>
+            <description>
+                With a distributed realm you can combine identities located across multiple security realms of any type into a single security realm. Identities can be used for both authentication and authorization purposes. Add a distributed realm You can add a distributed-realm to the Elytron subsystem by specifying the list of realms...
+            </description>
+            <pubDate>Thu, 21 Oct 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/distributed-realm/
+            </guid>
+        </item>
         
         <item>
             <title>Open Source Day 2021 Recap</title>
@@ -102,48 +144,6 @@
             <pubDate>Fri, 18 Jun 2021 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/ssl-certificate-revocation-list/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Secure WildFly CLI with Keycloak</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/secure-wildfly-cli-with-keycloak/
-            </link>
-            <description>
-                This blog post gives an example of how to secure WildFly CLI using Keycloak and Elytron. Keycloak&#8217;s Wildfly Elytron Adapter Download WildFly server, Keycloak server and the WildFly OpenID Connect client adapter for WildFly from keycloak.org. Make sure your versions are compatible. Then, extract the contents of the client adapter...
-            </description>
-            <pubDate>Tue, 15 Jun 2021 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/secure-wildfly-cli-with-keycloak/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Invoking EJBs over HTTP</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/ejb-over-http/
-            </link>
-            <description>
-                Server Configuration Prerequisite Configuration Configure the HTTP Transport Client Configuration Prerequisite Configuration Performing Invocations Summary The ejb-http quickstart will describe the steps to setting up EJBs using HTTP as the transport. It will also secure it with a FileSystem realm, and use a credential store to access the EJB. This...
-            </description>
-            <pubDate>Mon, 14 Jun 2021 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/ejb-over-http/
-            </guid>
-        </item>
-        
-        <item>
-            <title>WildFly Encrypted Expression Support</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/wildfly-encrypted-expressions/
-            </link>
-            <description>
-                With the release of WildFly 23 the WildFly Elytron project and it&#8217;s integration now adds support for encrypted expressions within the management model, this post will describe the steps to quickly get started using this new feature. Introduction The CredentialStore functionality provided by WildFly Elytron provides a mechanism for the...
-            </description>
-            <pubDate>Fri, 19 Mar 2021 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/wildfly-encrypted-expressions/
             </guid>
         </item>
         
