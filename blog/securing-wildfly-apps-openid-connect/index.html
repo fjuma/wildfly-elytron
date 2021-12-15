@@ -154,8 +154,8 @@ to make use of the Keycloak client adapter. This blog post gives an introduction
 <ul class="sectlevel2">
 <li><a href="#example-project">Example Project</a></li>
 <li><a href="#setting-up-your-keycloak-openid-provider">Setting up your Keycloak OpenID provider</a></li>
-<li><a href="#deploy-the-app-to-wildfly">Deploy the app to WildFly</a></li>
-<li><a href="#access-the-app">Access the app</a></li>
+<li><a href="#deploying-the-app-to-wildfly">Deploying the app to WildFly</a></li>
+<li><a href="#accessing-the-app">Accessing the app</a></li>
 </ul>
 </li>
 <li><a href="#summary">Summary</a></li>
@@ -299,10 +299,10 @@ on <code>Clients</code> and then on <code>myclient</code>. In the <code>Valid Re
 </div>
 </div>
 <div class="sect2">
-<h3 id="deploy-the-app-to-wildfly"><a class="anchor" href="#deploy-the-app-to-wildfly"></a>Deploy the app to WildFly</h3>
+<h3 id="deploying-the-app-to-wildfly"><a class="anchor" href="#deploying-the-app-to-wildfly"></a>Deploying the app to WildFly</h3>
 <div class="paragraph">
 <p>We&#8217;re going to use the deployment configuration approach for this example, i.e., our application
-contains an oidc.json file and its web.xml` file specifies <code>OIDC</code> as the <code>auth-method</code>.</p>
+contains an <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/simple-webapp-oidc/src/main/webapp/WEB-INF/oidc.json">oidc.json</a> file and its <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/simple-webapp-oidc/src/main/webapp/WEB-INF/web.xml#L18-L20">web.xml</a> file specifies <code>OIDC</code> as the <code>auth-method</code>.</p>
 </div>
 <div class="paragraph">
 <p>Now that we&#8217;ve set up our Keycloak OpenID provider, we just need to deploy our application to WildFly.</p>
@@ -328,7 +328,7 @@ mvn wildfly:deploy -Dwildfly.port=10000</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="access-the-app"><a class="anchor" href="#access-the-app"></a>Access the app</h3>
+<h3 id="accessing-the-app"><a class="anchor" href="#accessing-the-app"></a>Accessing the app</h3>
 <div class="paragraph">
 <p>Now, let&#8217;s try accessing our application using <a href="http://localhost:8090/simple-webapp-oidc/" class="bare">http://localhost:8090/simple-webapp-oidc/</a>.</p>
 </div>
