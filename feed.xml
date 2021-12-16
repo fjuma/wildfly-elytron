@@ -5,7 +5,21 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Wed, 15 Dec 2021 22:19:32 +0000</lastBuildDate>
+        <lastBuildDate>Thu, 16 Dec 2021 20:50:49 +0000</lastBuildDate>
+        
+        <item>
+            <title>New Security Features in WildFly</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-wildfly/
+            </link>
+            <description>
+                Since WildFly 26 was just released, we wanted to highlight a new security feature included in this release and a couple other security features as well. Support for JAAS security realms in WildFly 26 WildFly 26 now adds support for JAAS security realms to the Elytron subsystem. This means that...
+            </description>
+            <pubDate>Thu, 16 Dec 2021 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-wildfly/
+            </guid>
+        </item>
         
         <item>
             <title>Securing WildFly Apps with OpenID Connect</title>
@@ -130,20 +144,6 @@
             <pubDate>Mon, 21 Jun 2021 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/oneway-sslv2hello/
-            </guid>
-        </item>
-        
-        <item>
-            <title>SSL Certificate Revocation Lists with WildFly</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/ssl-certificate-revocation-list/
-            </link>
-            <description>
-                An Overview of Certificate Revocation Lists Configuring CRLs on the Client Side Back Up Your Standalone Server Configuration Pre-requisite Server Configuration Pre-requisite Client Configuration Configure the Server Create the Certificate Revocation Lists Configure a Client that verifies certificates against CRLs Build and Deploy the Application Run the Client and Verify...
-            </description>
-            <pubDate>Fri, 18 Jun 2021 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/ssl-certificate-revocation-list/
             </guid>
         </item>
         
