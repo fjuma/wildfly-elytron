@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Thu, 16 Dec 2021 20:50:49 +0000</lastBuildDate>
+        <lastBuildDate>Thu, 16 Dec 2021 21:17:23 +0000</lastBuildDate>
         
         <item>
             <title>New Security Features in WildFly</title>
@@ -13,7 +13,7 @@
                 https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-wildfly/
             </link>
             <description>
-                Since WildFly 26 was just released, we wanted to highlight a new security feature included in this release and a couple other security features as well. Support for JAAS security realms in WildFly 26 WildFly 26 now adds support for JAAS security realms to the Elytron subsystem. This means that...
+                Since WildFly 26 was just released, we wanted to highlight a new security feature included in this release and a couple other security features as well. Support for JAAS Security Realms in WildFly 26 WildFly 26 now adds support for JAAS security realms to the Elytron subsystem. This means that...
             </description>
             <pubDate>Thu, 16 Dec 2021 00:00:00 +0000</pubDate>
             <guid>
