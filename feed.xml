@@ -5,17 +5,17 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Fri, 14 Jan 2022 19:53:25 +0000</lastBuildDate>
+        <lastBuildDate>Fri, 14 Jan 2022 19:56:00 +0000</lastBuildDate>
         
         <item>
-            <title>Multi-Tenancy Support for OpenID Connect Applications</title>
+            <title>Multi-tenancy Support for OpenID Connect Applications</title>
             <link>
                 https://wildfly-security.github.io/wildfly-elytron/blog/multi-tenancy-support-openid-connect/
             </link>
             <description>
-                As mentioned in my last blog post, applications deployed to WildFly can be secured with OpenID Connect, without needing to use the Keycloak client adapter. WildFly 26.0.1.Final, which was just released today, also includes a fix for multi-tenancy support for OpenID Connect applications. This blog post gives an overview of...
+                As mentioned in my last blog post, applications deployed to WildFly can be secured with OpenID Connect, without needing to use the Keycloak client adapter. WildFly 26.0.1.Final, which was just released, also includes a fix for multi-tenancy support for OpenID Connect applications. This blog post gives an overview of how...
             </description>
-            <pubDate>Thu, 13 Jan 2022 00:00:00 +0000</pubDate>
+            <pubDate>Fri, 14 Jan 2022 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/multi-tenancy-support-openid-connect/
             </guid>
