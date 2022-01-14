@@ -284,7 +284,7 @@ cd elytron-examples</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>We’re going to be looking at the <code>multi-tenancy-oidc</code> project.</p>
+<p>We’re going to be looking at the <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/multi-tenancy-oidc">multi-tenancy-oidc</a> project.</p>
 </div>
 </div>
 <div class="sect2">
@@ -307,8 +307,8 @@ on <code>myclient</code>. In the <code>Valid Redirect URIs</code> field, enter <
 <div class="paragraph">
 <p>Take a look at the <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/multi-tenancy-oidc/src/main/java/org/wildfly/security/examples/PathBasedOidcConfigResolver.java">custom configuration resovler</a>
 defined in our application. Notice that the <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/multi-tenancy-oidc/src/main/resources/oidc-tenant1.json">oidc-tenant1.json</a> configuration file will be used for requests of the form
-<code><a href="http://localhost:8090/multi-tenancy-oidc/tenant1" class="bare">http://localhost:8090/multi-tenancy-oidc/tenant1</a></code>. Similarly, the <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/multi-tenancy-oidc/src/main/resources/oidc-tenant2.json">oidc-tenant2.json</a> configuration file will be used for
-requests of the form <code><a href="http://localhost:8090/multi-tenancy-oidc/tenant2" class="bare">http://localhost:8090/multi-tenancy-oidc/tenant2</a></code>.</p>
+<a href="http://localhost:8090/multi-tenancy-oidc/tenant1" class="bare">http://localhost:8090/multi-tenancy-oidc/tenant1</a>. Similarly, the <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/multi-tenancy-oidc/src/main/resources/oidc-tenant2.json">oidc-tenant2.json</a> configuration file will be used for
+requests of the form <a href="http://localhost:8090/multi-tenancy-oidc/tenant2" class="bare">http://localhost:8090/multi-tenancy-oidc/tenant2</a>.</p>
 </div>
 <div class="paragraph">
 <p>Finally, notice that we&#8217;ve specified that we want to use our custom configuration resolver in our application&#8217;s <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/multi-tenancy-oidc/src/main/webapp/WEB-INF/web.xml#L8-L11">web.xml</a> file.</p>
