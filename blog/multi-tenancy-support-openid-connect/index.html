@@ -305,11 +305,16 @@ on <code>myclient</code>. In the <code>Valid Redirect URIs</code> field, enter <
 <div class="sect2">
 <h3 id="deploying-the-app-to-wildfly"><a class="anchor" href="#deploying-the-app-to-wildfly"></a>Deploying the app to WildFly</h3>
 <div class="paragraph">
-<p>We&#8217;re going to use the deployment configuration approach for this example, i.e., our application
-contains an <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/simple-webapp-oidc/src/main/webapp/WEB-INF/oidc.json">oidc.json</a> file and its <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/simple-webapp-oidc/src/main/webapp/WEB-INF/web.xml#L18-L20">web.xml</a> file specifies <code>OIDC</code> as the <code>auth-method</code>.</p>
+<p>Take a look at the <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/multi-tenancy-oidc/src/main/java/org/wildfly/security/examples/PathBasedOidcConfigResolver.java">custom configuration resovler</a>
+defined in our application. Notice that the <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/multi-tenancy-oidc/src/main/resources/oidc-tenant1.json">oidc-tenant1.json</a> configuration file will be used for requests of the form
+<code><a href="http://localhost:8090/multi-tenancy-oidc/tenant1" class="bare">http://localhost:8090/multi-tenancy-oidc/tenant1</a></code>. Similarly, the <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/multi-tenancy-oidc/src/main/resources/oidc-tenant2.json">oidc-tenant2.json</a> configuration file will be used for
+requests of the form <code><a href="http://localhost:8090/multi-tenancy-oidc/tenant2" class="bare">http://localhost:8090/multi-tenancy-oidc/tenant2</a></code>.</p>
 </div>
 <div class="paragraph">
-<p>Now that we&#8217;ve set up our Keycloak OpenID provider, we just need to deploy our application to WildFly.</p>
+<p>Finally, notice that we&#8217;ve specified that we want to use our custom configuration resolver in our application&#8217;s <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/master/multi-tenancy-oidc/src/main/webapp/WEB-INF/web.xml#L8-L11">web.xml</a> file.</p>
+</div>
+<div class="paragraph">
+<p>Now let&#8217;s deploy our application to WildFly.</p>
 </div>
 <div class="paragraph">
 <p>First, we&#8217;re going to start our WildFly instance (notice that we&#8217;re specifying a port offset here
