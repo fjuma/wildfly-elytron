@@ -5,19 +5,19 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Wed, 13 Apr 2022 16:32:21 +0000</lastBuildDate>
+        <lastBuildDate>Wed, 13 Apr 2022 17:40:23 +0000</lastBuildDate>
         
         <item>
-            <title>New Security Features in WildFly</title>
+            <title>New Security Features in WildFly 26.1</title>
             <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-wildfly/
+                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-wildfly-26-1/
             </link>
             <description>
-                Since WildFly 26.1 was just released, we wanted to highlight some new security features included in this release. Automatic Registration of a Client Side Default SSLContext The Elytron authentication client now provides a Java security provider that can be used to register a JVM wide default SSLContext. When this provider...
+                Since WildFly 26.1 was just released, we wanted to highlight some new security features included in this release. New Features Automatic Registration of a Client Side Default SSLContext The Elytron authentication client now provides a Java security provider that can be used to register a JVM wide default SSLContext. When...
             </description>
             <pubDate>Wed, 13 Apr 2022 00:00:00 +0000</pubDate>
             <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-wildfly/
+                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-wildfly-26-1/
             </guid>
         </item>
         
