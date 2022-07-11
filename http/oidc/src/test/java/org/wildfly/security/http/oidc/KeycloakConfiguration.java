@@ -62,20 +62,50 @@ public class KeycloakConfiguration {
         return createRealm(realmName, clientId, clientSecret, clientHostName, clientPort, clientApp);
     }
 
+    public static RealmRepresentation getRealmRepresentation(final String realmName, String clientId, String clientSecret,
+                                                             String clientHostName, int clientPort, String clientApp,
+                                                             boolean directAccessGrantEnabled, String bearerOnlyClientId) {
+        return createRealm(realmName, clientId, clientSecret, clientHostName, clientPort, clientApp, directAccessGrantEnabled, bearerOnlyClientId);
+    }
+
     public static String getAdminAccessToken(String authServerUrl) {
+        return getAdminAccessToken(authServerUrl, "master", KeycloakContainer.KEYCLOAK_ADMIN_USER,
+                KeycloakContainer.KEYCLOAK_ADMIN_PASSWORD, "admin-cli");
+    }
+
+    public static String getAdminAccessToken(String authServerUrl, String realmName, String username, String password, String clientId) {
         return RestAssured
                 .given()
                 .param("grant_type", "password")
-                .param("username", KeycloakContainer.KEYCLOAK_ADMIN_USER)
-                .param("password", KeycloakContainer.KEYCLOAK_ADMIN_PASSWORD)
-                .param("client_id", "admin-cli")
+                .param("username", username)
+                .param("password", password)
+                .param("client_id", clientId)
                 .when()
-                .post(authServerUrl + "/realms/master/protocol/openid-connect/token")
+                .post(authServerUrl + "/realms/" + realmName + "/protocol/openid-connect/token")
+                .as(AccessTokenResponse.class).getToken();
+    }
+
+    public static String getAccessToken(String authServerUrl, String realmName, String username, String password, String clientId, String clientSecret) {
+        return RestAssured
+                .given()
+                .param("grant_type", "password")
+                .param("username", username)
+                .param("password", password)
+                .param("client_id", clientId)
+                .param("client_secret", clientSecret)
+                .when()
+                .post(authServerUrl + "/realms/" + realmName + "/protocol/openid-connect/token")
                 .as(AccessTokenResponse.class).getToken();
     }
 
     private static RealmRepresentation createRealm(String name, String clientId, String clientSecret,
                                                    String clientHostName, int clientPort, String clientApp) {
+        return createRealm(name, clientId, clientSecret, clientHostName, clientPort, clientApp, false, null);
+    }
+
+    private static RealmRepresentation createRealm(String name, String clientId, String clientSecret,
+                                                   String clientHostName, int clientPort, String clientApp,
+                                                   boolean directAccessGrantEnabled, String bearerOnlyClientId) {
         RealmRepresentation realm = new RealmRepresentation();
 
         realm.setRealm(name);
@@ -94,20 +124,33 @@ public class KeycloakConfiguration {
         realm.getRoles().getRealm().add(new RoleRepresentation("user", null, false));
         realm.getRoles().getRealm().add(new RoleRepresentation("admin", null, false));
 
-        realm.getClients().add(createWebAppClient(clientId, clientSecret, clientHostName, clientPort, clientApp));
+        realm.getClients().add(createWebAppClient(clientId, clientSecret, clientHostName, clientPort, clientApp, directAccessGrantEnabled));
+
+        if (bearerOnlyClientId != null) {
+            realm.getClients().add(createBearerOnlyClient(bearerOnlyClientId));
+        }
 
         realm.getUsers().add(createUser(ALICE, ALICE_PASSWORD, Arrays.asList(USER_ROLE, ADMIN_ROLE)));
         realm.getUsers().add(createUser(BOB, BOB_PASSWORD, Arrays.asList(USER_ROLE)));
         return realm;
     }
 
-    private static ClientRepresentation createWebAppClient(String clientId, String clientSecret, String clientHostName, int clientPort, String clientApp) {
+    private static ClientRepresentation createWebAppClient(String clientId, String clientSecret, String clientHostName, int clientPort, String clientApp, boolean directAccessGrantEnabled) {
         ClientRepresentation client = new ClientRepresentation();
         client.setClientId(clientId);
         client.setPublicClient(false);
         client.setSecret(clientSecret);
         //client.setRedirectUris(Arrays.asList("*"));
         client.setRedirectUris(Arrays.asList("http://" + clientHostName + ":" + clientPort + "/" + clientApp));
+        client.setEnabled(true);
+        client.setDirectAccessGrantsEnabled(directAccessGrantEnabled);
+        return client;
+    }
+
+    private static ClientRepresentation createBearerOnlyClient(String clientId) {
+        ClientRepresentation client = new ClientRepresentation();
+        client.setClientId(clientId);
+        client.setBearerOnly(true);
         client.setEnabled(true);
         return client;
     }

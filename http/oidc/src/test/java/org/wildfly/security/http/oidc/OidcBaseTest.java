@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021 Red Hat, Inc., and individual contributors
+ * Copyright 2022 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,28 +19,17 @@
 package org.wildfly.security.http.oidc;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-import static org.wildfly.security.http.oidc.Oidc.OIDC_NAME;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 
-import org.apache.http.HttpStatus;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.testcontainers.DockerClientFactory;
 import org.wildfly.security.auth.callback.AuthenticationCompleteCallback;
@@ -56,7 +45,6 @@ import org.wildfly.security.http.impl.AbstractBaseHttpTest;
 import org.wildfly.security.jose.util.JsonSerialization;
 
 import com.gargoylesoftware.htmlunit.SilentCssErrorHandler;
-import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
@@ -67,7 +55,6 @@ import io.restassured.RestAssured;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.QueueDispatcher;
 import okhttp3.mockwebserver.RecordedRequest;
 
 /**
@@ -75,38 +62,84 @@ import okhttp3.mockwebserver.RecordedRequest;
  *
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-public class OidcTest extends AbstractBaseHttpTest {
+public class OidcBaseTest extends AbstractBaseHttpTest {
 
     public static final String CLIENT_ID = "test-webapp";
     public static final String CLIENT_SECRET = "secret";
-    private static KeycloakContainer KEYCLOAK_CONTAINER;
-    private static final String TEST_REALM = "WildFly";
-    private static final String KEYCLOAK_USERNAME = "username";
-    private static final String KEYCLOAK_PASSWORD = "password";
-    private static final String KEYCLOAK_LOGIN = "login";
-    private static final int CLIENT_PORT = 5002;
-    private static final String CLIENT_APP = "clientApp";
-    private static final String CLIENT_PAGE_TEXT = "Welcome page!";
-    private static final String CLIENT_HOST_NAME = "localhost";
-    private static MockWebServer client; // to simulate the application being secured
-
-    private static final String CLIENT_ID = "test-webapp-direct";
-    private static final String SECURED_ENDPOINT = "/secured";
-    private static final String SECURED_PAGE_TEXT = "Welcome to the secured page!";
+    public static KeycloakContainer KEYCLOAK_CONTAINER;
+    public static final String TEST_REALM = "WildFly";
+    public static final String KEYCLOAK_USERNAME = "username";
+    public static final String KEYCLOAK_PASSWORD = "password";
+    public static final String KEYCLOAK_LOGIN = "login";
+    public static final int CLIENT_PORT = 5002;
+    public static final String CLIENT_APP = "clientApp";
+    public static final String CLIENT_PAGE_TEXT = "Welcome page!";
+    public static final String CLIENT_HOST_NAME = "localhost";
+    public static MockWebServer client; // to simulate the application being secured
 
     protected HttpServerAuthenticationMechanismFactory oidcFactory;
 
-    @BeforeClass
-    public static void startTestContainers() throws Exception {
-        assumeTrue("Docker isn't available, OIDC tests will be skipped", isDockerAvailable());
-        KEYCLOAK_CONTAINER = new KeycloakContainer();
-        KEYCLOAK_CONTAINER.start();
-        sendRealmCreationRequest(KeycloakConfiguration.getRealmRepresentation(TEST_REALM, CLIENT_ID, CLIENT_SECRET, CLIENT_HOST_NAME, CLIENT_PORT, CLIENT_APP));
-        client = new MockWebServer();
-        client.start(CLIENT_PORT);
+    @AfterClass
+    public static void generalCleanup() throws Exception {
+        if (KEYCLOAK_CONTAINER != null) {
+            RestAssured
+                    .given()
+                    .auth().oauth2(KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl()))
+                    .when()
+                    .delete(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/admin/realms/" + TEST_REALM).then().statusCode(204);
+            KEYCLOAK_CONTAINER.stop();
+        }
+        if (client != null) {
+            client.shutdown();
+        }
     }
 
-    private static Dispatcher createAppResponse(HttpServerAuthenticationMechanism mechanism, int expectedStatusCode, String expectedLocation, String clientPageText) {
+    protected static void sendRealmCreationRequest(RealmRepresentation realm) {
+        try {
+            RestAssured
+                    .given()
+                    .auth().oauth2(KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl()))
+                    .contentType("application/json")
+                    .body(JsonSerialization.writeValueAsBytes(realm))
+                    .when()
+                    .post(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/admin/realms").then()
+                    .statusCode(201);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected static boolean isDockerAvailable() {
+        try {
+            DockerClientFactory.instance().client();
+            return true;
+        } catch (Throwable ex) {
+            return false;
+        }
+    }
+
+    protected CallbackHandler getCallbackHandler() {
+        return callbacks -> {
+            for(Callback callback : callbacks) {
+                if (callback instanceof EvidenceVerifyCallback) {
+                    Evidence evidence = ((EvidenceVerifyCallback) callback).getEvidence();
+                    ((EvidenceVerifyCallback) callback).setVerified(evidence.getDecodedPrincipal() != null);
+                } else if (callback instanceof AuthenticationCompleteCallback) {
+                    // NO-OP
+                } else if (callback instanceof IdentityCredentialCallback) {
+                    // NO-OP
+                } else if (callback instanceof AuthorizeCallback) {
+                    ((AuthorizeCallback) callback).setAuthorized(true);
+                } else if (callback instanceof SecurityIdentityCallback) {
+                    ((SecurityIdentityCallback) callback).setSecurityIdentity(SecurityDomain.builder().build().getCurrentSecurityIdentity());
+                } else {
+                    throw new UnsupportedCallbackException(callback);
+                }
+            }
+        };
+    }
+
+    protected static Dispatcher createAppResponse(HttpServerAuthenticationMechanism mechanism, int expectedStatusCode, String expectedLocation, String clientPageText) {
         return new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest recordedRequest) throws InterruptedException {
@@ -130,196 +163,18 @@ public class OidcTest extends AbstractBaseHttpTest {
         };
     }
 
-    private static Dispatcher createAppBearerResponse(HttpServerAuthenticationMechanism mechanism, int expectedStatusCode, String expectedLocation, String clientPageText) {
-        return new Dispatcher() {
-            @Override
-            public MockResponse dispatch(RecordedRequest recordedRequest) throws InterruptedException {
-                String path = recordedRequest.getPath();
-                if (path.contains("/" + CLIENT_APP + SECURED_ENDPOINT)) {
-                    try {
-                        String authorizationHeader = recordedRequest.getHeader("Authorization");
-                        TestingHttpServerRequest request = new TestingHttpServerRequest(authorizationHeader == null ? null : new String[] { authorizationHeader },
-                                new URI(recordedRequest.getRequestUrl().toString()));
-                        mechanism.evaluateRequest(request);
-                        TestingHttpServerResponse response = request.getResponse();
-                        assertEquals(expectedStatusCode, response.getStatusCode());
-                        assertEquals(expectedLocation, response.getLocation());
-                        return new MockResponse().setBody(clientPageText);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                return new MockResponse()
-                        .setBody("");
-            }
-        };
-    }
-
-    @AfterClass
-    public static void generalCleanup() throws Exception {
-        if (KEYCLOAK_CONTAINER != null) {
-            RestAssured
-                    .given()
-                    .auth().oauth2(KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl()))
-                    .when()
-                    .delete(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/admin/realms/" + TEST_REALM).then().statusCode(204);
-            KEYCLOAK_CONTAINER.stop();
-        }
-        if (client != null) {
-            client.shutdown();
-        }
-    }
-
-    private static void sendRealmCreationRequest(RealmRepresentation realm) {
-        try {
-            RestAssured
-                    .given()
-                    .auth().oauth2(KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl()))
-                    .contentType("application/json")
-                    .body(JsonSerialization.writeValueAsBytes(realm))
-                    .when()
-                    .post(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/admin/realms").then()
-                    .statusCode(201);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Test
-    public void testWrongPassword() throws Exception {
-        Map<String, Object> props = new HashMap<>();
-        OidcClientConfiguration oidcClientConfiguration = OidcClientConfigurationBuilder.build(getOidcConfigurationInputStream());
-        OidcClientContext oidcClientContext = new OidcClientContext(oidcClientConfiguration);
-        oidcFactory = new OidcMechanismFactory(oidcClientContext);
-        HttpServerAuthenticationMechanism mechanism = oidcFactory.createAuthenticationMechanism(OIDC_NAME, props, getCallbackHandler());
-
-        URI requestUri = new URI(getClientUrl());
-        TestingHttpServerRequest request = new TestingHttpServerRequest(null, requestUri);
-        mechanism.evaluateRequest(request);
-        TestingHttpServerResponse response = request.getResponse();
-        assertEquals(HttpStatus.SC_MOVED_TEMPORARILY, response.getStatusCode());
-        assertEquals(Status.NO_AUTH, request.getResult());
-
-        HtmlPage page = loginToKeycloak(KeycloakConfiguration.ALICE, "WRONG_PASSWORD", requestUri, response.getLocation(), response.getCookies()).click();
-        assertTrue(page.getBody().asText().contains("Invalid username or password"));
-    }
-
-    @Test
-    public void testWrongAuthServerUrl() throws Exception {
-        performAuthentication(getOidcConfigurationInputStream(CLIENT_SECRET, "http://fakeauthserver/auth"), KeycloakConfiguration.ALICE,
-                KeycloakConfiguration.ALICE_PASSWORD, false, -1, null, null);
-    }
-
-    @Test
-    public void testWrongClientSecret() throws Exception {
-        performAuthentication(getOidcConfigurationInputStream("WRONG_CLIENT_SECRET"), KeycloakConfiguration.ALICE,
-                KeycloakConfiguration.ALICE_PASSWORD, true, HttpStatus.SC_FORBIDDEN, null,"Forbidden");
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void testMissingRequiredConfigurationOption() {
-        OidcClientConfigurationBuilder.build(getOidcConfigurationMissingRequiredOption());
-    }
-
-    @Test
-    public void testSucessfulAuthenticationWithAuthServerUrl() throws Exception {
-        performAuthentication(getOidcConfigurationInputStream(), KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
-                true, HttpStatus.SC_MOVED_TEMPORARILY, getClientUrl(), CLIENT_PAGE_TEXT);
-    }
-
-    @Test
-    public void testSucessfulAuthenticationWithProviderUrl() throws Exception {
-        performAuthentication(getOidcConfigurationInputStreamWithProviderUrl(), KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
-                true, HttpStatus.SC_MOVED_TEMPORARILY, getClientUrl(), CLIENT_PAGE_TEXT);
-    }
-
-    @Test
-    public void testTokenSignatureAlgorithm() throws Exception {
-        // keycloak uses RS256
-        performAuthentication(getOidcConfigurationInputStreamWithTokenSignatureAlgorithm(), KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
-                true, HttpStatus.SC_MOVED_TEMPORARILY, getClientUrl(), CLIENT_PAGE_TEXT);
-    }
-
-    @Test
-    public void testSucessfulBearerAuthenticationWithAuthServerUrl() throws Exception {
-        performBearerAuthentication(getOidcConfigurationInputStreamWithBearerOnly(), SECURED_ENDPOINT, HttpStatus.SC_OK, getClientUrl() + SECURED_ENDPOINT, SECURED_PAGE_TEXT);
-    }
-
-    private void performAuthentication(InputStream oidcConfig, String username, String password, boolean loginToKeycloak,
-                                       int expectedDispatcherStatusCode, String expectedLocation, String clientPageText) throws Exception {
-        try {
-            Map<String, Object> props = new HashMap<>();
-            OidcClientConfiguration oidcClientConfiguration = OidcClientConfigurationBuilder.build(oidcConfig);
-            assertEquals(OidcClientConfiguration.RelativeUrlsUsed.NEVER, oidcClientConfiguration.getRelativeUrls());
-
-            OidcClientContext oidcClientContext = new OidcClientContext(oidcClientConfiguration);
-            oidcFactory = new OidcMechanismFactory(oidcClientContext);
-            HttpServerAuthenticationMechanism mechanism = oidcFactory.createAuthenticationMechanism(OIDC_NAME, props, getCallbackHandler());
-
-            URI requestUri = new URI(getClientUrl());
-            TestingHttpServerRequest request = new TestingHttpServerRequest(null, requestUri);
-            mechanism.evaluateRequest(request);
-            TestingHttpServerResponse response = request.getResponse();
-            assertEquals(loginToKeycloak ? HttpStatus.SC_MOVED_TEMPORARILY : HttpStatus.SC_FORBIDDEN, response.getStatusCode());
-            assertEquals(Status.NO_AUTH, request.getResult());
-
-            if (loginToKeycloak) {
-                client.setDispatcher(createAppResponse(mechanism, expectedDispatcherStatusCode, expectedLocation, clientPageText));
-                TextPage page = loginToKeycloak(username, password, requestUri, response.getLocation(),
-                        response.getCookies()).click();
-                assertTrue(page.getContent().contains(clientPageText));
-            }
-        } finally {
-            client.setDispatcher(new QueueDispatcher());
-        }
-    }
-
-    private void performBearerAuthentication(InputStream oidcConfig, String endpoint, int expectedDispatcherStatusCode,
-                                             String expectedLocation, String clientPageText) throws Exception {
-        try {
-            Map<String, Object> props = new HashMap<>();
-            OidcClientConfiguration oidcClientConfiguration = OidcClientConfigurationBuilder.build(oidcConfig);
-            assertEquals(OidcClientConfiguration.RelativeUrlsUsed.NEVER, oidcClientConfiguration.getRelativeUrls());
-
-            OidcClientContext oidcClientContext = new OidcClientContext(oidcClientConfiguration);
-            oidcFactory = new OidcMechanismFactory(oidcClientContext);
-            HttpServerAuthenticationMechanism mechanism = oidcFactory.createAuthenticationMechanism(OIDC_NAME, props, getCallbackHandler());
-
-            URI requestUri = new URI(getClientUrl() + endpoint);
-            client.setDispatcher(createAppBearerResponse(mechanism, expectedDispatcherStatusCode, expectedLocation, clientPageText));
-            TestingHttpServerRequest request = new TestingHttpServerRequest(null, requestUri);
-            mechanism.evaluateRequest(request);
-            TestingHttpServerResponse response = request.getResponse();
-            assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getStatusCode());
-            assertEquals("Bearer realm=\"" + TEST_REALM + "\"", response.getAuthenticateHeader());
-            String accessToken = KeycloakConfiguration.getAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl(), TEST_REALM, KeycloakConfiguration.ALICE,
-                    KeycloakConfiguration.ALICE_PASSWORD, oidcClientConfiguration.getClientId(), CLIENT_SECRET);
-            request = new TestingHttpServerRequest(new String[] {"Bearer " + accessToken}, requestUri);
-            response = request.getResponse();
-            assertEquals(HttpStatus.SC_OK, response.getStatusCode());
-            /*
-            assertEquals(loginToKeycloak ? HttpStatus.SC_MOVED_TEMPORARILY : HttpStatus.SC_FORBIDDEN, response.getStatusCode());
-            assertEquals(Status.NO_AUTH, request.getResult());
-
-            if (loginToKeycloak) {
-                client.setDispatcher(createAppResponse(mechanism, expectedDispatcherStatusCode, expectedLocation, clientPageText));
-                TextPage page = loginToKeycloak(username, password, requestUri, response.getLocation(),
-                        response.getCookies()).click();
-                assertTrue(page.getContent().contains(clientPageText));
-            }*/
-        } finally {
-            client.setDispatcher(new QueueDispatcher());
-        }
-    }
-
-    private WebClient getWebClient() {
+    protected WebClient getWebClient() {
         WebClient webClient = new WebClient();
         webClient.setCssErrorHandler(new SilentCssErrorHandler());
         webClient.setJavaScriptErrorListener(new SilentJavaScriptErrorListener());
         return webClient;
     }
 
-    private HtmlInput loginToKeycloak(String username, String password, URI requestUri, String location, List<HttpServerCookie> cookies) throws IOException {
+    protected static String getClientUrl() {
+        return "http://" + CLIENT_HOST_NAME + ":" + CLIENT_PORT + "/" + CLIENT_APP;
+    }
+
+    protected HtmlInput loginToKeycloak(String username, String password, URI requestUri, String location, List<HttpServerCookie> cookies) throws IOException {
         WebClient webClient = getWebClient();
         if (cookies != null) {
             for (HttpServerCookie cookie : cookies) {
@@ -333,135 +188,7 @@ public class OidcTest extends AbstractBaseHttpTest {
         return loginForm.getInputByName(KEYCLOAK_LOGIN);
     }
 
-    private InputStream getOidcConfigurationInputStream() {
-        return getOidcConfigurationInputStream(CLIENT_SECRET);
-    }
-
-    private InputStream getOidcConfigurationInputStream(String clientSecret) {
-        return getOidcConfigurationInputStream(clientSecret, KEYCLOAK_CONTAINER.getAuthServerUrl());
-    }
-
-    private InputStream getOidcConfigurationInputStreamWithBearerOnly() {
-        return getOidcConfigurationInputStreamWithBearerOnly(CLIENT_SECRET);
-    }
-
-    private InputStream getOidcConfigurationInputStreamWithBearerOnly(String clientSecret) {
-        return getOidcConfigurationInputStreamWithBearerOnly(clientSecret, KEYCLOAK_CONTAINER.getAuthServerUrl());
-    }
-
-    private InputStream getOidcConfigurationInputStream(String clientSecret, String authServerUrl) {
-        String oidcConfig = "{\n" +
-                "    \"realm\" : \"" + TEST_REALM + "\",\n" +
-                "    \"resource\" : \"" + CLIENT_ID + "\",\n" +
-                "    \"public-client\" : \"false\",\n" +
-                "    \"auth-server-url\" : \"" + authServerUrl + "\",\n" +
-                "    \"ssl-required\" : \"EXTERNAL\",\n" +
-                "    \"credentials\" : {\n" +
-                "        \"secret\" : \"" + clientSecret + "\"\n" +
-                "    }\n" +
-                "}";
-        return new ByteArrayInputStream(oidcConfig.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private InputStream getOidcConfigurationInputStreamWithProviderUrl() {
-        String oidcConfig = "{\n" +
-                "    \"resource\" : \"" + CLIENT_ID + "\",\n" +
-                "    \"public-client\" : \"false\",\n" +
-                "    \"provider-url\" : \"" + KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "\",\n" +
-                "    \"ssl-required\" : \"EXTERNAL\",\n" +
-                "    \"credentials\" : {\n" +
-                "        \"secret\" : \"" + CLIENT_SECRET + "\"\n" +
-                "    }\n" +
-                "}";
-        return new ByteArrayInputStream(oidcConfig.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private InputStream getOidcConfigurationInputStreamWithBearerOnly(String clientSecret, String authServerUrl) {
-        String oidcConfig = "{\n" +
-                "    \"realm\" : \"" + TEST_REALM + "\",\n" +
-                "    \"resource\" : \"" + CLIENT_ID + "\",\n" +
-                "    \"public-client\" : \"false\",\n" +
-                "    \"auth-server-url\" : \"" + authServerUrl + "\",\n" +
-                "    \"ssl-required\" : \"EXTERNAL\",\n" +
-                "    \"bearer-only\" : \"true\",\n" +
-                "    \"credentials\" : {\n" +
-                "        \"secret\" : \"" + clientSecret + "\"\n" +
-                "    }\n" +
-                "}";
-        return new ByteArrayInputStream(oidcConfig.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private InputStream getOidcConfigurationInputStreamWithProviderUrlWithBearerOnly() {
-        String oidcConfig = "{\n" +
-                "    \"resource\" : \"" + CLIENT_ID + "\",\n" +
-                "    \"public-client\" : \"false\",\n" +
-                "    \"provider-url\" : \"" + KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "\",\n" +
-                "    \"ssl-required\" : \"EXTERNAL\",\n" +
-                "    \"bearer-only\" : \"true\",\n" +
-                "    \"credentials\" : {\n" +
-                "        \"secret\" : \"" + CLIENT_SECRET + "\"\n" +
-                "    }\n" +
-                "}";
-        return new ByteArrayInputStream(oidcConfig.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private InputStream getOidcConfigurationMissingRequiredOption() {
-        String oidcConfig = "{\n" +
-                "    \"public-client\" : \"false\",\n" +
-                "    \"provider-url\" : \"" + KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "\",\n" +
-                "    \"ssl-required\" : \"EXTERNAL\",\n" +
-                "    \"credentials\" : {\n" +
-                "        \"secret\" : \"" + CLIENT_SECRET + "\"\n" +
-                "    }\n" +
-                "}";
-        return new ByteArrayInputStream(oidcConfig.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private InputStream getOidcConfigurationInputStreamWithTokenSignatureAlgorithm() {
-        String oidcConfig = "{\n" +
-                "    \"token-signature-algorithm\" : \"RS256\",\n" +
-                "    \"resource\" : \"" + CLIENT_ID + "\",\n" +
-                "    \"public-client\" : \"false\",\n" +
-                "    \"provider-url\" : \"" + KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "\",\n" +
-                "    \"ssl-required\" : \"EXTERNAL\",\n" +
-                "    \"credentials\" : {\n" +
-                "        \"secret\" : \"" + CLIENT_SECRET + "\"\n" +
-                "    }\n" +
-                "}";
-        return new ByteArrayInputStream(oidcConfig.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private CallbackHandler getCallbackHandler() {
-        return callbacks -> {
-            for(Callback callback : callbacks) {
-                if (callback instanceof EvidenceVerifyCallback) {
-                    Evidence evidence = ((EvidenceVerifyCallback) callback).getEvidence();
-                    ((EvidenceVerifyCallback) callback).setVerified(evidence.getDecodedPrincipal() != null);
-                } else if (callback instanceof AuthenticationCompleteCallback) {
-                    // NO-OP
-                } else if (callback instanceof IdentityCredentialCallback) {
-                    // NO-OP
-                } else if (callback instanceof AuthorizeCallback) {
-                    ((AuthorizeCallback) callback).setAuthorized(true);
-                } else if (callback instanceof SecurityIdentityCallback) {
-                    ((SecurityIdentityCallback) callback).setSecurityIdentity(SecurityDomain.builder().build().getCurrentSecurityIdentity());
-                } else {
-                    throw new UnsupportedCallbackException(callback);
-                }
-            }
-        };
-    }
-
-    private static boolean isDockerAvailable() {
-        try {
-            DockerClientFactory.instance().client();
-            return true;
-        } catch (Throwable ex) {
-            return false;
-        }
-    }
-
-    private String getCookieString(HttpServerCookie cookie) {
+    protected String getCookieString(HttpServerCookie cookie) {
         final StringBuilder header = new StringBuilder(cookie.getName());
         header.append("=");
         if(cookie.getValue() != null) {
@@ -488,7 +215,4 @@ public class OidcTest extends AbstractBaseHttpTest {
         return header.toString();
     }
 
-    private static String getClientUrl() {
-        return "http://" + CLIENT_HOST_NAME + ":" + CLIENT_PORT + "/" + CLIENT_APP;
-    }
 }
