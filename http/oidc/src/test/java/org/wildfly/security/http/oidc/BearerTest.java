@@ -19,7 +19,6 @@
 package org.wildfly.security.http.oidc;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -36,6 +35,7 @@ import org.apache.http.HttpStatus;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.wildfly.common.iteration.CodePointIterator;
 import org.wildfly.security.http.HttpServerAuthenticationMechanism;
 import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
 
@@ -61,8 +61,15 @@ public class BearerTest extends OidcBaseTest {
     private static final String BEARER_ONLY_CLIENT_ID = "bearer-client";
     private static final String SECURED_ENDPOINT = "/service/secured";
     private static final String SECURED_PAGE_TEXT = "Welcome to the secured page!";
+    private static final String WRONG_PASSWORD = "WRONG_PASSWORD";
 
     protected HttpServerAuthenticationMechanismFactory oidcFactory;
+
+    private enum BearerAuthType {
+        BEARER,
+        QUERY_PARAM,
+        BASIC
+    }
 
     @BeforeClass
     public static void startTestContainers() throws Exception {
@@ -133,13 +140,13 @@ public class BearerTest extends OidcBaseTest {
     public void testWrongToken() throws Exception {
         String wrongToken = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJrNmhQYTdHdmdrajdFdlhLeFAtRjFLZkNSUk85Q3kwNC04YzFqTERWOXNrIn0.eyJleHAiOjE2NTc2NjExODksImlhdCI6MTY1NzY2MTEyOSwianRpIjoiZThiZGQ3MWItYTA2OC00Mjc3LTkyY2UtZWJkYmU2MDVkMzBhIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9tYXN0ZXIiLCJhdWQiOlsibXlyZWFsbS1yZWFsbSIsIm1hc3Rlci1yZWFsbSIsImFjY291bnQiXSwic3ViIjoiZTliOGE2OWItM2RlNy00ZDYzLWFjYmItMmYyNTRhMDM1MjVkIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoidGVzdC13ZWJhcHAiLCJzZXNzaW9uX3N0YXRlIjoiMTQ1OTdhMmUtOGM1Ni00YzkwLWI3NjAtZWFjYzczNWU1Zjc1IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJjcmVhdGUtcmVhbG0iLCJkZWZhdWx0LXJvbGVzLW1hc3RlciIsIm9mZmxpbmVfYWNjZXNzIiwiYWRtaW4iLCJ1bWFfYXV0aG9yaXphdGlvbiIsInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJteXJlYWxtLXJlYWxtIjp7InJvbGVzIjpbInZpZXctcmVhbG0iLCJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsIm1hbmFnZS1pZGVudGl0eS1wcm92aWRlcnMiLCJpbXBlcnNvbmF0aW9uIiwiY3JlYXRlLWNsaWVudCIsIm1hbmFnZS11c2VycyIsInF1ZXJ5LXJlYWxtcyIsInZpZXctYXV0aG9yaXphdGlvbiIsInF1ZXJ5LWNsaWVudHMiLCJxdWVyeS11c2VycyIsIm1hbmFnZS1ldmVudHMiLCJtYW5hZ2UtcmVhbG0iLCJ2aWV3LWV2ZW50cyIsInZpZXctdXNlcnMiLCJ2aWV3LWNsaWVudHMiLCJtYW5hZ2UtYXV0aG9yaXphdGlvbiIsIm1hbmFnZS1jbGllbnRzIiwicXVlcnktZ3JvdXBzIl19LCJtYXN0ZXItcmVhbG0iOnsicm9sZXMiOlsidmlldy1yZWFsbSIsInZpZXctaWRlbnRpdHktcHJvdmlkZXJzIiwibWFuYWdlLWlkZW50aXR5LXByb3ZpZGVycyIsImltcGVyc29uYXRpb24iLCJjcmVhdGUtY2xpZW50IiwibWFuYWdlLXVzZXJzIiwicXVlcnktcmVhbG1zIiwidmlldy1hdXRob3JpemF0aW9uIiwicXVlcnktY2xpZW50cyIsInF1ZXJ5LXVzZXJzIiwibWFuYWdlLWV2ZW50cyIsIm1hbmFnZS1yZWFsbSIsInZpZXctZXZlbnRzIiwidmlldy11c2VycyIsInZpZXctY2xpZW50cyIsIm1hbmFnZS1hdXRob3JpemF0aW9uIiwibWFuYWdlLWNsaWVudHMiLCJxdWVyeS1ncm91cHMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjE0NTk3YTJlLThjNTYtNGM5MC1iNzYwLWVhY2M3MzVlNWY3NSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwicHJlZmVycmVkX3VzZXJuYW1lIjoiYWxpY2UifQ.hVj6SG-aTcDYhifdljpiBcz4ShCHej3h_4-82rgX0s_oJ-En68Cqt-_DgJLtMdr6dW_gQFFCPYBJfEGvZ8L6b_TwzbdLxyrQrKTOpeG0KJ8VAFlbWum9B1vvES_sav1Gj1sQHlV621EaLISYz7pnknuQEvrB7liJFRRjN9SH30AsAJy6nmKTDHGZ6Eegkveqd_7POaKfsHS3Z0-SGyL5GClXv9yZ1l5Y4VH-rrMUztLPCFH5bJ319-m-7sgizvV-C2EcM37XVAtPRVQbJNRW0wVmLEJKMuLYVnjS1Wn5eU_qnBvVMEaENNG3TzNd6b4YmxMFHFf9tnkb3wkDzdrRTA";
         performBearerAuthentication(getOidcConfigurationInputStreamWithProviderUrl(), SECURED_ENDPOINT, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
-                SECURED_PAGE_TEXT, wrongToken);
+                SECURED_PAGE_TEXT, wrongToken, BearerAuthType.BEARER);
     }
 
     @Test
     public void testInvalidToken() throws Exception {
         performBearerAuthentication(getOidcConfigurationInputStreamWithProviderUrl(), SECURED_ENDPOINT, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
-                SECURED_PAGE_TEXT, "INVALID_TOKEN");
+                SECURED_PAGE_TEXT, "INVALID_TOKEN", BearerAuthType.BEARER);
     }
 
     @Test
@@ -165,12 +172,67 @@ public class BearerTest extends OidcBaseTest {
         accessAppWithoutToken("", getRegularOidcConfigurationInputStream(), false);
     }
 
+    /**
+     * Tests that pass the bearer token to use via an access_token query param.
+     */
+
+    @Test
+    public void testValidTokenViaQueryParameter() throws Exception {
+        performBearerAuthentication(getOidcConfigurationInputStreamWithProviderUrl(), SECURED_ENDPOINT, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
+                SECURED_PAGE_TEXT, null, BearerAuthType.QUERY_PARAM);
+    }
+
+    @Test
+    public void testWrongTokenViaQueryParameter() throws Exception {
+        String wrongToken = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJrNmhQYTdHdmdrajdFdlhLeFAtRjFLZkNSUk85Q3kwNC04YzFqTERWOXNrIn0.eyJleHAiOjE2NTc2NjExODksImlhdCI6MTY1NzY2MTEyOSwianRpIjoiZThiZGQ3MWItYTA2OC00Mjc3LTkyY2UtZWJkYmU2MDVkMzBhIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9tYXN0ZXIiLCJhdWQiOlsibXlyZWFsbS1yZWFsbSIsIm1hc3Rlci1yZWFsbSIsImFjY291bnQiXSwic3ViIjoiZTliOGE2OWItM2RlNy00ZDYzLWFjYmItMmYyNTRhMDM1MjVkIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoidGVzdC13ZWJhcHAiLCJzZXNzaW9uX3N0YXRlIjoiMTQ1OTdhMmUtOGM1Ni00YzkwLWI3NjAtZWFjYzczNWU1Zjc1IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJjcmVhdGUtcmVhbG0iLCJkZWZhdWx0LXJvbGVzLW1hc3RlciIsIm9mZmxpbmVfYWNjZXNzIiwiYWRtaW4iLCJ1bWFfYXV0aG9yaXphdGlvbiIsInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJteXJlYWxtLXJlYWxtIjp7InJvbGVzIjpbInZpZXctcmVhbG0iLCJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsIm1hbmFnZS1pZGVudGl0eS1wcm92aWRlcnMiLCJpbXBlcnNvbmF0aW9uIiwiY3JlYXRlLWNsaWVudCIsIm1hbmFnZS11c2VycyIsInF1ZXJ5LXJlYWxtcyIsInZpZXctYXV0aG9yaXphdGlvbiIsInF1ZXJ5LWNsaWVudHMiLCJxdWVyeS11c2VycyIsIm1hbmFnZS1ldmVudHMiLCJtYW5hZ2UtcmVhbG0iLCJ2aWV3LWV2ZW50cyIsInZpZXctdXNlcnMiLCJ2aWV3LWNsaWVudHMiLCJtYW5hZ2UtYXV0aG9yaXphdGlvbiIsIm1hbmFnZS1jbGllbnRzIiwicXVlcnktZ3JvdXBzIl19LCJtYXN0ZXItcmVhbG0iOnsicm9sZXMiOlsidmlldy1yZWFsbSIsInZpZXctaWRlbnRpdHktcHJvdmlkZXJzIiwibWFuYWdlLWlkZW50aXR5LXByb3ZpZGVycyIsImltcGVyc29uYXRpb24iLCJjcmVhdGUtY2xpZW50IiwibWFuYWdlLXVzZXJzIiwicXVlcnktcmVhbG1zIiwidmlldy1hdXRob3JpemF0aW9uIiwicXVlcnktY2xpZW50cyIsInF1ZXJ5LXVzZXJzIiwibWFuYWdlLWV2ZW50cyIsIm1hbmFnZS1yZWFsbSIsInZpZXctZXZlbnRzIiwidmlldy11c2VycyIsInZpZXctY2xpZW50cyIsIm1hbmFnZS1hdXRob3JpemF0aW9uIiwibWFuYWdlLWNsaWVudHMiLCJxdWVyeS1ncm91cHMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjE0NTk3YTJlLThjNTYtNGM5MC1iNzYwLWVhY2M3MzVlNWY3NSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwicHJlZmVycmVkX3VzZXJuYW1lIjoiYWxpY2UifQ.hVj6SG-aTcDYhifdljpiBcz4ShCHej3h_4-82rgX0s_oJ-En68Cqt-_DgJLtMdr6dW_gQFFCPYBJfEGvZ8L6b_TwzbdLxyrQrKTOpeG0KJ8VAFlbWum9B1vvES_sav1Gj1sQHlV621EaLISYz7pnknuQEvrB7liJFRRjN9SH30AsAJy6nmKTDHGZ6Eegkveqd_7POaKfsHS3Z0-SGyL5GClXv9yZ1l5Y4VH-rrMUztLPCFH5bJ319-m-7sgizvV-C2EcM37XVAtPRVQbJNRW0wVmLEJKMuLYVnjS1Wn5eU_qnBvVMEaENNG3TzNd6b4YmxMFHFf9tnkb3wkDzdrRTA";
+        performBearerAuthentication(getOidcConfigurationInputStreamWithProviderUrl(), SECURED_ENDPOINT, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
+                SECURED_PAGE_TEXT, wrongToken, BearerAuthType.QUERY_PARAM);
+    }
+
+    @Test
+    public void testInvalidTokenViaQueryParameter() throws Exception {
+        performBearerAuthentication(getOidcConfigurationInputStreamWithProviderUrl(), SECURED_ENDPOINT, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
+                SECURED_PAGE_TEXT, "INVALID_TOKEN", BearerAuthType.QUERY_PARAM);
+    }
+
+    /**
+     * Tests that rely on obtaining the bearer token to use from credentials obtained from basic auth.
+     */
+
+    @Test
+    public void testBasicAuthenticationWithoutEnableBasicAuthSet() throws Exception {
+        accessAppWithoutToken(SECURED_ENDPOINT, getOidcConfigurationInputStream(), true, BearerAuthType.BASIC, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD);
+    }
+
+    @Test
+    public void testBasicAuthenticationWithoutEnableBasicAuthSetAndWithoutBearerOnlySet() throws Exception {
+        // ensure the regular OIDC flow takes place
+        accessAppWithoutToken("", getRegularOidcConfigurationInputStream(), false, BearerAuthType.BASIC, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD);
+    }
+
+    @Test
+    public void testValidCredentialsBasicAuthentication() throws Exception {
+        performBearerAuthentication(getOidcConfigurationInputStreamWithEnableBasicAuth(), SECURED_ENDPOINT, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
+                SECURED_PAGE_TEXT, null, BearerAuthType.BASIC);
+    }
+
+    @Test
+    public void testInvalidCredentialsBasicAuthentication() throws Exception {
+        accessAppWithoutToken(SECURED_ENDPOINT, getOidcConfigurationInputStreamWithEnableBasicAuth(), true, BearerAuthType.BASIC, KeycloakConfiguration.ALICE, WRONG_PASSWORD);
+    }
+
+    @Test
+    public void testInvalidCredentialsBasicAuthenticationWithoutBearerOnlySet() throws Exception {
+        // ensure this fails, we won't fallback to the regular OIDC flow here
+        accessAppWithoutToken(SECURED_ENDPOINT, getRegularOidcConfigurationInputStreamWithEnableBasicAuth(), false, BearerAuthType.BASIC, KeycloakConfiguration.ALICE, WRONG_PASSWORD);
+    }
+
     private void performBearerAuthentication(InputStream oidcConfig, String endpoint, String username, String password, String clientPageText) throws Exception {
-        performBearerAuthentication(oidcConfig, endpoint, username, password, clientPageText, null);
+        performBearerAuthentication(oidcConfig, endpoint, username, password, clientPageText, null, BearerAuthType.BEARER);
     }
 
     private void performBearerAuthentication(InputStream oidcConfig, String endpoint, String username, String password,
-                                             String clientPageText, String bearerToken) throws Exception {
+                                             String clientPageText, String bearerToken, BearerAuthType bearerAuthType) throws Exception {
         try {
             Map<String, Object> props = new HashMap<>();
             OidcClientConfiguration oidcClientConfiguration = OidcClientConfigurationBuilder.build(oidcConfig);
@@ -186,18 +248,42 @@ public class BearerTest extends OidcBaseTest {
                 client.setDispatcher(createAppBearerResponse(mechanism, clientPageText, null));
             }
 
-            URI requestUri = new URI(getClientUrl() + endpoint);
+            URI requestUri;
             WebClient webClient = getWebClient();
+            switch (bearerAuthType) {
+                case QUERY_PARAM:
+                    if (bearerToken == null) {
+                        // obtain a bearer token and then try accessing the endpoint with a query param specified
+                        requestUri = new URI(getClientUrl() + endpoint + "?access_token="
+                                + KeycloakConfiguration.getAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl(), TEST_REALM, username,
+                                password, CLIENT_ID, CLIENT_SECRET));
+                    } else {
+                        // try accessing the endpoint with the given bearer token specified using a query param
+                        requestUri = new URI(getClientUrl() + endpoint + "?access_token=" + bearerToken);
+                    }
+                    break;
+                case BASIC:
+                    webClient.addRequestHeader("Authorization",
+                            "Basic " + CodePointIterator.ofString(username + ":" + password).asUtf8().base64Encode().drainToString());
+                    requestUri = new URI(getClientUrl() + endpoint);
+                    break;
+                default:
+                    if (bearerToken == null) {
+                        // obtain a bearer token and then try accessing the endpoint with the Authorization header specified
+                        webClient.addRequestHeader("Authorization", "Bearer " + KeycloakConfiguration.getAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl(), TEST_REALM, username,
+                                password, CLIENT_ID, CLIENT_SECRET));
+                    } else {
+                        // try accessing the endpoint with the given bearer token specified using the Authorization header
+                        webClient.addRequestHeader("Authorization", "Bearer " + bearerToken);
+                    }
+                    requestUri = new URI(getClientUrl() + endpoint);
+            }
+
             if (bearerToken == null) {
-                // obtain a bearer token and then try accessing the endpoint
-                webClient.addRequestHeader("Authorization", "Bearer " + KeycloakConfiguration.getAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl(), TEST_REALM, username,
-                        password, CLIENT_ID, CLIENT_SECRET));
                 TextPage page = webClient.getPage(requestUri.toURL());
                 assertEquals(HttpStatus.SC_OK, page.getWebResponse().getStatusCode());
                 assertTrue(page.getContent().contains(clientPageText));
             } else {
-                // try accessing the endpoint with the given bearer token
-                webClient.addRequestHeader("Authorization", "Bearer " + bearerToken);
                 try {
                     webClient.getPage(requestUri.toURL());
                     fail("Expected exception not thrown");
@@ -209,8 +295,11 @@ public class BearerTest extends OidcBaseTest {
             client.setDispatcher(new QueueDispatcher());
         }
     }
-
     private void accessAppWithoutToken(String endpoint, InputStream oidcConfigInputStream, boolean bearerOnly) throws Exception {
+        accessAppWithoutToken(endpoint, oidcConfigInputStream, bearerOnly, null, null, null);
+    }
+
+    private void accessAppWithoutToken(String endpoint, InputStream oidcConfigInputStream, boolean bearerOnly, BearerAuthType bearerAuthType, String username, String password) throws Exception {
         Map<String, Object> props = new HashMap<>();
         OidcClientConfiguration oidcClientConfiguration = OidcClientConfigurationBuilder.build(oidcConfigInputStream);
         assertEquals(OidcClientConfiguration.RelativeUrlsUsed.NEVER, oidcClientConfiguration.getRelativeUrls());
@@ -220,14 +309,25 @@ public class BearerTest extends OidcBaseTest {
         HttpServerAuthenticationMechanism mechanism = oidcFactory.createAuthenticationMechanism(OIDC_NAME, props, getCallbackHandler());
 
         URI requestUri = new URI(getClientUrl() + endpoint);
-        TestingHttpServerRequest request = new TestingHttpServerRequest(null, requestUri); // no bearer token specified
+        TestingHttpServerRequest request;
+        if (bearerAuthType == BearerAuthType.BASIC) {
+            request = new TestingHttpServerRequest(new String[] {"Basic "
+                    + CodePointIterator.ofString(username + ":" + password).asUtf8().base64Encode().drainToString()}, requestUri);
+        } else {
+            request = new TestingHttpServerRequest(null, requestUri); // no bearer token specified
+        }
         mechanism.evaluateRequest(request);
         TestingHttpServerResponse response = request.getResponse();
 
-        if (bearerOnly) {
+        if (bearerOnly || oidcClientConfiguration.isEnableBasicAuth()) {
             assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getStatusCode());
 
-            if (oidcClientConfiguration.getRealm() != null) {
+            if ((bearerAuthType == BearerAuthType.BASIC) && password.equals(WRONG_PASSWORD)) {
+                String authenticateHeader = response.getAuthenticateHeader();
+                assertTrue(authenticateHeader.startsWith("Bearer error=\"" + "no_token" + "\""));
+                assertTrue(authenticateHeader.contains("error_description"));
+                assertTrue(authenticateHeader.contains(String.valueOf(HttpStatus.SC_UNAUTHORIZED)));
+            } else if (oidcClientConfiguration.getRealm() != null) {
                 // if we have a keycloak realm configured, its name should appear in the challenge
                 assertEquals("Bearer realm=\"" + TEST_REALM + "\"", response.getAuthenticateHeader());
             } else {
@@ -288,6 +388,32 @@ public class BearerTest extends OidcBaseTest {
                 "    \"client-id\" : \"" + CLIENT_ID + "\",\n" +
                 "    \"provider-url\" : \"" + KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "\",\n" +
                 "    \"ssl-required\" : \"EXTERNAL\",\n" +
+                "    \"credentials\" : {\n" +
+                "        \"secret\" : \"" + CLIENT_SECRET + "\"\n" +
+                "    }\n" +
+                "}";
+        return new ByteArrayInputStream(oidcConfig.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private InputStream getRegularOidcConfigurationInputStreamWithEnableBasicAuth() {
+        String oidcConfig = "{\n" +
+                "    \"client-id\" : \"" + CLIENT_ID + "\",\n" +
+                "    \"provider-url\" : \"" + KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "\",\n" +
+                "    \"ssl-required\" : \"EXTERNAL\",\n" +
+                "    \"enable-basic-auth\" : \"true\",\n" +
+                "    \"credentials\" : {\n" +
+                "        \"secret\" : \"" + CLIENT_SECRET + "\"\n" +
+                "    }\n" +
+                "}";
+        return new ByteArrayInputStream(oidcConfig.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private InputStream getOidcConfigurationInputStreamWithEnableBasicAuth() {
+        String oidcConfig = "{\n" +
+                "    \"client-id\" : \"" + CLIENT_ID + "\",\n" +
+                "    \"provider-url\" : \"" + KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "\",\n" +
+                "    \"ssl-required\" : \"EXTERNAL\",\n" +
+                "    \"enable-basic-auth\" : \"true\",\n" +
                 "    \"credentials\" : {\n" +
                 "        \"secret\" : \"" + CLIENT_SECRET + "\"\n" +
                 "    }\n" +
