@@ -28,7 +28,9 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.http.HttpStatus;
@@ -40,8 +42,10 @@ import org.wildfly.security.http.HttpServerAuthenticationMechanism;
 import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebRequest;
 
 import io.restassured.RestAssured;
 import okhttp3.mockwebserver.Dispatcher;
@@ -82,7 +86,8 @@ public class BearerTest extends OidcBaseTest {
         client.start(CLIENT_PORT);
     }
 
-    private static Dispatcher createAppBearerResponse(HttpServerAuthenticationMechanism mechanism, String clientPageText, String expectedError) {
+    private static Dispatcher createAppBearerResponse(HttpServerAuthenticationMechanism mechanism, String clientPageText,
+                                                      String expectedError, String originHeader) {
         return new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest recordedRequest) throws InterruptedException {
@@ -90,8 +95,14 @@ public class BearerTest extends OidcBaseTest {
                 if (path.contains("/" + CLIENT_APP + SECURED_ENDPOINT)) {
                     try {
                         String authorizationHeader = recordedRequest.getHeader("Authorization");
-                        TestingHttpServerRequest request = new TestingHttpServerRequest(authorizationHeader == null ? null : new String[] { authorizationHeader },
-                                new URI(recordedRequest.getRequestUrl().toString()));
+                        TestingHttpServerRequest request;
+                        if (originHeader != null) {
+                            request = new TestingHttpServerRequest(authorizationHeader == null ? null : new String[]{authorizationHeader},
+                                    new URI(recordedRequest.getRequestUrl().toString()));
+                        } else {
+                            request = new TestingHttpServerRequest(authorizationHeader == null ? null : new String[]{authorizationHeader},
+                                    new URI(recordedRequest.getRequestUrl().toString()));
+                        }
                         mechanism.evaluateRequest(request);
                         TestingHttpServerResponse response = request.getResponse();
                         if (expectedError != null) {
@@ -227,6 +238,36 @@ public class BearerTest extends OidcBaseTest {
         accessAppWithoutToken(SECURED_ENDPOINT, getRegularOidcConfigurationInputStreamWithEnableBasicAuth(), false, BearerAuthType.BASIC, KeycloakConfiguration.ALICE, WRONG_PASSWORD);
     }
 
+    /**
+     * Tests that simulate CORS preflight requests.
+     */
+
+    @Test
+    public void testCorsRequestWithEnableCors() throws Exception {
+        performBearerAuthenticationCorsRequest(getOidcConfigurationInputStreamWithEnableCors(), SECURED_ENDPOINT, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
+                SECURED_PAGE_TEXT, null, "http://somehost");
+    }
+
+    @Test
+    public void testCorsRequestWithEnableCorsWithWrongToken() throws Exception {
+        String wrongToken = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJrNmhQYTdHdmdrajdFdlhLeFAtRjFLZkNSUk85Q3kwNC04YzFqTERWOXNrIn0.eyJleHAiOjE2NTc2NjExODksImlhdCI6MTY1NzY2MTEyOSwianRpIjoiZThiZGQ3MWItYTA2OC00Mjc3LTkyY2UtZWJkYmU2MDVkMzBhIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9tYXN0ZXIiLCJhdWQiOlsibXlyZWFsbS1yZWFsbSIsIm1hc3Rlci1yZWFsbSIsImFjY291bnQiXSwic3ViIjoiZTliOGE2OWItM2RlNy00ZDYzLWFjYmItMmYyNTRhMDM1MjVkIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoidGVzdC13ZWJhcHAiLCJzZXNzaW9uX3N0YXRlIjoiMTQ1OTdhMmUtOGM1Ni00YzkwLWI3NjAtZWFjYzczNWU1Zjc1IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJjcmVhdGUtcmVhbG0iLCJkZWZhdWx0LXJvbGVzLW1hc3RlciIsIm9mZmxpbmVfYWNjZXNzIiwiYWRtaW4iLCJ1bWFfYXV0aG9yaXphdGlvbiIsInVzZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJteXJlYWxtLXJlYWxtIjp7InJvbGVzIjpbInZpZXctcmVhbG0iLCJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsIm1hbmFnZS1pZGVudGl0eS1wcm92aWRlcnMiLCJpbXBlcnNvbmF0aW9uIiwiY3JlYXRlLWNsaWVudCIsIm1hbmFnZS11c2VycyIsInF1ZXJ5LXJlYWxtcyIsInZpZXctYXV0aG9yaXphdGlvbiIsInF1ZXJ5LWNsaWVudHMiLCJxdWVyeS11c2VycyIsIm1hbmFnZS1ldmVudHMiLCJtYW5hZ2UtcmVhbG0iLCJ2aWV3LWV2ZW50cyIsInZpZXctdXNlcnMiLCJ2aWV3LWNsaWVudHMiLCJtYW5hZ2UtYXV0aG9yaXphdGlvbiIsIm1hbmFnZS1jbGllbnRzIiwicXVlcnktZ3JvdXBzIl19LCJtYXN0ZXItcmVhbG0iOnsicm9sZXMiOlsidmlldy1yZWFsbSIsInZpZXctaWRlbnRpdHktcHJvdmlkZXJzIiwibWFuYWdlLWlkZW50aXR5LXByb3ZpZGVycyIsImltcGVyc29uYXRpb24iLCJjcmVhdGUtY2xpZW50IiwibWFuYWdlLXVzZXJzIiwicXVlcnktcmVhbG1zIiwidmlldy1hdXRob3JpemF0aW9uIiwicXVlcnktY2xpZW50cyIsInF1ZXJ5LXVzZXJzIiwibWFuYWdlLWV2ZW50cyIsIm1hbmFnZS1yZWFsbSIsInZpZXctZXZlbnRzIiwidmlldy11c2VycyIsInZpZXctY2xpZW50cyIsIm1hbmFnZS1hdXRob3JpemF0aW9uIiwibWFuYWdlLWNsaWVudHMiLCJxdWVyeS1ncm91cHMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjE0NTk3YTJlLThjNTYtNGM5MC1iNzYwLWVhY2M3MzVlNWY3NSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwicHJlZmVycmVkX3VzZXJuYW1lIjoiYWxpY2UifQ.hVj6SG-aTcDYhifdljpiBcz4ShCHej3h_4-82rgX0s_oJ-En68Cqt-_DgJLtMdr6dW_gQFFCPYBJfEGvZ8L6b_TwzbdLxyrQrKTOpeG0KJ8VAFlbWum9B1vvES_sav1Gj1sQHlV621EaLISYz7pnknuQEvrB7liJFRRjN9SH30AsAJy6nmKTDHGZ6Eegkveqd_7POaKfsHS3Z0-SGyL5GClXv9yZ1l5Y4VH-rrMUztLPCFH5bJ319-m-7sgizvV-C2EcM37XVAtPRVQbJNRW0wVmLEJKMuLYVnjS1Wn5eU_qnBvVMEaENNG3TzNd6b4YmxMFHFf9tnkb3wkDzdrRTA";
+        performBearerAuthenticationCorsRequest(getOidcConfigurationInputStreamWithEnableCors(), SECURED_ENDPOINT, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
+                SECURED_PAGE_TEXT, wrongToken, "http://somehost");
+    }
+
+
+    @Test
+    public void testCorsRequestWithEnableCorsWithInvalidToken() throws Exception {
+        performBearerAuthenticationCorsRequest(getOidcConfigurationInputStreamWithEnableCors(), SECURED_ENDPOINT, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
+                SECURED_PAGE_TEXT, "INVALID_TOKEN", "http://somehost");
+    }
+
+    @Test
+    public void testCorsRequestWithoutEnableCors() throws Exception {
+        performBearerAuthenticationCorsRequest(getOidcConfigurationInputStream(), SECURED_ENDPOINT, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD,
+                SECURED_PAGE_TEXT, null, "http://somehost");
+    }
+
     private void performBearerAuthentication(InputStream oidcConfig, String endpoint, String username, String password, String clientPageText) throws Exception {
         performBearerAuthentication(oidcConfig, endpoint, username, password, clientPageText, null, BearerAuthType.BEARER);
     }
@@ -243,9 +284,9 @@ public class BearerTest extends OidcBaseTest {
             HttpServerAuthenticationMechanism mechanism = oidcFactory.createAuthenticationMechanism(OIDC_NAME, props, getCallbackHandler());
 
             if (bearerToken != null) { // going to pass an invalid token
-                client.setDispatcher(createAppBearerResponse(mechanism, clientPageText, "invalid_token"));
+                client.setDispatcher(createAppBearerResponse(mechanism, clientPageText, "invalid_token", null));
             } else {
-                client.setDispatcher(createAppBearerResponse(mechanism, clientPageText, null));
+                client.setDispatcher(createAppBearerResponse(mechanism, clientPageText, null, null));
             }
 
             URI requestUri;
@@ -295,6 +336,75 @@ public class BearerTest extends OidcBaseTest {
             client.setDispatcher(new QueueDispatcher());
         }
     }
+
+    private void performBearerAuthenticationCorsRequest(InputStream oidcConfig, String endpoint, String username, String password,
+                                             String clientPageText, String bearerToken, String originHeader) throws Exception {
+        try {
+            Map<String, Object> props = new HashMap<>();
+            OidcClientConfiguration oidcClientConfiguration = OidcClientConfigurationBuilder.build(oidcConfig);
+            assertEquals(OidcClientConfiguration.RelativeUrlsUsed.NEVER, oidcClientConfiguration.getRelativeUrls());
+
+            OidcClientContext oidcClientContext = new OidcClientContext(oidcClientConfiguration);
+            oidcFactory = new OidcMechanismFactory(oidcClientContext);
+            HttpServerAuthenticationMechanism mechanism = oidcFactory.createAuthenticationMechanism(OIDC_NAME, props, getCallbackHandler());
+
+            URI requestUri = new URI(getClientUrl() + endpoint);
+
+            // simulate preflight request
+            Map<String, List<String>> requestHeaders = new HashMap<>();
+            requestHeaders.put(CorsHeaders.ORIGIN, Collections.singletonList(originHeader));
+            requestHeaders.put(CorsHeaders.ACCESS_CONTROL_REQUEST_HEADERS, Collections.singletonList("authorization"));
+            requestHeaders.put(CorsHeaders.ACCESS_CONTROL_REQUEST_METHOD, Collections.singletonList(HttpMethod.GET.name()));
+            TestingHttpServerRequest request = new TestingHttpServerRequest(requestHeaders, requestUri, HttpMethod.OPTIONS.name());
+            mechanism.evaluateRequest(request);
+            TestingHttpServerResponse response = request.getResponse();
+
+            if (oidcClientConfiguration.isCors()) {
+                assertTrue(Boolean.valueOf(response.getFirstResponseHeaderValue(CorsHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS)));
+                assertEquals("authorization", response.getFirstResponseHeaderValue(CorsHeaders.ACCESS_CONTROL_ALLOW_HEADERS));
+                assertEquals(HttpMethod.GET.name(), response.getFirstResponseHeaderValue(CorsHeaders.ACCESS_CONTROL_ALLOW_METHODS));
+                assertEquals(originHeader, response.getFirstResponseHeaderValue(CorsHeaders.ACCESS_CONTROL_ALLOW_ORIGIN));
+
+                if (bearerToken != null) { // going to pass an invalid token
+                    client.setDispatcher(createAppBearerResponse(mechanism, clientPageText, "invalid_token", null));
+                } else {
+                    client.setDispatcher(createAppBearerResponse(mechanism, clientPageText, null, null));
+                }
+
+                WebClient webClient = getWebClient();
+                webClient.addRequestHeader(CorsHeaders.ORIGIN, originHeader);
+                if (bearerToken == null) {
+                    webClient.addRequestHeader("Authorization", "Bearer " + KeycloakConfiguration.getAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl(), TEST_REALM, username,
+                            password, CLIENT_ID, CLIENT_SECRET));
+                } else {
+                    webClient.addRequestHeader("Authorization", "Bearer " + bearerToken);
+                }
+                if (bearerToken == null) {
+                    TextPage page = webClient.getPage(requestUri.toURL());
+                    assertEquals(HttpStatus.SC_OK, page.getWebResponse().getStatusCode());
+                    assertTrue(page.getContent().contains(clientPageText));
+                } else {
+                    try {
+                        webClient.getPage(requestUri.toURL());
+                        fail("Expected exception not thrown");
+                    } catch (FailingHttpStatusCodeException e) {
+                        assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getStatusCode());
+                    }
+                }
+            } else {
+                assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getStatusCode());
+                if (oidcClientConfiguration.getRealm() != null) {
+                    // if we have a keycloak realm configured, its name should appear in the challenge
+                    assertEquals("Bearer realm=\"" + TEST_REALM + "\"", response.getAuthenticateHeader());
+                } else {
+                    assertEquals("Bearer", response.getAuthenticateHeader());
+                }
+            }
+        } finally {
+            client.setDispatcher(new QueueDispatcher());
+        }
+    }
+
     private void accessAppWithoutToken(String endpoint, InputStream oidcConfigInputStream, boolean bearerOnly) throws Exception {
         accessAppWithoutToken(endpoint, oidcConfigInputStream, bearerOnly, null, null, null);
     }
@@ -417,6 +527,17 @@ public class BearerTest extends OidcBaseTest {
                 "    \"credentials\" : {\n" +
                 "        \"secret\" : \"" + CLIENT_SECRET + "\"\n" +
                 "    }\n" +
+                "}";
+        return new ByteArrayInputStream(oidcConfig.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private InputStream getOidcConfigurationInputStreamWithEnableCors() {
+        String oidcConfig = "{\n" +
+                "    \"client-id\" : \"" + BEARER_ONLY_CLIENT_ID + "\",\n" +
+                "    \"provider-url\" : \"" + KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "\",\n" +
+                "    \"ssl-required\" : \"EXTERNAL\",\n" +
+                "    \"enable-cors\" : \"true\",\n" +
+                "    \"bearer-only\" : \"true\"\n" +
                 "}";
         return new ByteArrayInputStream(oidcConfig.getBytes(StandardCharsets.UTF_8));
     }

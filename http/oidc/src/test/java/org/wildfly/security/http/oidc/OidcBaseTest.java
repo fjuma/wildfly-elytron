@@ -146,7 +146,7 @@ public class OidcBaseTest extends AbstractBaseHttpTest {
                 String path = recordedRequest.getPath();
                 if (path.contains("/" + CLIENT_APP) && path.contains("&code=")) {
                     try {
-                        TestingHttpServerRequest request = new TestingHttpServerRequest(null,
+                        TestingHttpServerRequest request = new TestingHttpServerRequest(new String[0],
                                 new URI(recordedRequest.getRequestUrl().toString()), recordedRequest.getHeader("Cookie"));
                         mechanism.evaluateRequest(request);
                         TestingHttpServerResponse response = request.getResponse();
