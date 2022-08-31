@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Wed, 31 Aug 2022 20:38:20 +0000</lastBuildDate>
+        <lastBuildDate>Wed, 31 Aug 2022 21:34:27 +0000</lastBuildDate>
         
         <item>
             <title>Bearer Support for the Elytron OIDC Client Subsystem</title>
