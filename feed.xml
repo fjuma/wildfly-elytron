@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Wed, 31 Aug 2022 21:34:27 +0000</lastBuildDate>
+        <lastBuildDate>Thu, 01 Sep 2022 13:49:18 +0000</lastBuildDate>
         
         <item>
             <title>Bearer Support for the Elytron OIDC Client Subsystem</title>
@@ -15,7 +15,7 @@
             <description>
                 WildFly 26.1.2.Final, which was just released, includes the ability to secure applications with bearer tokens when using the Elytron OpenID Connect (OIDC) Client subsystem. This blog post gives an overview of how to configure applications deployed to WildFly so they can support Bearer Token Authentication. Bearer Token Authentication Securing an...
             </description>
-            <pubDate>Wed, 31 Aug 2022 00:00:00 +0000</pubDate>
+            <pubDate>Thu, 01 Sep 2022 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/bearer-only-support-openid-connect/
             </guid>
