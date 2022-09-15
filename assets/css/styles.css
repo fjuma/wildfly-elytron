@@ -278,9 +278,7 @@ body.post div.post-page .note, body.post div.post-page .colist { overflow: auto;
 
 @media screen and (max-width: 48em) { .blog-list-item .share-page, .post-page .share-page { text-align: left; } .blog-page p.byline { font-size: 1rem; line-height: 1.25rem; } .post-page, .blog-page { padding: 0px 10px; } }
 
-.video-content-band .video-container, .video-band .video-container { position: relative; width: 100%; height: 0; padding-bottom: 56.25%; }
-
-.video-content-band .video-container iframe, .video-band .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.videoblock iframe { width: auto; }
 
 .guides-page h1 strong { color: #004153 !important; }
 
