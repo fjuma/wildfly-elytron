@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Fri, 14 Oct 2022 14:42:30 +0000</lastBuildDate>
+        <lastBuildDate>Fri, 14 Oct 2022 15:06:31 +0000</lastBuildDate>
         
         <item>
             <title>Open Source Day 2022 Recap</title>
@@ -13,7 +13,7 @@
                 https://wildfly-security.github.io/wildfly-elytron/blog/ghc22-open-source-day-recap/
             </link>
             <description>
-                Last month, the WildFly Elytron team had the great pleasure of participating in Open Source Day, an all-day hackathon that took place as a pre-event before the 2022 Grace Hopper Celebration (GHC22). This was the WildFly Elytron team&#8217;s third time participating in this event, after having participated in the Summer...
+                Last month, the WildFly Elytron team had the great pleasure of participating in Open Source Day, an all-day hackathon that took place as a pre-event before the 2022 Grace Hopper Celebration. This was the WildFly Elytron team&#8217;s third time participating in this event, after having participated in the Summer Open...
             </description>
             <pubDate>Fri, 14 Oct 2022 00:00:00 +0000</pubDate>
             <guid>
