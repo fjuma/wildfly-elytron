@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Fri, 28 Oct 2022 21:23:28 +0000</lastBuildDate>
+        <lastBuildDate>Mon, 31 Oct 2022 13:52:46 +0000</lastBuildDate>
         
         <item>
             <title>Grace Hopper Celebration Recap</title>
@@ -15,7 +15,7 @@
             <description>
                 Last month, I had the opportunity to attend and speak at the 2022 Grace Hopper Celebration. This was my very first time attending this conference in person after attending virtually last year. This was the largest conference I have ever been to and it definitely had a lasting impact on...
             </description>
-            <pubDate>Wed, 19 Oct 2022 00:00:00 +0000</pubDate>
+            <pubDate>Mon, 31 Oct 2022 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/ghc22-recap/
             </guid>
