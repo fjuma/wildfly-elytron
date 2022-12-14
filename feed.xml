@@ -5,7 +5,63 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Fri, 04 Nov 2022 18:16:23 +0000</lastBuildDate>
+        <lastBuildDate>Wed, 14 Dec 2022 20:10:53 +0000</lastBuildDate>
+        
+        <item>
+            <title>Ask Me Anything with the WildFly Elytron Team</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/ask-me-anything/
+            </link>
+            <description>
+                Ask Me Anything The WildFly Elytron team will be having an Ask Me Anything (AMA) session on Monday Dec. 19th on chat. This is your chance to ask any questions about: Contributing to the WildFly Elytron project How to use WildFly Elytron General questions about contributing to open source projects...
+            </description>
+            <pubDate>Wed, 14 Dec 2022 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/ask-me-anything/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Vlog: Filesystem Realm Integrity</title>
+            <link>
+                https://www.youtube.com/watch?v=Tzd9GTr8kwE
+            </link>
+            <description>
+                
+            </description>
+            <pubDate>Wed, 07 Dec 2022 00:00:00 +0000</pubDate>
+            <guid>
+                https://www.youtube.com/watch?v=Tzd9GTr8kwE
+            </guid>
+        </item>
+        
+        <item>
+            <title>Vlog: Git Tips on Upstream Repositories and Merge Conflicts</title>
+            <link>
+                https://www.youtube.com/watch?v=v5d6x3kT7lU
+            </link>
+            <description>
+                
+            </description>
+            <pubDate>Thu, 10 Nov 2022 00:00:00 +0000</pubDate>
+            <guid>
+                https://www.youtube.com/watch?v=v5d6x3kT7lU
+            </guid>
+        </item>
+        
+        <item>
+            <title>Enabling Integrity on Filesystem realms</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/filesystem-integrity/
+            </link>
+            <description>
+                Previously, any data in the filesystem realm was not verified, this meant that anyone with access to the identity files, could tamper with the data without any way of knowing. WildFly 27 adds support for filesystem integrity checking by adding signatures to identity files. This is done using a public-private...
+            </description>
+            <pubDate>Thu, 10 Nov 2022 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/filesystem-integrity/
+            </guid>
+        </item>
         
         <item>
             <title>Grace Hopper Celebration Recap</title>
@@ -88,62 +144,6 @@
             <pubDate>Tue, 09 Aug 2022 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/top-five-reasons-to-join-elytron-open-source-day/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Vlog: Encrypting a Filesystem Realm</title>
-            <link>
-                https://www.youtube.com/watch?v=1K92tit2uCk
-            </link>
-            <description>
-                
-            </description>
-            <pubDate>Thu, 07 Jul 2022 00:00:00 +0000</pubDate>
-            <guid>
-                https://www.youtube.com/watch?v=1K92tit2uCk
-            </guid>
-        </item>
-        
-        <item>
-            <title>Securing Jakarta Enterprise Beans with mutual TLS authentication</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/ejb-over-tls/
-            </link>
-            <description>
-                The ejb-mutual-tls example demonstrates how to use Elytron to secure EJBs with mutual TLS authentication. It also shows how to restrict access to EJBs, configuring a FileSystem realm protected by SASL authentication, and accessed using a credential store. This example focuses on the TLS configuration, so if you wish to...
-            </description>
-            <pubDate>Tue, 21 Jun 2022 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/ejb-over-tls/
-            </guid>
-        </item>
-        
-        <item>
-            <title>New Security Features in WildFly 26.1</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-wildfly-26-1/
-            </link>
-            <description>
-                Since WildFly 26.1 was just released, we wanted to highlight some new security features included in this release. New Features Automatic Registration of a Client Side Default SSLContext The Elytron authentication client now provides a Java security provider that can be used to register a JVM wide default SSLContext. When...
-            </description>
-            <pubDate>Tue, 19 Apr 2022 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/new-security-features-wildfly-26-1/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Improving readability of certificate read commands</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/improving-readability-of-alias-commands/
-            </link>
-            <description>
-                Any one who has experience with network hardware or console administration knows the Achilles' heel of CLI - limited visualization capability. This can be somewhat mitigated by setting large horizontal buffer and simple scrolling. However not all devices support scrolling and output still can be loitered with wrapped lines. This...
-            </description>
-            <pubDate>Tue, 19 Apr 2022 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/improving-readability-of-alias-commands/
             </guid>
         </item>
         
