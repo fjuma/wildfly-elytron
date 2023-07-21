@@ -5,7 +5,63 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Thu, 22 Dec 2022 20:19:52 +0000</lastBuildDate>
+        <lastBuildDate>Fri, 21 Jul 2023 19:42:05 +0000</lastBuildDate>
+        
+        <item>
+            <title>Securing the WildFly Management Console with OpenID Connect</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/securing-management-console-oidc/
+            </link>
+            <description>
+                WildFly 29 Final, which was just released last week, includes the ability to secure the WildFly Management Console with OpenID Connect using the Keycloak OpenID provider. This blog post gives an overview of how to configure this. OpenID Connect Securing the WildFly Management Console with the Keycloak OpenID Provider Keycloak...
+            </description>
+            <pubDate>Fri, 21 Jul 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/securing-management-console-oidc/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Using Certificate Based Authentication with Mutual TLS without Roles</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/Client-cert-auth-without-roles/
+            </link>
+            <description>
+                Mutual TLS with client certificates is essential for secure and encrypted communication between clients and servers in various applications and systems. It involves a handshake process during which both the client and the server must present their certificate to each other in order to establish a secure connection. This ensures...
+            </description>
+            <pubDate>Mon, 26 Jun 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/Client-cert-auth-without-roles/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Configuring the Digest mechanism to make use of additional algorithms</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/specify-http-digest-algorithms/
+            </link>
+            <description>
+                The default algorithm used for the digest authentication mechanism is MD5. You can configure the WildFly server to also require or accept the SHA-256 and SHA-512-256 algorithms. This configuration can be specified in the mechanism-configuration attribute of both the http-authentication-factory and the sasl-authentication-factory: &lt;http-authentication-factory name="exampleHttpAuthFactory" security-domain="exampleSD" http-server-mechanism-factory="global"&gt; &lt;mechanism-configuration&gt; &lt;mechanism mechanism-name="DIGEST-SHA-256"&gt;...
+            </description>
+            <pubDate>Mon, 15 May 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/specify-http-digest-algorithms/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Using Custom Principals with Elytron</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/using-custom-principals-with-elytron/
+            </link>
+            <description>
+                Sometimes, you need to access additional information about an authenticated user. As an example, you may want to know when they logged in, or what information they have on file. Traditionally, this type of information needed to be stored using security realm attributes associated with an identity. Now in WildFly...
+            </description>
+            <pubDate>Tue, 25 Apr 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/using-custom-principals-with-elytron/
+            </guid>
+        </item>
         
         <item>
             <title>AMA Recap</title>
@@ -88,62 +144,6 @@
             <pubDate>Mon, 31 Oct 2022 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/ghc22-recap/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Open Source Day 2022 Recap</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/ghc22-open-source-day-recap/
-            </link>
-            <description>
-                Last month, the WildFly Elytron team had the great pleasure of participating in Open Source Day, an all-day hackathon that took place as a pre-event before the 2022 Grace Hopper Celebration. This was the WildFly Elytron team&#8217;s third time participating in this event, after having participated in the Summer Open...
-            </description>
-            <pubDate>Fri, 14 Oct 2022 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/ghc22-open-source-day-recap/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Hacktoberfest Has Started</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/hacktoberfest/
-            </link>
-            <description>
-                
-            </description>
-            <pubDate>Fri, 07 Oct 2022 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/hacktoberfest/
-            </guid>
-        </item>
-        
-        <item>
-            <title>FAQ for New Contributors</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/frequently-asked-questions-new-contributors/
-            </link>
-            <description>
-                It&#8217;s very common for new contributors to any project to have questions on how to get started. In this post, we thought we&#8217;d capture some frequently asked questions we&#8217;ve received from new contributors to the WildFly Elytron project. How do I find an issue to work on? How do I...
-            </description>
-            <pubDate>Thu, 01 Sep 2022 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/frequently-asked-questions-new-contributors/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Bearer Token Support for the Elytron OIDC Client Subsystem</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/bearer-only-support-openid-connect/
-            </link>
-            <description>
-                WildFly 26.1.2.Final, which was just released, includes the ability to secure applications with bearer tokens when using the Elytron OpenID Connect (OIDC) Client subsystem. This blog post gives an overview of how to configure applications deployed to WildFly so they can support Bearer Token Authentication. Bearer Token Authentication Securing an...
-            </description>
-            <pubDate>Thu, 01 Sep 2022 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/bearer-only-support-openid-connect/
             </guid>
         </item>
         
