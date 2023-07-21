@@ -252,7 +252,7 @@ to start Keycloak and create a realm called <code>wildfly-infra</code>.</p>
 <div class="paragraph">
 <p>Now, we&#8217;re going to create a client called <code>wildfly-console</code>. Set the <code>Valid Redirect URIs</code> using the URI used to access
 the WildFly Management Console. Since we will use a port offset of 10 when starting WildFly in this post, we will
-set the <code>Valid Redirect URIs</code> to <a href="http://localhost:/console/10000" class="bare">http://localhost:/console/10000</a>. Similarly, we can also set <code>Web Origins</code>
+set the <code>Valid Redirect URIs</code> to <a href="http://localhost:10000/console/*" class="bare">http://localhost:10000/console/*</a>. Similarly, we can also set <code>Web Origins</code>
 using the management port for our WildFly instance, e.g., <a href="http://localhost:10000" class="bare">http://localhost:10000</a>.</p>
 </div>
 <div class="paragraph">
@@ -291,7 +291,7 @@ you can create a new <code>Realm role</code> (e.g., <code>Administrator</code>) 
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java"># Configure the Keycloak provider
-/subsystem=elytron-oidc-client/provider=keycloak:add(provider-url=http://localhost:10000/realms/wildfly-infra)
+/subsystem=elytron-oidc-client/provider=keycloak:add(provider-url=http://localhost:8080/realms/wildfly-infra)
 
 # Create a secure-deployment in order to secure the management interface with bearer token authentication
 /subsystem=elytron-oidc-client/secure-deployment=wildfly-management:add(provider=keycloak,client-id=wildfly-management,principal-attribute=preferred_username,bearer-only=true,ssl-required=EXTERNAL)
