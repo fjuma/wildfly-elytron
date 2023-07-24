@@ -261,8 +261,8 @@ to start Keycloak and create a realm called <code>wildfly-infra</code>.</p>
 <div class="paragraph">
 <p>Now, we&#8217;re going to create a client called <code>wildfly-console</code>. Set the <code>Valid Redirect URIs</code> using the URI used to access
 the WildFly Management Console. Since we will use a port offset of 10 when starting WildFly in this post, we will
-set the <code>Valid Redirect URIs</code> to <a href="http://localhost:10000/console/*" class="bare">http://localhost:10000/console/*</a>. Similarly, we can also set <code>Web Origins</code>
-using the management port for our WildFly instance, e.g., <a href="http://localhost:10000" class="bare">http://localhost:10000</a>.</p>
+set the <code>Valid Redirect URIs</code> to <code><a href="http://localhost:10000/console/*" class="bare">http://localhost:10000/console/*</a></code>. Similarly, we can also set <code>Web Origins</code>
+using the management port for our WildFly instance, e.g., <code><a href="http://localhost:10000" class="bare">http://localhost:10000</a></code>.</p>
 </div>
 <div class="paragraph">
 <p>Next, create a second client called <code>wildfly-management</code>. This will be a bearer-only client so in the <code>Capability</code> configuration,
