@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Mon, 24 Jul 2023 20:09:22 +0000</lastBuildDate>
+        <lastBuildDate>Mon, 24 Jul 2023 20:10:29 +0000</lastBuildDate>
         
         <item>
             <title>Securing the WildFly Management Console with OpenID Connect</title>
@@ -15,7 +15,7 @@
             <description>
                 WildFly 29 Final, which was just released last week, includes the ability to secure the WildFly Management Console with OpenID Connect using the Keycloak OpenID provider. This blog post gives an overview of how to configure this. OpenID Connect Securing the WildFly Management Console with the Keycloak OpenID Provider Keycloak...
             </description>
-            <pubDate>Fri, 21 Jul 2023 00:00:00 +0000</pubDate>
+            <pubDate>Mon, 24 Jul 2023 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/securing-management-console-oidc/
             </guid>
