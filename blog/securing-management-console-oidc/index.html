@@ -245,6 +245,15 @@ on the Keycloak side and in the <code>elytron-oidc-client</code> subsystem confi
 </div>
 <div class="sect2">
 <h3 id="keycloak-configuration"><a class="anchor" href="#keycloak-configuration"></a>Keycloak Configuration</h3>
+<div class="sect3">
+<h4 id="supported-keycloak-versions"><a class="anchor" href="#supported-keycloak-versions"></a>Supported Keycloak versions</h4>
+<div class="paragraph">
+<p>Currently, the ability to secure the WildFly Management Console with the Keycloak OpenID provider requires
+Keycloak 21.1.2 or earlier to be used. It will be possible to use Keycloak 22 or later in a future WildFly release.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="set-up"><a class="anchor" href="#set-up"></a>Set up</h4>
 <div class="paragraph">
 <p>It&#8217;s easy to set up Keycloak using Docker. Follow the steps in Keycloak&#8217;s <a href="https://www.keycloak.org/getting-started/getting-started-docker">getting started guide</a>
 to start Keycloak and create a realm called <code>wildfly-infra</code>.</p>
@@ -261,6 +270,7 @@ be sure to uncheck the <code>Standard flow</code> and <code>Direct access grants
 </div>
 <div class="paragraph">
 <p>Finally, create a user called <code>alice</code>.</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="optional-role-configuration"><a class="anchor" href="#optional-role-configuration"></a>Optional Role Configuration</h4>
@@ -288,9 +298,26 @@ you can create a new <code>Realm role</code> (e.g., <code>Administrator</code>) 
 <div class="paragraph">
 <p>We can use the following commands to add the required configuration:</p>
 </div>
+<div class="paragraph">
+<p>First, we need to start our WildFly server instance. Notice that we&#8217;re specifying a port offset here
+since our Keycloak instance is already exposed on port 8080:</p>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java"># Configure the Keycloak provider
+<pre class="highlightjs highlight"><code class="language-none hljs">./bin/standalone.sh -Djboss.socket.binding.port-offset=10</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, we can connect to the WildFly CLI and then execute the commands below:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">./bin/jboss-cli.sh --connect --controller=localhost:10000</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell"># Configure the Keycloak provider
 /subsystem=elytron-oidc-client/provider=keycloak:add(provider-url=http://localhost:8080/realms/wildfly-infra)
 
 # Create a secure-deployment in order to secure the management interface with bearer token authentication
@@ -311,21 +338,9 @@ reload</code></pre>
 <div class="sect2">
 <h3 id="accessing-the-wildfly-management-console"><a class="anchor" href="#accessing-the-wildfly-management-console"></a>Accessing the WildFly Management Console</h3>
 <div class="paragraph">
-<p>With the above configuration in place, when you access the WildFly Management Console via <a href="http://localhost:10000/console" class="bare">http://localhost:10000/console</a>,
-you will be redirected to Keycloak to log in.</p>
-</div>
-<div class="paragraph">
-<p>Let&#8217;s try this out. First, we need to start our WildFly server instance. Notice that we&#8217;re specifying a port offset here
-since our Keycloak instance is already exposed on port 8080:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-none hljs">./bin/standalone.sh -Djboss.socket.binding.port-offset=10</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Next, let&#8217;s access <a href="http://localhost:10000/console" class="bare">http://localhost:10000/console</a>. We will be redirected to the Keycloak login page. We can log in using
-the <code>alice</code> user that we created earlier. Upon successful authentication, we will be redirected back to the WildFly
+<p>With the above configuration now in place, let&#8217;s access <a href="http://localhost:10000/console" class="bare">http://localhost:10000/console</a>. We will be redirected to
+the Keycloak login page. We can log in using the <code>alice</code> user that we created earlier. Upon successful authentication,
+we will be redirected back to the WildFly
 Management Console.</p>
 </div>
 </div>
