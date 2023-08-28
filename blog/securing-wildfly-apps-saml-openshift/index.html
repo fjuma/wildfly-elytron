@@ -324,38 +324,25 @@ this servlet using SAML.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">oc process -f https://raw.githubusercontent.com/keycloak/keycloak-quickstarts/latest/openshift/keycloak.yaml \
-    -p KEYCLOAK_ADMIN=admin \
-    -p KEYCLOAK_ADMIN_PASSWORD=admin \
-    -p NAMESPACE=myNameSpace \
+    -p KEYCLOAK_ADMIN=admin \                 <i class="conum" data-value="1"></i><b>(1)</b>
+    -p KEYCLOAK_ADMIN_PASSWORD=admin \        <i class="conum" data-value="2"></i><b>(2)</b>
+    -p NAMESPACE=myNameSpace \                <i class="conum" data-value="3"></i><b>(3)</b>
 | oc create -f -</code></pre>
 </div>
 </div>
-<div class="admonitionblock tip">
+<div class="colist arabic">
 <table>
 <tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>Be sure to replace <strong>myNameSpace</strong> in the command above with your project name.</p>
-</div>
-</td>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Replace <code>admin</code> with the user name you would like to use when accessing the Keycloak Administration Console.</td>
 </tr>
-</table>
-</div>
-<div class="admonitionblock tip">
-<table>
 <tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>You should also replace <strong>KEYCLOAK_ADMIN</strong> and <strong>KEYCLOAK_ADMIN_PASSWORD</strong> with the username
-and password that you would like to use when accessing the Keycloak Administration Console.</p>
-</div>
-</td>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Replace <code>admin</code> with the password you would like to use when accessing the Keycloak Administration Console.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Replace <code>myNameSpace</code> with your project name.</td>
 </tr>
 </table>
 </div>
@@ -443,61 +430,83 @@ to check its status. Once it is running, you can click on <strong>Open URL</stro
 <p>From the <strong>Role Mapping</strong> tab, assign <strong>alice</strong> the <strong>user</strong> role. For more information, see the Keycloak documentation on how to <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#proc-assigning-role-mappings_server_administration_guide">assign a role</a> to a user.</p>
 </li>
 <li>
-<p>Create a new client called <strong>simple-webapp-saml</strong>. Select <strong>saml</strong> as the <strong>Client type</strong> (or as the <strong>Client Protocol</strong>, depending on your Keycloak version). For more information, see the Keycloak documentation on how to <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#_client-saml-configuration">create a SAML client</a>.</p>
+<p>Create a new client as follows:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Client type</strong> (or <strong>Client Protocol</strong>, depending on your Keycloak version): <strong>saml</strong></p>
+</li>
+<li>
+<p><strong>Client ID</strong>: <strong>simple-webapp-saml</strong></p>
+<div class="paragraph">
+<p>For more information, see the Keycloak documentation on how to <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#_client-saml-configuration">create a SAML client</a>.</p>
+</div>
+</li>
+</ul>
+</div>
 </li>
 </ol>
 </div>
 <div class="paragraph">
 <p>Once the new client has been created, in the <strong>Settings</strong> tab, scroll down to the <strong>SAML capabilities</strong> section and
-set the <strong>Name ID format</strong> to <strong>email</strong>. Then set <strong>Force name ID format</strong> to <strong>On</strong>. Then click on <strong>Save</strong>.</p>
+set the <strong>Name ID format</strong> to <strong>email</strong>. Then set <strong>Force name ID format</strong> to <strong>On</strong>. Then click on <strong>Save</strong>. When accessing
+our servlet later on, we will see that this results in <code>HttpServletRequest.getUserPrincipal().getName()</code> returning
+the logged in user&#8217;s email address.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="download-the-saml-keys"><a class="anchor" href="#download-the-saml-keys"></a>Download the SAML Keys</h2>
 <div class="sectionbody">
-<div class="paragraph">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
 <p>From your <strong>simple-webapp-saml</strong> client in the Keycloak Admin Console, click on the <strong>Keys</strong> tab.</p>
-</div>
-<div class="paragraph">
+</li>
+<li>
 <p>Click on the <strong>Export</strong> button in the <strong>Signing keys config</strong> to export the SAML keys to a keystore.</p>
-</div>
 <div class="paragraph">
 <p>Take note of the aliases and passwords that you specify here since these will be used
 when updating the <code>keycloak-saml.xml</code> file.</p>
 </div>
-<div class="paragraph">
-<p>We will set the <strong>Key alias</strong> to <strong>simple-webapp-saml</strong>, the <strong>Key password</strong> to <strong>password</strong>,
-the <strong>Realm certificate alias</strong> to <strong>myrealm</strong>, and the <strong>Store password</strong> to <strong>password</strong> and then
-click on <strong>Export</strong> to download the corresponding <code>keystore.jks</code> file.</p>
-</div>
-<div class="paragraph">
+</li>
+<li>
+<p>Set the <strong>Key alias</strong> to <strong>simple-webapp-saml</strong>, the <strong>Key password</strong> to <strong>password</strong>,
+the <strong>Realm certificate alias</strong> to <strong>myrealm</strong>, and the <strong>Store password</strong> to <strong>password</strong>.</p>
+</li>
+<li>
+<p>Click on <strong>Export</strong> to download the corresponding <code>keystore.jks</code> file.</p>
+</li>
+<li>
 <p>Create an OpenShift secret using this keystore by running the following command:</p>
-</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">oc create secret generic simple-webapp-saml-secret --from-file=/PATH/TO/keystore.jks</code></pre>
 </div>
+</div>
+</li>
+</ol>
 </div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="download-and-edit-the-keycloak-adapter-configuration-file"><a class="anchor" href="#download-and-edit-the-keycloak-adapter-configuration-file"></a>Download and Edit the Keycloak Adapter Configuration File</h2>
 <div class="sectionbody">
-<div class="paragraph">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
 <p>From your <strong>simple-webapp-saml</strong> client in the Keycloak Admin Console, click on the <strong>Action</strong> dropdown in the top right corner
 and select <strong>Download Adapter Config</strong>.</p>
-</div>
-<div class="paragraph">
+</li>
+<li>
 <p>For the <strong>Format option</strong>, select the <strong>Keycloak SAML Adapter keycloak-saml.xml</strong>, and download the file and place it in the example
 application&#8217;s <code>WEB-INF</code> directory, i.e., place the <code>keycloak-saml.xml</code> file in
 <code>/PATH/TO/ELYTRON/EXAMPLES/simple-webapp-saml/src/main/webapp/WEB-INF</code>.</p>
-</div>
-<div class="paragraph">
+</li>
+<li>
 <p>Update the <code>keycloak-saml.xml</code> file as follows:</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
+<div class="ulist">
+<ul>
 <li>
 <p>Set the <strong>SP</strong> <strong>entityID</strong> to <strong>"simple-webapp-saml"</strong></p>
 </li>
@@ -507,9 +516,6 @@ application&#8217;s <code>WEB-INF</code> directory, i.e., place the <code>keyclo
 <li>
 <p>Replace the <strong>SP</strong> <strong>Keys</strong> configuration with the following configuration, being sure to use the aliases
 and passwords you specified when exporting the SAML keys to the <code>keystore.jks</code> file:</p>
-</li>
-</ol>
-</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">&lt;Keys&gt;
@@ -522,9 +528,10 @@ and passwords you specified when exporting the SAML keys to the <code>keystore.j
 &lt;/Keys&gt;</code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>Push this new file to the <code>simple-webapp-saml</code> directory in your <code>elytron-examples</code> fork:</p>
-</div>
+</li>
+<li>
+<p>Push this new file to the <code>simple-webapp-saml</code> directory in your <code>elytron-examples</code> fork, making
+sure to push the changes to your fork&#8217;s default branch.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-none hljs">cd /PATH/TO/ELYTRON/EXAMPLES/simple-webapp-saml
@@ -532,6 +539,12 @@ git add src/main/webapp/WEB-INF/keycloak-saml.xml
 git commit -m "Added Keycloak adapter deployment descriptor file"
 git push origin main</code></pre>
 </div>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ol>
 </div>
 </div>
 </div>
