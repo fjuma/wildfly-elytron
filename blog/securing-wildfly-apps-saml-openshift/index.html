@@ -445,13 +445,16 @@ to check its status. Once it is running, you can click on <strong>Open URL</stro
 </ul>
 </div>
 </li>
-</ol>
-</div>
-<div class="paragraph">
+<li>
 <p>Once the new client has been created, in the <strong>Settings</strong> tab, scroll down to the <strong>SAML capabilities</strong> section and
-set the <strong>Name ID format</strong> to <strong>email</strong>. Then set <strong>Force name ID format</strong> to <strong>On</strong>. Then click on <strong>Save</strong>. When accessing
+set the <strong>Name ID format</strong> to <strong>email</strong>. When accessing
 our servlet later on, we will see that this results in <code>HttpServletRequest.getUserPrincipal().getName()</code> returning
 the logged in user&#8217;s email address.</p>
+</li>
+<li>
+<p>Then set <strong>Force name ID format</strong> to <strong>On</strong>. Then click on <strong>Save</strong>.</p>
+</li>
+</ol>
 </div>
 </div>
 </div>
