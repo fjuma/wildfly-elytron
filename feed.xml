@@ -5,7 +5,21 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Wed, 06 Sep 2023 17:40:23 +0000</lastBuildDate>
+        <lastBuildDate>Mon, 23 Oct 2023 22:04:47 +0000</lastBuildDate>
+        
+        <item>
+            <title>Vlog: Join us at Open Source Day and Level Up Your Skills</title>
+            <link>
+                https://www.youtube.com/watch?v=9i_MiK0W2n4
+            </link>
+            <description>
+                
+            </description>
+            <pubDate>Thu, 07 Sep 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://www.youtube.com/watch?v=9i_MiK0W2n4
+            </guid>
+        </item>
         
         <item>
             <title>Securing WildFly Apps with SAML on OpenShift</title>
@@ -18,6 +32,34 @@
             <pubDate>Wed, 06 Sep 2023 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-saml-openshift/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Vlog: Join us at Open Source Day, No Prior Experience Needed</title>
+            <link>
+                https://www.youtube.com/watch?v=PAcqCa8u0Z8
+            </link>
+            <description>
+                
+            </description>
+            <pubDate>Wed, 06 Sep 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://www.youtube.com/watch?v=PAcqCa8u0Z8
+            </guid>
+        </item>
+        
+        <item>
+            <title>Vlog: Begin your Open Source Journey with the WildFly Elytron Project at Open Source Day</title>
+            <link>
+                https://www.youtube.com/watch?v=vUWGPTCNl4I
+            </link>
+            <description>
+                
+            </description>
+            <pubDate>Tue, 29 Aug 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://www.youtube.com/watch?v=vUWGPTCNl4I
             </guid>
         </item>
         
@@ -102,48 +144,6 @@
             <pubDate>Wed, 14 Dec 2022 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/ask-me-anything/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Vlog: Filesystem Realm Integrity</title>
-            <link>
-                https://www.youtube.com/watch?v=Tzd9GTr8kwE
-            </link>
-            <description>
-                
-            </description>
-            <pubDate>Wed, 07 Dec 2022 00:00:00 +0000</pubDate>
-            <guid>
-                https://www.youtube.com/watch?v=Tzd9GTr8kwE
-            </guid>
-        </item>
-        
-        <item>
-            <title>Vlog: Git Tips on Upstream Repositories and Merge Conflicts</title>
-            <link>
-                https://www.youtube.com/watch?v=v5d6x3kT7lU
-            </link>
-            <description>
-                
-            </description>
-            <pubDate>Thu, 10 Nov 2022 00:00:00 +0000</pubDate>
-            <guid>
-                https://www.youtube.com/watch?v=v5d6x3kT7lU
-            </guid>
-        </item>
-        
-        <item>
-            <title>Enabling Integrity on Filesystem realms</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/filesystem-integrity/
-            </link>
-            <description>
-                Previously, any data in the filesystem realm was not verified, this meant that anyone with access to the identity files, could tamper with the data without any way of knowing. WildFly 27 adds support for filesystem integrity checking by adding signatures to identity files. This is done using a public-private...
-            </description>
-            <pubDate>Thu, 10 Nov 2022 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/filesystem-integrity/
             </guid>
         </item>
         
