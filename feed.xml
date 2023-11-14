@@ -5,7 +5,77 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Mon, 23 Oct 2023 22:04:47 +0000</lastBuildDate>
+        <lastBuildDate>Tue, 14 Nov 2023 16:48:17 +0000</lastBuildDate>
+        
+        <item>
+            <title>Identity Propagation with OIDC</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/wildfly-oidc-identity-propagation/
+            </link>
+            <description>
+                When securing an application with OpenID Connect (OIDC), WildFly automatically creates and makes use of a virtual security domain across the deployment. If the application invokes an EJB, additional configuration might be required in order to propagate the security identity from the virtual security domain. The configuration that&#8217;s needed depends...
+            </description>
+            <pubDate>Tue, 14 Nov 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/wildfly-oidc-identity-propagation/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Securing WildFly Apps with OIDC on OpenShift</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-oidc-openshift/
+            </link>
+            <description>
+                You can secure your WildFly applications deployed on OpenShift with OpenID Connect (OIDC). By using OIDC to secure applications, you delegate authentication to OIDC providers. This guide shows how to secure an example application deployed to WildFly on OpenShift with OIDC using Keycloak as the OIDC provider. Prerequisites Example Application...
+            </description>
+            <pubDate>Wed, 08 Nov 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-oidc-openshift/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Adding Support for Integrity Checking to an Existing Filesystem Realm</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/filesystem-integrity-elytron-tool/
+            </link>
+            <description>
+                WildFly 27 included the ability to add integrity checking support to filesystem realms. This uses an asymmetric key pair that has a private and public key to secure the filesystem realm. In the filesystem realm, each identity will be signed using the private key. This makes it possible to verify...
+            </description>
+            <pubDate>Thu, 02 Nov 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/filesystem-integrity-elytron-tool/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Open Source Day 2023 Recap</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/ghc23-osd-recap/
+            </link>
+            <description>
+                Last month, the WildFly Elytron team had the great pleasure of participating in Open Source Day, an all-day hackathon that took place as part of the 2023 Grace Hopper Celebration. This was the fourth time that the WildFly Elytron team has participated in this event. It is always an exciting...
+            </description>
+            <pubDate>Thu, 19 Oct 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/ghc23-osd-recap/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Vlog: Join us at Open Source Day on September 22, 2023 and Make Meaningful Contributions</title>
+            <link>
+                https://www.youtube.com/watch?v=nevZyt2TkzI
+            </link>
+            <description>
+                
+            </description>
+            <pubDate>Wed, 13 Sep 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://www.youtube.com/watch?v=nevZyt2TkzI
+            </guid>
+        </item>
         
         <item>
             <title>Vlog: Join us at Open Source Day and Level Up Your Skills</title>
@@ -74,76 +144,6 @@
             <pubDate>Mon, 24 Jul 2023 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/securing-management-console-oidc/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Using Certificate Based Authentication with Mutual TLS without Roles</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/Client-cert-auth-without-roles/
-            </link>
-            <description>
-                Mutual TLS with client certificates is essential for secure and encrypted communication between clients and servers in various applications and systems. It involves a handshake process during which both the client and the server must present their certificate to each other in order to establish a secure connection. This ensures...
-            </description>
-            <pubDate>Mon, 26 Jun 2023 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/Client-cert-auth-without-roles/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Configuring the Digest mechanism to make use of additional algorithms</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/specify-http-digest-algorithms/
-            </link>
-            <description>
-                The default algorithm used for the digest authentication mechanism is MD5. You can configure the WildFly server to also require or accept the SHA-256 and SHA-512-256 algorithms. This configuration can be specified in the mechanism-configuration attribute of both the http-authentication-factory and the sasl-authentication-factory: &lt;http-authentication-factory name="exampleHttpAuthFactory" security-domain="exampleSD" http-server-mechanism-factory="global"&gt; &lt;mechanism-configuration&gt; &lt;mechanism mechanism-name="DIGEST-SHA-256"&gt;...
-            </description>
-            <pubDate>Mon, 15 May 2023 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/specify-http-digest-algorithms/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Using Custom Principals with Elytron</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/using-custom-principals-with-elytron/
-            </link>
-            <description>
-                Sometimes, you need to access additional information about an authenticated user. As an example, you may want to know when they logged in, or what information they have on file. Traditionally, this type of information needed to be stored using security realm attributes associated with an identity. Now in WildFly...
-            </description>
-            <pubDate>Tue, 25 Apr 2023 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/using-custom-principals-with-elytron/
-            </guid>
-        </item>
-        
-        <item>
-            <title>AMA Recap</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/ask-me-anything-recap/
-            </link>
-            <description>
-                The WildFly Elytron team had our very first Ask Me Anything (AMA) session on chat this week. Thanks very much to those who joined! This blog post gives a recap of the session in case you missed it. Q: How can I contribute to Elytron as a person who has...
-            </description>
-            <pubDate>Thu, 22 Dec 2022 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/ask-me-anything-recap/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Ask Me Anything with the WildFly Elytron Team</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/ask-me-anything/
-            </link>
-            <description>
-                The WildFly Elytron team will be having an Ask Me Anything (AMA) session on Monday Dec. 19th on chat. This is your chance to ask any questions about: Contributing to the WildFly Elytron project How to use WildFly Elytron General questions about contributing to open source projects The AMA session...
-            </description>
-            <pubDate>Wed, 14 Dec 2022 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/ask-me-anything/
             </guid>
         </item>
         
