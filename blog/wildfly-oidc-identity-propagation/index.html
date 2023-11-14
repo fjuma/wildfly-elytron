@@ -507,8 +507,13 @@ port 8080:</p>
 <div class="sect2">
 <h3 id="configure-the-security-domain-that-will-be-used-to-secure-the-ejb-businessdomain"><a class="anchor" href="#configure-the-security-domain-that-will-be-used-to-secure-the-ejb-businessdomain"></a>Configure the Security Domain that will be used to Secure the EJB (BusinessDomain)</h3>
 <div class="paragraph">
-<p>We&#8217;re going to secure the EJB being invoked with a security domain called <code>BusinessDomain</code>. To
-create this security domain, execute the following WildFly CLI commands:</p>
+<p>We&#8217;re going to secure the EJB being invoked with a security domain called <code>BusinessDomain</code>. To create this security domain,
+we&#8217;ll connect to the WildFly CLI and execute the CLI commands shown below.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">./bin/jboss-cli.sh --connect --controller=localhost:10000</code></pre>
+</div>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -523,7 +528,9 @@ create this security domain, execute the following WildFly CLI commands:</p>
 /subsystem=elytron/security-domain=BusinessDomain:add(realms=[{realm=BusinessRealm}],default-realm=BusinessRealm,permission-mapper=default-permission-mapper)
 
 # Update the application security domain mapping in the EJB3 subsystem
-/subsystem=ejb3/application-security-domain=BusinessDomain:add(security-domain=BusinessDomain)</code></pre>
+/subsystem=ejb3/application-security-domain=BusinessDomain:add(security-domain=BusinessDomain)
+
+reload</code></pre>
 </div>
 </div>
 </div>
@@ -696,8 +703,13 @@ port 8080:</p>
 <h3 id="configure-the-virtual-security-domain-that-will-be-used-to-secure-the-ejb"><a class="anchor" href="#configure-the-virtual-security-domain-that-will-be-used-to-secure-the-ejb"></a>Configure the Virtual Security Domain that will be used to Secure the EJB</h3>
 <div class="paragraph">
 <p>We&#8217;re going to secure the EJB being invoked with the same virtual security domain that&#8217;s being used
-to secure the web application with OIDC. We first need to add a <code>virtual-security-domain</code> resource in
-the Elytron subsystem as follows:</p>
+to secure the web application with OIDC. We first need to connect to the WildFly CLI and add a <code>virtual-security-domain</code>
+resource in the Elytron subsystem as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell hljs" data-lang="shell">./bin/jboss-cli.sh --connect --controller=localhost:10000</code></pre>
+</div>
 </div>
 <div class="listingblock">
 <div class="content">
