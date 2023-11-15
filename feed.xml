@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Tue, 14 Nov 2023 22:04:45 +0000</lastBuildDate>
+        <lastBuildDate>Wed, 15 Nov 2023 15:50:03 +0000</lastBuildDate>
         
         <item>
             <title>Identity Propagation with OIDC</title>
@@ -15,7 +15,7 @@
             <description>
                 When securing an application with OpenID Connect (OIDC), WildFly automatically creates and makes use of a virtual security domain across the deployment. If the application invokes an EJB, additional configuration might be required in order to propagate the security identity from the virtual security domain. The configuration that&#8217;s needed depends...
             </description>
-            <pubDate>Tue, 14 Nov 2023 00:00:00 +0000</pubDate>
+            <pubDate>Wed, 15 Nov 2023 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/wildfly-oidc-identity-propagation/
             </guid>
