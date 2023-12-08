@@ -5,10 +5,38 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Wed, 15 Nov 2023 16:10:28 +0000</lastBuildDate>
+        <lastBuildDate>Fri, 08 Dec 2023 22:53:44 +0000</lastBuildDate>
         
         <item>
-            <title>Identity Propagation with OIDC</title>
+            <title>Securing WildFly Apps with Auth0 on OpenShift</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-auth0-openshift/
+            </link>
+            <description>
+                You can secure your WildFly applications deployed on OpenShift with OpenID Connect (OIDC). By using OIDC to secure applications, you delegate authentication to OIDC providers. This guide shows how to secure an example application deployed to WildFly on OpenShift with OIDC using Auth0 as the OIDC provider. Prerequisites Example Application...
+            </description>
+            <pubDate>Fri, 08 Dec 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-auth0-openshift/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Using distributed realm ignore-unavailable-realms attribute in Elytron</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/distributed-realm-ignore-unavailable-realms/
+            </link>
+            <description>
+                A distributed-realm is made up of a list of realms. Each realm in the list is sequentially attempted until we either find the user or run out of realms. If a realm happens to be unavailable, by default search is stopped altogether. With the introduction of the ignore-unavailable-realms boolean attribute...
+            </description>
+            <pubDate>Mon, 20 Nov 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/distributed-realm-ignore-unavailable-realms/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Identity Propagation with OpenID Connect</title>
             <link>
                 https://wildfly-security.github.io/wildfly-elytron/blog/wildfly-oidc-identity-propagation/
             </link>
@@ -18,6 +46,20 @@
             <pubDate>Wed, 15 Nov 2023 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/wildfly-oidc-identity-propagation/
+            </guid>
+        </item>
+        
+        <item>
+            <title>Change the default encoding of the audit log file in WildFly</title>
+            <link>
+                https://wildfly-security.github.io/wildfly-elytron/blog/specify-file-audit-log-encoding/
+            </link>
+            <description>
+                The default encoding used for the audit log file is UTF-8. Starting from WildFly 29, you can change the default encoding by specifying encoding attribute in file-audit-log, periodic-rotating-file-audit-log or size-rotating-file-audit-log elements in the Elytron subsystem. Possible values are: UTF-8, UTF-16BE, UTF-16LE, UTF-16, US-ASCII or ISO-8859-1. &lt;file-audit-log name="local-file" path="audit.log" relative-to="jboss.server.log.dir" synchronized="false"...
+            </description>
+            <pubDate>Tue, 14 Nov 2023 00:00:00 +0000</pubDate>
+            <guid>
+                https://wildfly-security.github.io/wildfly-elytron/blog/specify-file-audit-log-encoding/
             </guid>
         </item>
         
@@ -102,48 +144,6 @@
             <pubDate>Wed, 06 Sep 2023 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-saml-openshift/
-            </guid>
-        </item>
-        
-        <item>
-            <title>Vlog: Join us at Open Source Day, No Prior Experience Needed</title>
-            <link>
-                https://www.youtube.com/watch?v=PAcqCa8u0Z8
-            </link>
-            <description>
-                
-            </description>
-            <pubDate>Wed, 06 Sep 2023 00:00:00 +0000</pubDate>
-            <guid>
-                https://www.youtube.com/watch?v=PAcqCa8u0Z8
-            </guid>
-        </item>
-        
-        <item>
-            <title>Vlog: Begin your Open Source Journey with the WildFly Elytron Project at Open Source Day</title>
-            <link>
-                https://www.youtube.com/watch?v=vUWGPTCNl4I
-            </link>
-            <description>
-                
-            </description>
-            <pubDate>Tue, 29 Aug 2023 00:00:00 +0000</pubDate>
-            <guid>
-                https://www.youtube.com/watch?v=vUWGPTCNl4I
-            </guid>
-        </item>
-        
-        <item>
-            <title>Securing the WildFly Management Console with OpenID Connect</title>
-            <link>
-                https://wildfly-security.github.io/wildfly-elytron/blog/securing-management-console-oidc/
-            </link>
-            <description>
-                WildFly 29 Final, which was just released last week, includes the ability to secure the WildFly Management Console with OpenID Connect using the Keycloak OpenID provider. This blog post gives an overview of how to configure this. OpenID Connect Securing the WildFly Management Console with the Keycloak OpenID Provider Keycloak...
-            </description>
-            <pubDate>Mon, 24 Jul 2023 00:00:00 +0000</pubDate>
-            <guid>
-                https://wildfly-security.github.io/wildfly-elytron/blog/securing-management-console-oidc/
             </guid>
         </item>
         
