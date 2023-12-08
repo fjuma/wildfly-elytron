@@ -520,58 +520,58 @@ needed to build and deploy our application.</p>
 <p>Examine the <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/main/simple-webapp-auth0/src/main/webapp/WEB-INF/web.xml">web.xml</a>.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-xml hljs" data-lang="xml">...
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">...
     &lt;login-config&gt;
         &lt;auth-method&gt;OIDC&lt;/auth-method&gt;  <i class="conum" data-value="1"></i><b>(1)</b>
     &lt;/login-config&gt;
 ...</code></pre>
 </div>
 </div>
+</li>
+</ul>
+</div>
 <div class="colist arabic">
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>When the <strong>elytron-oidc-client</strong> subsystem sees the <strong>auth-method</strong> is set to <strong>OIDC</strong>, it enables the OIDC authentication mechanism for the application.</td>
-</tr>
-</table>
-</div>
-</li>
+<td>When the <strong>elytron-oidc-client</strong> subsystem sees the <strong>auth-method</strong> is set to <strong>OIDC</strong>, it enables the OIDC authentication mechanism for the application.
+<div class="ulist">
+<ul>
 <li>
 <p>Examine the <a href="https://github.com/wildfly-security-incubator/elytron-examples/blob/main/simple-webapp-auth0/src/main/webapp/WEB-INF/oidc.json">oidc.json</a> file. The <code>oidc.json</code> is used to configure the native OIDC client subsystem.</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-none hljs">{
-    "client-id" : "${env.CLIENT_ID}",                                                 <i class="conum" data-value="1"></i><b>(1)</b>
-    "provider-url" : "https://${env.DOMAIN}",                                         <i class="conum" data-value="2"></i><b>(2)</b>
-    "ssl-required" : "EXTERNAL",                                                      <i class="conum" data-value="3"></i><b>(3)</b>
+<pre class="highlightjs highlight"><code class="language-none hljs">{
+    "client-id" : "${env.CLIENT_ID}",                       <i class="conum" data-value="1"></i><b>(1)</b>
+    "provider-url" : "https://${env.DOMAIN}",               <i class="conum" data-value="2"></i><b>(2)</b>
+    "ssl-required" : "EXTERNAL",                            <i class="conum" data-value="3"></i><b>(3)</b>
     "credentials" : {
-        "secret" : "${env.CLIENT_SECRET}"                                             <i class="conum" data-value="4"></i><b>(4)</b>
+        "secret" : "${env.CLIENT_SECRET}"                   <i class="conum" data-value="4"></i><b>(4)</b>
     }
 }</code></pre>
 </div>
 </div>
-<div class="colist arabic">
-<table>
-<tr>
-<td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>The client ID, which is specified using the <strong>CLIENT_ID</strong> environment variable we defined in the Helm configuration.</td>
+</li>
+</ul>
+</div></td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>The provider URL, which is specified using the <strong>DOMAIN</strong> environment variable. We defined its value in the Helm configuration.</td>
+<td>The client ID, which is specified using the <strong>CLIENT_ID</strong> environment variable we defined in the Helm configuration.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
-<td>When <strong>ssl-required</strong> is set to <strong>EXTERNAL</strong>, communication with external clients happens over HTTPs.</td>
+<td>The provider URL, which is specified using the <strong>DOMAIN</strong> environment variable. We defined its value in the Helm configuration.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>When <strong>ssl-required</strong> is set to <strong>EXTERNAL</strong>, communication with external clients happens over HTTPs.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
 <td>The client secret is needed to communicate with Auth0. This refers to the <strong>CLIENT_SECRET</strong> environment variable that we defined in the Helm configuration.</td>
 </tr>
 </table>
-</div>
-</li>
-</ul>
 </div>
 </div>
 </div>
