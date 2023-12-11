@@ -5,7 +5,7 @@
         <title>WildFly Elytron</title>
         <link>https://wildfly-security.github.io/wildfly-elytron</link>
         <description></description>
-        <lastBuildDate>Fri, 08 Dec 2023 23:06:02 +0000</lastBuildDate>
+        <lastBuildDate>Mon, 11 Dec 2023 15:20:36 +0000</lastBuildDate>
         
         <item>
             <title>Securing WildFly Apps with Auth0 on OpenShift</title>
@@ -15,7 +15,7 @@
             <description>
                 You can secure your WildFly applications deployed on OpenShift with OpenID Connect (OIDC). By using OIDC to secure applications, you delegate authentication to OIDC providers. This guide shows how to secure an example application deployed to WildFly on OpenShift with OIDC using Auth0 as the OIDC provider. Prerequisites Example Application...
             </description>
-            <pubDate>Fri, 08 Dec 2023 00:00:00 +0000</pubDate>
+            <pubDate>Mon, 11 Dec 2023 00:00:00 +0000</pubDate>
             <guid>
                 https://wildfly-security.github.io/wildfly-elytron/blog/securing-wildfly-apps-auth0-openshift/
             </guid>
