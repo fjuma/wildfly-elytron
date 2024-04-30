@@ -19,7 +19,6 @@
 package org.wildfly.security.http.oidc;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 import static org.wildfly.security.http.oidc.KeycloakConfiguration.CHARLIE;
@@ -46,7 +45,6 @@ import org.junit.Test;
 import org.wildfly.security.http.HttpServerAuthenticationMechanism;
 
 import com.gargoylesoftware.htmlunit.TextPage;
-import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import io.restassured.RestAssured;
@@ -392,59 +390,6 @@ public class OidcTest extends OidcBaseTest {
         }
     }
 
-    private void performTenantRequestWithAuthServerUrl(String username, String password, String tenant, String otherTenant) throws Exception {
-        performTenantRequest(username, password, tenant, otherTenant, true);
-    }
-
-    private void performTenantRequestWithProviderUrl(String username, String password, String tenant, String otherTenant) throws Exception {
-        performTenantRequest(username, password, tenant, otherTenant, false);
-    }
-
-    private void performTenantRequest(String username, String password, String tenant, String otherTenant, boolean useAuthServerUrl) throws Exception {
-        try {
-            Map<String, Object> props = new HashMap<>();
-            Map<String, Object> sessionScopeAttachments = new HashMap<>();
-            String clientPageText = getClientPageTestForTenant(tenant);
-            String expectedLocation = getClientUrlForTenant(tenant);
-
-            // the resolver will be used to obtain the OIDC configuration
-            MultiTenantResolver multiTenantResolver = new MultiTenantResolver(useAuthServerUrl);
-            OidcClientContext oidcClientContext = new OidcClientContext(multiTenantResolver);
-
-            oidcFactory = new OidcMechanismFactory(oidcClientContext);
-            HttpServerAuthenticationMechanism mechanism = oidcFactory.createAuthenticationMechanism(OIDC_NAME, props, getCallbackHandler());
-
-            // attempt to access the specified tenant, we should be redirected to Keycloak to login
-            URI requestUri = new URI(getClientUrlForTenant(tenant));
-            TestingHttpServerRequest request = new TestingHttpServerRequest(null, requestUri);
-            mechanism.evaluateRequest(request);
-            TestingHttpServerResponse response = request.getResponse();
-            assertEquals(HttpStatus.SC_MOVED_TEMPORARILY, response.getStatusCode());
-            assertEquals(Status.NO_AUTH, request.getResult());
-
-            // log into Keycloak, we should then be redirected back to the tenant upon successful authentication
-            client.setDispatcher(createAppResponse(mechanism, HttpStatus.SC_MOVED_TEMPORARILY, expectedLocation, clientPageText, sessionScopeAttachments));
-            TextPage page = loginToKeycloak(username, password, requestUri, response.getLocation(),
-                    response.getCookies()).click();
-            assertTrue(page.getContent().contains(clientPageText));
-
-            if (otherTenant != null) {
-                // attempt to access the other tenant
-                client.setDispatcher(createAppResponse(mechanism, clientPageText, sessionScopeAttachments, otherTenant, tenant.equals(otherTenant)));
-                WebClient webClient = getWebClient();
-                page = webClient.getPage(getClientUrlForTenant(otherTenant));
-                if (otherTenant.equals(tenant)) {
-                    // accessing the same tenant as above, already logged in
-                    assertTrue(page.getContent().contains(clientPageText));
-                } else {
-                    assertFalse(page.getContent().contains(clientPageText));
-                }
-            }
-        } finally {
-            client.setDispatcher(new QueueDispatcher());
-        }
-    }
-
     private InputStream getOidcConfigurationInputStream() {
         return getOidcConfigurationInputStream(CLIENT_SECRET);
     }
@@ -572,7 +517,4 @@ public class OidcTest extends OidcBaseTest {
         return new ByteArrayInputStream(oidcConfig.getBytes(StandardCharsets.UTF_8));
     }
 
-    private static final String getClientPageTestForTenant(String tenant) {
-        return tenant.equals(TENANT1_ENDPOINT) ? TENANT1_ENDPOINT : TENANT2_ENDPOINT + ":" + CLIENT_PAGE_TEXT;
-    }
 }
